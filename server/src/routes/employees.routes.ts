@@ -42,7 +42,7 @@ import {
 import type { Department, RequestingActor, Role } from '../db/domain-types.js';
 
 const DEPARTMENTS = ['front_desk', 'cafe', 'bar', 'mechanic'] as const satisfies readonly Department[];
-const ROLES = ['manager', 'employee'] as const satisfies readonly Role[];
+const ROLES = ['manager', 'employee', 'coordinator'] as const satisfies readonly Role[];
 
 const router = Router();
 

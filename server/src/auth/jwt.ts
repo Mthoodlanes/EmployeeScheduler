@@ -25,7 +25,7 @@ interface ActorTokenPayload {
 }
 
 function isRole(value: unknown): value is Role {
-  return value === 'manager' || value === 'employee';
+  return value === 'manager' || value === 'employee' || value === 'coordinator';
 }
 
 function isActorTokenPayload(value: unknown): value is ActorTokenPayload {

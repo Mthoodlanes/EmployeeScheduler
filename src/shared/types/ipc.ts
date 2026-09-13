@@ -23,6 +23,7 @@ import type {
   EmployeePreference,
   EmployeeUnavailability,
   EndAnchor,
+  Notice,
   Role,
   ScheduledShift,
   ShiftTemplate,
@@ -392,6 +393,41 @@ export interface SpecialEventsRemoveRequest {
   id: number;
 }
 export type SpecialEventsRemoveResponse = { success: true };
+
+// ---- notices:list ----
+export type NoticesListRequest = undefined;
+export type NoticesListResponse = Notice[];
+
+// ---- notices:create ----
+export interface NoticesCreateRequest {
+  title: string;
+  body: string;
+  expiresAt: string | null;
+}
+export type NoticesCreateResponse = Notice;
+
+// ---- notices:update ----
+export interface NoticesUpdateRequest {
+  id: number;
+  title: string;
+  body: string;
+  expiresAt: string | null;
+}
+export type NoticesUpdateResponse = Notice;
+
+// ---- notices:remove ----
+export interface NoticesRemoveRequest {
+  id: number;
+}
+export type NoticesRemoveResponse = { success: true };
+
+// ---- notices:unreadStatus ----
+export type NoticesUnreadStatusRequest = undefined;
+export type NoticesUnreadStatusResponse = { hasUnread: boolean };
+
+// ---- notices:markRead ----
+export type NoticesMarkReadRequest = undefined;
+export type NoticesMarkReadResponse = { success: true };
 
 // ---- windowControls:minimize / toggleMaximize / close ----
 export type WindowControlsMinimizeResponse = { success: true };

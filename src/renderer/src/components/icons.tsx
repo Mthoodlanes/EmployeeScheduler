@@ -325,6 +325,26 @@ export function IconDownload(): React.JSX.Element {
   );
 }
 
+/** Notice Board nav icon / empty state (Milestone 26). */
+export function IconMegaphone(): React.JSX.Element {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="28"
+      height="28"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3.5 10v4a1.5 1.5 0 0 0 1.5 1.5h1l1.5 5h2l-1-5h3l7 4V6l-7 4h-6.5A1.5 1.5 0 0 0 3.5 10z" />
+      <path d="M19.5 9.5v5" />
+    </svg>
+  );
+}
+
 /* ---- Custom title-bar window controls (Milestone 9) ---- */
 
 export function IconWindowMinimize(): React.JSX.Element {

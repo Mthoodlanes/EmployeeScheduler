@@ -15,7 +15,13 @@ export const DEPARTMENT_LABELS: Record<Department, string> = {
   mechanic: 'Mechanic',
 };
 
-export type Role = 'manager' | 'employee';
+export type Role = 'manager' | 'employee' | 'coordinator';
+
+export const ROLE_LABELS: Record<Role, string> = {
+  manager: 'Manager',
+  employee: 'Employee',
+  coordinator: 'Event Coordinator',
+};
 
 export interface Employee {
   id: number;
@@ -185,4 +191,21 @@ export interface SpecialEventOverride {
   closeTime: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * A notice-board announcement (e.g. a new special) posted by a manager or
+ * Event Coordinator, readable by every employee. `postedByName` is
+ * denormalized from a join at read time purely for display.
+ */
+export interface Notice {
+  id: number;
+  title: string;
+  body: string;
+  postedByEmployeeId: number;
+  postedByName: string;
+  createdAt: string;
+  updatedAt: string;
+  /** Optional — a notice with no expiration stays visible indefinitely until removed. */
+  expiresAt: string | null;
 }

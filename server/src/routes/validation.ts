@@ -135,6 +135,14 @@ export function requireDateString(value: unknown, field: string): string {
   return str;
 }
 
+/** Treats both `undefined` and `null` as "no value" -> `null`; otherwise validates a `YYYY-MM-DD` date string. */
+export function nullableDateString(value: unknown, field: string): string | null {
+  if (value === undefined || value === null) {
+    return null;
+  }
+  return requireDateString(value, field);
+}
+
 /** Parses a positive-integer `:id`-style route param (or a caller-chosen param name). */
 export function requireIdParam(req: Request, paramName = 'id'): number {
   const raw = req.params[paramName];

@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
-import { DAY_OF_WEEK_LABELS, DEPARTMENTS, DEPARTMENT_LABELS } from '@shared/types/domain';
+import { DAY_OF_WEEK_LABELS, DEPARTMENTS, DEPARTMENT_LABELS, ROLE_LABELS } from '@shared/types/domain';
 import type { Department, Role } from '@shared/types/domain';
 import type { EmployeeWithDepartments } from '@shared/types/ipc';
 import {
@@ -352,7 +352,7 @@ export function EmployeesAdminPage(): React.JSX.Element {
                 <tr key={employee.id}>
                   <td>{employee.name}</td>
                   <td>{employee.username}</td>
-                  <td>{employee.role}</td>
+                  <td>{ROLE_LABELS[employee.role]}</td>
                   <td>
                     {employee.departments.map((department) => (
                       <span key={department} className="tag">
@@ -455,6 +455,7 @@ export function EmployeesAdminPage(): React.JSX.Element {
               }
             >
               <option value="employee">Employee</option>
+              <option value="coordinator">Event Coordinator</option>
               <option value="manager">Manager</option>
             </select>
           </label>

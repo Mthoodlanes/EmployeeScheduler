@@ -76,6 +76,7 @@ const TABLES_IN_ANY_ORDER = [
   'employee_unavailability',
   'store_hours',
   'special_event_overrides',
+  'notices',
 ];
 
 /**

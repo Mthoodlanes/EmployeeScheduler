@@ -282,6 +282,16 @@
   flex: 1;
 }
 
+.app-nav-badge {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-left: 6px;
+  border-radius: 50%;
+  background: var(--color-danger);
+  vertical-align: middle;
+}
+
 .app-nav-user {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
@@ -360,6 +370,60 @@
 .card h2 {
   margin-top: 0;
   font-size: var(--text-lg);
+}
+
+/* ==========================================================================
+   Notice Board (Milestone 26)
+   ========================================================================== */
+
+.notice-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.notice-card {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  background: var(--color-surface-raised);
+}
+
+.notice-card-expired {
+  opacity: 0.65;
+}
+
+.notice-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.notice-card-title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.notice-card-body {
+  margin: var(--space-2) 0 0;
+  white-space: pre-wrap;
+}
+
+.notice-card-meta {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-sm);
+  color: var(--color-text-subtle);
+}
+
+.notice-card-actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-2);
 }
 
 /* ==========================================================================
@@ -1310,6 +1374,43 @@ table.data-table tbody tr:last-child td {
 }
 
 .pwa-update-toast-refresh {
+  padding: 6px 14px;
+  font-size: var(--text-sm);
+}
+
+.notice-alert-toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-5);
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  max-width: calc(100vw - var(--space-6) * 2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: rise-in var(--transition-slow) var(--ease-emphasized);
+}
+
+.notice-alert-toast-message {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.notice-alert-toast-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.notice-alert-toast-view {
   padding: 6px 14px;
   font-size: var(--text-sm);
 }

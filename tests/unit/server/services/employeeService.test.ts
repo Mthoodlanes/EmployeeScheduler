@@ -6,6 +6,7 @@ import type { RequestingActor } from '../../../../server/src/db/domain-types.js'
 
 const managerActor: RequestingActor = { id: 999999, role: 'manager' };
 const employeeActor: RequestingActor = { id: 999998, role: 'employee' };
+const coordinatorActor: RequestingActor = { id: 999997, role: 'coordinator' };
 
 beforeEach(async () => {
   await truncateAllTables();
@@ -34,6 +35,35 @@ describe('employeeService', () => {
       employeeService.createEmployee(employeeActor, {
         name: 'Nope',
         username: 'nope',
+        password: 'password123',
+        role: 'employee',
+        isSalaried: false,
+        departments: [],
+      }),
+    ).rejects.toThrow(employeeService.UnauthorizedEmployeeActionError);
+  });
+
+  it('creates an employee with the coordinator role', async () => {
+    const created = await employeeService.createEmployee(managerActor, {
+      name: 'Casey Coordinator',
+      username: 'casey',
+      password: 'password123',
+      role: 'coordinator',
+      isSalaried: false,
+      departments: [],
+    });
+
+    expect(created.role).toBe('coordinator');
+  });
+
+  // The new 'coordinator' role (added for the notice board feature) is
+  // deliberately NOT a manager — it must not gain employee-management
+  // rights just by existing as a third role value alongside 'manager'.
+  it('refuses a coordinator (not a manager) from creating an employee', async () => {
+    await expect(
+      employeeService.createEmployee(coordinatorActor, {
+        name: 'Nope',
+        username: 'nope2',
         password: 'password123',
         role: 'employee',
         isSalaried: false,

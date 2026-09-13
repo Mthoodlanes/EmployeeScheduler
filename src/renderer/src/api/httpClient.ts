@@ -78,6 +78,15 @@ import type {
   ShiftTemplatesListResponse,
   ShiftTemplatesUpdateRequest,
   ShiftTemplatesUpdateResponse,
+  NoticesCreateRequest,
+  NoticesCreateResponse,
+  NoticesListResponse,
+  NoticesMarkReadResponse,
+  NoticesRemoveRequest,
+  NoticesRemoveResponse,
+  NoticesUnreadStatusResponse,
+  NoticesUpdateRequest,
+  NoticesUpdateResponse,
   SpecialEventsCreateRequest,
   SpecialEventsCreateResponse,
   SpecialEventsListResponse,
@@ -215,6 +224,14 @@ export interface Api {
     create: (request: SpecialEventsCreateRequest) => Promise<SpecialEventsCreateResponse>;
     update: (request: SpecialEventsUpdateRequest) => Promise<SpecialEventsUpdateResponse>;
     remove: (request: SpecialEventsRemoveRequest) => Promise<SpecialEventsRemoveResponse>;
+  };
+  notices: {
+    list: () => Promise<NoticesListResponse>;
+    create: (request: NoticesCreateRequest) => Promise<NoticesCreateResponse>;
+    update: (request: NoticesUpdateRequest) => Promise<NoticesUpdateResponse>;
+    remove: (request: NoticesRemoveRequest) => Promise<NoticesRemoveResponse>;
+    unreadStatus: () => Promise<NoticesUnreadStatusResponse>;
+    markRead: () => Promise<NoticesMarkReadResponse>;
   };
   /**
    * The one namespace with no web equivalent (see Milestone 9/19/23). In the
@@ -461,6 +478,18 @@ const specialEvents: Api['specialEvents'] = {
     del<SpecialEventsRemoveResponse>(`/special-events/${removeRequest.id}`),
 };
 
+const notices: Api['notices'] = {
+  list: () => get<NoticesListResponse>('/notices'),
+  create: (createRequest: NoticesCreateRequest) =>
+    post<NoticesCreateResponse>('/notices', createRequest),
+  update: (updateRequest: NoticesUpdateRequest) =>
+    put<NoticesUpdateResponse>(`/notices/${updateRequest.id}`, updateRequest),
+  remove: (removeRequest: NoticesRemoveRequest) =>
+    del<NoticesRemoveResponse>(`/notices/${removeRequest.id}`),
+  unreadStatus: () => get<NoticesUnreadStatusResponse>('/notices/unread-status'),
+  markRead: () => post<NoticesMarkReadResponse>('/notices/mark-read'),
+};
+
 /**
  * `windowControls` has no web equivalent and isn't part of the HTTP route
  * surface (Milestone 19), so it's never implemented via `fetch` here.
@@ -491,5 +520,6 @@ export const httpApi: Api = {
   preferences,
   storeHours,
   specialEvents,
+  notices,
   windowControls,
 };

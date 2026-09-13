@@ -306,4 +306,52 @@ describe('employeeRepo', () => {
     const updated = await employeeRepo.setDepartments(created.id, ['front_desk', 'cafe']);
     expect([...updated.departments].sort()).toEqual(['cafe', 'front_desk']);
   });
+
+  it('creates an employee with the coordinator role', async () => {
+    const created = await employeeRepo.create({
+      name: 'Casey Coordinator',
+      username: `casey-${Date.now()}`,
+      passwordHash: 'hash',
+      role: 'coordinator',
+      isSalaried: false,
+      departments: [],
+    });
+
+    expect(created.role).toBe('coordinator');
+  });
+
+  describe('getLastReadNoticesAt / markNoticesRead', () => {
+    it('is null until the employee has never had it set', async () => {
+      const created = await employeeRepo.create({
+        name: 'Notice Reader',
+        username: `reader-${Date.now()}`,
+        passwordHash: 'hash',
+        role: 'employee',
+        isSalaried: false,
+        departments: [],
+      });
+
+      expect(await employeeRepo.getLastReadNoticesAt(created.id)).toBeNull();
+    });
+
+    it('sets the timestamp to roughly now', async () => {
+      const created = await employeeRepo.create({
+        name: 'Notice Reader',
+        username: `reader-${Date.now()}`,
+        passwordHash: 'hash',
+        role: 'employee',
+        isSalaried: false,
+        departments: [],
+      });
+
+      const before = Date.now();
+      await employeeRepo.markNoticesRead(created.id);
+      const after = Date.now();
+
+      const lastReadAt = await employeeRepo.getLastReadNoticesAt(created.id);
+      expect(lastReadAt).not.toBeNull();
+      expect(lastReadAt!.getTime()).toBeGreaterThanOrEqual(before - 1000);
+      expect(lastReadAt!.getTime()).toBeLessThanOrEqual(after + 1000);
+    });
+  });
 });

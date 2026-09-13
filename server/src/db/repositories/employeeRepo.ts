@@ -301,3 +301,26 @@ export async function reorder(orderedIds: number[]): Promise<EmployeeWithDepartm
 
   return listAll();
 }
+
+/**
+ * Milestone 26: raw `last_read_notices_at` column access for the notice
+ * board's unread tracking — deliberately NOT threaded through `toEmployee`/
+ * the public `Employee` type (every existing caller/test expects that exact
+ * shape), so these two functions read/write the column directly instead.
+ */
+export async function getLastReadNoticesAt(employeeId: number): Promise<Date | null> {
+  const db = getDb();
+  const [row] = await db
+    .select({ lastReadNoticesAt: employees.lastReadNoticesAt })
+    .from(employees)
+    .where(eq(employees.id, employeeId));
+  return row?.lastReadNoticesAt ?? null;
+}
+
+export async function markNoticesRead(employeeId: number): Promise<void> {
+  const db = getDb();
+  await db
+    .update(employees)
+    .set({ lastReadNoticesAt: sql`now()` })
+    .where(eq(employees.id, employeeId));
+}

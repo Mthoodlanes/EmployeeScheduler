@@ -19,7 +19,7 @@
 
 export type Department = 'front_desk' | 'cafe' | 'bar' | 'mechanic';
 
-export type Role = 'manager' | 'employee';
+export type Role = 'manager' | 'employee' | 'coordinator';
 
 /**
  * Milestone 16: the employee performing an action, as will be established by
@@ -152,4 +152,22 @@ export interface SpecialEventOverride {
   closeTime: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * A notice-board announcement (e.g. a new special) posted by a manager or
+ * coordinator, readable by every employee. `postedByName` is denormalized
+ * from a join against `employees` at read time purely for display — the
+ * canonical author reference is `postedByEmployeeId`.
+ */
+export interface Notice {
+  id: number;
+  title: string;
+  body: string;
+  postedByEmployeeId: number;
+  postedByName: string;
+  createdAt: string;
+  updatedAt: string;
+  /** Optional — a notice with no expiration stays visible indefinitely until removed. */
+  expiresAt: string | null;
 }

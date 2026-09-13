@@ -36,7 +36,10 @@ import { sql } from 'drizzle-orm';
  *   `CHECK` constraint rather than becoming an enum.
  */
 
-export const roleEnum = pgEnum('role', ['manager', 'employee']);
+// Milestone 26: 'coordinator' added via a dedicated additive migration
+// (`ALTER TYPE "role" ADD VALUE 'coordinator'`), mirroring the precedent set
+// by 0001_many_eddie_brock.sql adding 'mechanic' to the department enum.
+export const roleEnum = pgEnum('role', ['manager', 'employee', 'coordinator']);
 export const departmentEnum = pgEnum('department', ['front_desk', 'cafe', 'bar', 'mechanic']);
 export const requestStatusEnum = pgEnum('request_status', ['pending', 'approved', 'denied']);
 export const startAnchorEnum = pgEnum('start_anchor', ['fixed', 'open']);
@@ -57,6 +60,12 @@ export const employees = pgTable('employees', {
   // row ordering, independent of department. See `domain-types.ts`'s
   // `Employee.sortOrder` doc comment.
   sortOrder: integer('sort_order').notNull().default(0),
+  // Milestone 26: last time this employee opened the Notice Board — compared
+  // against the newest active notice's `createdAt` to compute "unread"
+  // status (nav badge + one-time login toast), rather than a separate
+  // per-notice-per-employee read-tracking table. Null means "never opened
+  // it," so any existing notice counts as unread.
+  lastReadNoticesAt: timestamp('last_read_notices_at', { withTimezone: true }),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -240,3 +249,28 @@ export const specialEventOverrides = pgTable('special_event_overrides', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+// --- notices ----------------------------------------------------------
+// Milestone 26: notice board announcements (e.g. new specials), postable by
+// a manager or the new 'coordinator' role, readable by every employee.
+// `postedByEmployeeId` uses `onDelete: 'restrict'` (the default) rather than
+// `cascade`/`set null` — employees are never hard-deleted in this app (only
+// deactivated), so a notice's author reference is expected to always
+// resolve; restricting matches that invariant instead of quietly hiding a
+// violation of it.
+export const notices = pgTable(
+  'notices',
+  {
+    id: integer('id').generatedAlwaysAsIdentity().primaryKey(),
+    title: text('title').notNull(),
+    body: text('body').notNull(),
+    postedByEmployeeId: integer('posted_by_employee_id')
+      .notNull()
+      .references(() => employees.id),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+    // Optional — a notice with no expiration stays visible until manually removed.
+    expiresAt: timestamp('expires_at', { withTimezone: true }),
+  },
+  (table) => [index('idx_notices_created_at').on(table.createdAt)],
+);

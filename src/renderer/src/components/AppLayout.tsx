@@ -1,10 +1,13 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { ROLE_LABELS } from '@shared/types/domain';
 import { useTheme } from '../theme/ThemeProvider';
 import { useSessionStore } from '../store/useSessionStore';
+import { useNoticesUnreadStatus } from '../hooks/useNotices';
 import { api } from '../api/client';
 import { IconMenu, IconMoon, IconSun } from './icons';
+import { NoticeAlertToast } from './NoticeAlertToast';
 
 function navLinkClassName({ isActive }: { isActive: boolean }): string {
   return isActive ? 'app-nav-link active' : 'app-nav-link';
@@ -17,6 +20,7 @@ export function AppLayout(): React.JSX.Element {
   const currentEmployee = useSessionStore((state) => state.currentEmployee);
   const setSession = useSessionStore((state) => state.setSession);
   const isManager = currentEmployee?.role === 'manager';
+  const { data: unreadStatus } = useNoticesUnreadStatus();
   // Only meaningful at the mobile breakpoint (see `.app-nav-links` in
   // styles.css) — the desktop nav ignores this and always shows every link,
   // since a manager's full link set (7 items) stacked one-per-row would
@@ -57,6 +61,12 @@ export function AppLayout(): React.JSX.Element {
           </NavLink>
           <NavLink to="/time-off/request" className={navLinkClassName} onClick={closeMenu}>
             Request Time Off
+          </NavLink>
+          <NavLink to="/notices" className={navLinkClassName} onClick={closeMenu}>
+            Notice Board
+            {unreadStatus?.hasUnread && (
+              <span className="app-nav-badge" data-testid="notice-board-unread-badge" />
+            )}
           </NavLink>
           {isManager && (
             <>
@@ -99,7 +109,7 @@ export function AppLayout(): React.JSX.Element {
           </button>
           {currentEmployee && (
             <span className="app-nav-user">
-              {currentEmployee.name} ({currentEmployee.role})
+              {currentEmployee.name} ({ROLE_LABELS[currentEmployee.role]})
             </span>
           )}
           <button
@@ -117,6 +127,7 @@ export function AppLayout(): React.JSX.Element {
       <div className="app-content">
         <Outlet />
       </div>
+      <NoticeAlertToast />
     </div>
   );
 }

@@ -13,6 +13,7 @@ import { ScheduleBoardPage } from './pages/ScheduleBoardPage';
 import { TimeOffQueuePage } from './pages/TimeOffQueuePage';
 import { RequestTimeOffPage } from './pages/RequestTimeOffPage';
 import { EmployeesAdminPage } from './pages/EmployeesAdminPage';
+import { NoticeBoardPage } from './pages/NoticeBoardPage';
 import { ShiftTemplatesAdminPage } from './pages/ShiftTemplatesAdminPage';
 import { StoreHoursAdminPage } from './pages/StoreHoursAdminPage';
 import { useSessionStore } from './store/useSessionStore';
@@ -88,6 +89,7 @@ export function App(): React.JSX.Element {
               <Route path="/" element={<Navigate to="/my-schedule" replace />} />
               <Route path="/my-schedule" element={<MySchedulePage />} />
               <Route path="/time-off/request" element={<RequestTimeOffPage />} />
+              <Route path="/notices" element={<NoticeBoardPage />} />
               <Route path="/account" element={<MyAccountPage />} />
               <Route element={<RequireManager />}>
                 <Route path="/time-off" element={<TimeOffQueuePage />} />
