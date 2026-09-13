@@ -14,6 +14,15 @@ if (!container) {
   throw new Error('Root element #root not found');
 }
 
+// `window.api` is only ever injected by the Electron preload script — its
+// presence means this bundle is running inside the frameless desktop shell,
+// which wants the transparent-window + rounded-#root-corners treatment (see
+// theme.css). A plain web page/PWA has no window frame to fake and should
+// just fill the viewport normally, not clip its own corners.
+if (window.api) {
+  document.body.classList.add('is-electron-shell');
+}
+
 ReactDOM.createRoot(container).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>

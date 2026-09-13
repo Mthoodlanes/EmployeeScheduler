@@ -201,10 +201,11 @@ body,
 
 body {
   margin: 0;
-  /* The main window itself is transparent (see src/main/index.ts) so the
-     corners #root clips below show the desktop through, not a black/white
-     rectangle — body must stay see-through, not paint the window's bg. */
-  background-color: transparent;
+  /* Plain web/PWA default: a normal filled page background. The Electron
+     shell overrides this to transparent below, since ITS window itself is
+     transparent (see src/main/index.ts) so the corners #root clips show the
+     desktop through, not a black/white rectangle. */
+  background-color: var(--color-bg);
   color: var(--color-text);
   font-family: var(--font-sans);
   font-size: var(--text-base);
@@ -212,15 +213,26 @@ body {
   transition: color var(--transition-base) var(--ease-standard);
 }
 
+/* `is-electron-shell` is added to <body> at boot only when `window.api` is
+   present (see main.tsx) — i.e. only inside the real Electron desktop app,
+   never on the web/PWA, which has no window frame to fake rounded corners
+   or transparency for. */
+body.is-electron-shell {
+  background-color: transparent;
+}
+
 #root {
+  background-color: var(--color-bg);
+  transition: background-color var(--transition-base) var(--ease-standard);
+}
+
+body.is-electron-shell #root {
   /* Visually rounds the frameless window's corners by clipping #root to the
      window bounds — see --radius-window. The window itself is transparent,
      so the four corner slivers outside this radius show the desktop behind
      the app rather than a hard-edged rectangle. */
   overflow: hidden;
   border-radius: var(--radius-window);
-  background-color: var(--color-bg);
-  transition: background-color var(--transition-base) var(--ease-standard);
 }
 
 /* Consistent, visible keyboard focus everywhere — no component should rely
