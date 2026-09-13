@@ -12,6 +12,7 @@ import authRoutes from './routes/auth.routes.js';
 import employeesRoutes from './routes/employees.routes.js';
 import shiftTemplatesRoutes from './routes/shiftTemplates.routes.js';
 import scheduledShiftsRoutes from './routes/scheduledShifts.routes.js';
+import { pruneShiftsOlderThanTwoWeeks } from './services/scheduledShiftService.js';
 import timeOffRoutes from './routes/timeOff.routes.js';
 import unavailabilityRoutes from './routes/unavailability.routes.js';
 import preferencesRoutes from './routes/preferences.routes.js';
@@ -117,6 +118,21 @@ app.use((req, res) => {
   }
   res.sendFile(rendererIndexHtml);
 });
+
+// Drop schedule data more than two weeks old so the table doesn't grow
+// unbounded — run once at startup (covers Render free-tier cold starts,
+// which happen often) and then on a recurring interval for as long as this
+// process stays warm. Best-effort: a failure here must never take down the
+// whole server, so it's logged rather than thrown.
+function runScheduledShiftPruning(): void {
+  pruneShiftsOlderThanTwoWeeks().catch((error: unknown) => {
+    // eslint-disable-next-line no-console -- background job failure needs to be visible somewhere
+    console.error('Failed to prune old scheduled shifts:', error);
+  });
+}
+runScheduledShiftPruning();
+const PRUNE_INTERVAL_MS = 12 * 60 * 60 * 1000;
+setInterval(runScheduledShiftPruning, PRUNE_INTERVAL_MS);
 
 app.listen(port, () => {
   // eslint-disable-next-line no-console -- startup log is intentional server output

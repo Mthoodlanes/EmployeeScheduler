@@ -709,6 +709,33 @@ table.data-table tbody tr:last-child td {
   text-align: center;
 }
 
+.week-nav-carryover {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
+.week-nav-carryover-label {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--color-text-subtle);
+  white-space: nowrap;
+}
+
+.week-nav-carryover-select {
+  min-width: 160px;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: inherit;
+  font-size: var(--text-sm);
+}
+
 /* ==========================================================================
    My Schedule — a single employee's read-only day-by-day week view.
    ========================================================================== */
@@ -1156,6 +1183,26 @@ table.data-table tbody tr:last-child td {
 
   .week-nav .btn {
     flex: 1 1 0;
+  }
+
+  /* The carry-over group and the "all employees" button each need their own
+     full-width row at phone width — they don't split evenly like the plain
+     prev/next buttons above. */
+  .week-nav-carryover {
+    order: 1;
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .week-nav-carryover-select {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .week-nav-carryover-all-btn {
+    order: 2;
+    width: 100%;
+    flex: 1 1 100%;
   }
 
   /* ---- Data tables (time-off/unavailability history, admin CRUD lists) —

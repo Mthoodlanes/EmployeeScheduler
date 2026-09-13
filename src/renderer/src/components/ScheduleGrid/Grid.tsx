@@ -210,6 +210,9 @@ function SortableEmployeeRow({
                   }
                   resolvedStartTime={resolvedStartTime}
                   resolvedEndTime={resolvedEndTime}
+                  templateName={
+                    (shift.templateId && templatesById.get(shift.templateId)?.name) || null
+                  }
                   onClick={() => onEditShift(shift)}
                 />
               );

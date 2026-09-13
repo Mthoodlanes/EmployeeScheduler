@@ -63,6 +63,8 @@ import type {
   ScheduledShiftsAssignCustomResponse,
   ScheduledShiftsAssignTemplateRequest,
   ScheduledShiftsAssignTemplateResponse,
+  ScheduledShiftsCarryOverWeekRequest,
+  ScheduledShiftsCarryOverWeekResponse,
   ScheduledShiftsListWeekRequest,
   ScheduledShiftsListWeekResponse,
   ScheduledShiftsOverrideRequest,
@@ -167,6 +169,9 @@ export interface Api {
     ) => Promise<ScheduledShiftsAssignCustomResponse>;
     override: (request: ScheduledShiftsOverrideRequest) => Promise<ScheduledShiftsOverrideResponse>;
     remove: (request: ScheduledShiftsRemoveRequest) => Promise<ScheduledShiftsRemoveResponse>;
+    carryOverWeek: (
+      request: ScheduledShiftsCarryOverWeekRequest,
+    ) => Promise<ScheduledShiftsCarryOverWeekResponse>;
   };
   timeOff: {
     createRequest: (request: TimeOffCreateRequestRequest) => Promise<TimeOffCreateRequestResponse>;
@@ -394,6 +399,8 @@ const scheduledShifts: Api['scheduledShifts'] = {
     put<ScheduledShiftsOverrideResponse>(`/scheduled-shifts/${overrideRequest.id}`, overrideRequest),
   remove: (removeRequest: ScheduledShiftsRemoveRequest) =>
     del<ScheduledShiftsRemoveResponse>(`/scheduled-shifts/${removeRequest.id}`),
+  carryOverWeek: (carryOverRequest: ScheduledShiftsCarryOverWeekRequest) =>
+    post<ScheduledShiftsCarryOverWeekResponse>('/scheduled-shifts/carry-over', carryOverRequest),
 };
 
 const timeOff: Api['timeOff'] = {

@@ -226,6 +226,18 @@ export interface ScheduledShiftsRemoveRequest {
 }
 export type ScheduledShiftsRemoveResponse = { success: true };
 
+// ---- scheduledShifts:carryOverWeek ----
+export interface ScheduledShiftsCarryOverWeekRequest {
+  department: Department;
+  /** Monday of the week to copy shifts FROM, YYYY-MM-DD. */
+  sourceWeekStart: string;
+  /** Monday of the week to copy shifts INTO, YYYY-MM-DD. */
+  targetWeekStart: string;
+  /** Omit to carry over every employee in `department`; otherwise just this one. */
+  employeeId?: number;
+}
+export type ScheduledShiftsCarryOverWeekResponse = ScheduledShift[];
+
 // ---- timeOff:createRequest ----
 export interface TimeOffCreateRequestRequest {
   startDate: string;

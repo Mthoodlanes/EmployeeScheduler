@@ -52,7 +52,14 @@
 
   .print-schedule-table {
     width: 100%;
-    border-collapse: collapse;
+    /* `separate` + zero spacing rather than `collapse`: with `collapse` on a
+       fixed-layout table, Chromium's print rasterizer can round adjacent
+       columns' shared border to zero width at certain column boundaries,
+       silently dropping vertical lines (seen after the Employee, Monday, and
+       Tuesday columns). Each cell drawing its own full border sidesteps that
+       shared-border rounding entirely. */
+    border-collapse: separate;
+    border-spacing: 0;
     table-layout: fixed;
   }
 

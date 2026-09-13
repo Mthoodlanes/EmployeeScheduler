@@ -21,7 +21,7 @@
  */
 import * as scheduledShiftRepo from '../db/repositories/scheduledShiftRepo.js';
 import * as shiftTemplateRepo from '../db/repositories/shiftTemplateRepo.js';
-import { getWeekDates } from '../logic/weekRange.js';
+import { getTodayIso, getWeekDates, getWeekStart, shiftWeek } from '../logic/weekRange.js';
 import { DepartmentMismatchError, ShiftTemplateNotFoundError } from './scheduledShiftErrors.js';
 import type {
   Department,
@@ -186,4 +186,90 @@ export async function overrideShift(
 export async function removeShift(actor: RequestingActor, id: number): Promise<void> {
   assertManager(actor);
   await scheduledShiftRepo.remove(id);
+}
+
+export interface CarryOverWeekInput {
+  department: Department;
+  sourceWeekStart: string;
+  targetWeekStart: string;
+  employeeId?: number;
+}
+
+/**
+ * Manager-only: copies each shift from `sourceWeekStart` onto the matching
+ * day of `targetWeekStart` (Monday maps to Monday, Tuesday to Tuesday, etc.),
+ * either for one employee or every employee in `department`. Non-destructive
+ * by design: an employee/day in the target week that already has at least
+ * one shift is left untouched rather than overwritten or duplicated, so a
+ * manager can safely carry over without clobbering edits already made to the
+ * current week. Copies are taken from a single snapshot of the target week
+ * read before any inserts, so multiple source shifts for the same
+ * employee/day (e.g. a split shift) all still copy over correctly.
+ */
+export async function carryOverWeek(
+  actor: RequestingActor,
+  input: CarryOverWeekInput,
+): Promise<ScheduledShift[]> {
+  assertManager(actor);
+  const sourceDates = getWeekDates(input.sourceWeekStart);
+  const targetDates = getWeekDates(input.targetWeekStart);
+
+  const [sourceShifts, targetShifts] = await Promise.all([
+    scheduledShiftRepo.listByDepartmentAndDateRange(
+      input.department,
+      sourceDates[0],
+      sourceDates[sourceDates.length - 1],
+    ),
+    scheduledShiftRepo.listByDepartmentAndDateRange(
+      input.department,
+      targetDates[0],
+      targetDates[targetDates.length - 1],
+    ),
+  ]);
+
+  const relevantSourceShifts =
+    input.employeeId === undefined
+      ? sourceShifts
+      : sourceShifts.filter((shift) => shift.employeeId === input.employeeId);
+
+  const occupiedTargetSlots = new Set(
+    targetShifts.map((shift) => `${shift.employeeId}:${shift.shiftDate}`),
+  );
+
+  const shiftsToCopy = relevantSourceShifts
+    .map((shift) => ({ shift, targetDate: targetDates[sourceDates.indexOf(shift.shiftDate)] }))
+    .filter(
+      ({ shift, targetDate }) => !occupiedTargetSlots.has(`${shift.employeeId}:${targetDate}`),
+    );
+
+  const created: ScheduledShift[] = [];
+  for (const { shift, targetDate } of shiftsToCopy) {
+    // eslint-disable-next-line no-await-in-loop -- sequential inserts keep this simple; the week is at most 7 days x a handful of employees
+    const createdShift = await scheduledShiftRepo.create({
+      employeeId: shift.employeeId,
+      department: input.department,
+      shiftDate: targetDate,
+      startTime: shift.startTime,
+      endTime: shift.endTime,
+      startAnchor: shift.startAnchor,
+      endAnchor: shift.endAnchor,
+      templateId: shift.templateId,
+      isOverride: shift.isOverride,
+      notes: shift.notes,
+    });
+    created.push(createdShift);
+  }
+  return created;
+}
+
+/**
+ * System task (no requesting actor — not triggered by a user action): drops
+ * every scheduled shift dated before two full weeks ago, so the schedule
+ * table doesn't grow unbounded with data nobody needs once a week has fully
+ * passed. Keeps the current week plus the two weeks immediately prior.
+ */
+export async function pruneShiftsOlderThanTwoWeeks(): Promise<void> {
+  const currentWeekStart = getWeekStart(getTodayIso());
+  const cutoffDate = shiftWeek(currentWeekStart, -2);
+  await scheduledShiftRepo.deleteOlderThan(cutoffDate);
 }

@@ -11,6 +11,7 @@
  *   scheduledShifts:assignCustom   -> POST   /api/scheduled-shifts/assign-custom
  *   scheduledShifts:override       -> PUT    /api/scheduled-shifts/:id
  *   scheduledShifts:remove         -> DELETE /api/scheduled-shifts/:id
+ *   scheduledShifts:carryOverWeek  -> POST   /api/scheduled-shifts/carry-over
  */
 import { Router } from 'express';
 import * as scheduledShiftService from '../services/scheduledShiftService.js';
@@ -19,6 +20,7 @@ import { handleRoute } from './httpResult.js';
 import {
   bodyOf,
   nullableString,
+  optionalInteger,
   optionalStringOrNull,
   requireDateString,
   requireIdParam,
@@ -98,6 +100,19 @@ router.delete(
     await scheduledShiftService.removeShift(req.actor as RequestingActor, requireIdParam(req));
     return { success: true };
   }),
+);
+
+router.post(
+  '/carry-over',
+  handleRoute((req) => {
+    const body = bodyOf(req);
+    return scheduledShiftService.carryOverWeek(req.actor as RequestingActor, {
+      department: requireOneOf(body.department, 'department', DEPARTMENTS),
+      sourceWeekStart: requireDateString(body.sourceWeekStart, 'sourceWeekStart'),
+      targetWeekStart: requireDateString(body.targetWeekStart, 'targetWeekStart'),
+      employeeId: optionalInteger(body.employeeId, 'employeeId'),
+    });
+  }, 201),
 );
 
 export default router;

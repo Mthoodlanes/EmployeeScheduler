@@ -65,6 +65,14 @@ export function requireInteger(value: unknown, field: string): number {
   return value;
 }
 
+/** Present-but-optional integer field (undefined is fine; present must be an integer). */
+export function optionalInteger(value: unknown, field: string): number | undefined {
+  if (value === undefined) {
+    return undefined;
+  }
+  return requireInteger(value, field);
+}
+
 export function requireOneOf<T extends string>(
   value: unknown,
   field: string,

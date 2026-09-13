@@ -4,6 +4,7 @@ import * as employeeRepo from '../../../../server/src/db/repositories/employeeRe
 import * as scheduledShiftRepo from '../../../../server/src/db/repositories/scheduledShiftRepo.js';
 import * as shiftTemplateRepo from '../../../../server/src/db/repositories/shiftTemplateRepo.js';
 import * as scheduledShiftService from '../../../../server/src/services/scheduledShiftService.js';
+import { getTodayIso, getWeekStart, shiftWeek } from '../../../../server/src/logic/weekRange.js';
 import type { RequestingActor } from '../../../../server/src/db/domain-types.js';
 
 let employeeId: number;
@@ -368,5 +369,148 @@ describe('scheduledShiftService', () => {
     const weekShifts = await scheduledShiftService.listWeek(managerActor, 'bar', '2026-09-07');
     expect(weekShifts).toHaveLength(1);
     expect(weekShifts[0].id).toBe(assigned.id);
+  });
+
+  describe('carryOverWeek', () => {
+    it('copies every employee\'s shifts to the matching day next week, skipping days the target week already has a shift', async () => {
+      const secondEmployee = await employeeRepo.create({
+        name: 'Sam Bar',
+        username: `sam-${Date.now()}-${Math.random()}`,
+        passwordHash: 'hash',
+        role: 'employee',
+        isSalaried: false,
+        departments: ['bar'],
+      });
+
+      // Source week: Mon 2026-08-31 - Sun 2026-09-06.
+      await scheduledShiftRepo.create({
+        employeeId,
+        department: 'bar',
+        shiftDate: '2026-09-01', // Tuesday
+        startTime: '16:00',
+        endTime: '23:00',
+        templateId: null,
+        isOverride: false,
+      });
+      await scheduledShiftRepo.create({
+        employeeId: secondEmployee.id,
+        department: 'bar',
+        shiftDate: '2026-09-02', // Wednesday
+        startTime: '10:00',
+        endTime: '18:00',
+        templateId: null,
+        isOverride: false,
+      });
+
+      // Target week: Mon 2026-09-07 - Sun 2026-09-13. `employeeId` already has
+      // a shift on the matching Tuesday, so that day must be left alone.
+      const existingTargetShift = await scheduledShiftRepo.create({
+        employeeId,
+        department: 'bar',
+        shiftDate: '2026-09-08', // Tuesday
+        startTime: '12:00',
+        endTime: '20:00',
+        templateId: null,
+        isOverride: false,
+      });
+
+      const created = await scheduledShiftService.carryOverWeek(managerActor, {
+        department: 'bar',
+        sourceWeekStart: '2026-08-31',
+        targetWeekStart: '2026-09-07',
+      });
+
+      expect(created).toHaveLength(1);
+      expect(created[0].employeeId).toBe(secondEmployee.id);
+      expect(created[0].shiftDate).toBe('2026-09-09');
+      expect(created[0].startTime).toBe('10:00');
+      expect(created[0].endTime).toBe('18:00');
+
+      const targetWeekShifts = await scheduledShiftService.listWeek(managerActor, 'bar', '2026-09-07');
+      expect(targetWeekShifts).toHaveLength(2);
+      const untouchedShift = targetWeekShifts.find((shift) => shift.id === existingTargetShift.id);
+      expect(untouchedShift?.startTime).toBe('12:00');
+    });
+
+    it('carries over only the specified employee when employeeId is given', async () => {
+      const secondEmployee = await employeeRepo.create({
+        name: 'Sam Bar',
+        username: `sam-${Date.now()}-${Math.random()}`,
+        passwordHash: 'hash',
+        role: 'employee',
+        isSalaried: false,
+        departments: ['bar'],
+      });
+      await scheduledShiftRepo.create({
+        employeeId,
+        department: 'bar',
+        shiftDate: '2026-09-01',
+        startTime: '16:00',
+        endTime: '23:00',
+        templateId: null,
+        isOverride: false,
+      });
+      await scheduledShiftRepo.create({
+        employeeId: secondEmployee.id,
+        department: 'bar',
+        shiftDate: '2026-09-01',
+        startTime: '09:00',
+        endTime: '15:00',
+        templateId: null,
+        isOverride: false,
+      });
+
+      const created = await scheduledShiftService.carryOverWeek(managerActor, {
+        department: 'bar',
+        sourceWeekStart: '2026-08-31',
+        targetWeekStart: '2026-09-07',
+        employeeId: secondEmployee.id,
+      });
+
+      expect(created).toHaveLength(1);
+      expect(created[0].employeeId).toBe(secondEmployee.id);
+    });
+
+    it('refuses a non-manager from carrying over a week', async () => {
+      await expect(
+        scheduledShiftService.carryOverWeek(employeeActor, {
+          department: 'bar',
+          sourceWeekStart: '2026-08-31',
+          targetWeekStart: '2026-09-07',
+        }),
+      ).rejects.toThrow(scheduledShiftService.UnauthorizedScheduledShiftActionError);
+    });
+  });
+
+  describe('pruneShiftsOlderThanTwoWeeks', () => {
+    it('deletes shifts dated before the two-week retention window, keeping everything newer', async () => {
+      const currentWeekStart = getWeekStart(getTodayIso());
+      const oldDate = shiftWeek(currentWeekStart, -3);
+      const keptDate = shiftWeek(currentWeekStart, -1);
+
+      const oldShift = await scheduledShiftRepo.create({
+        employeeId,
+        department: 'bar',
+        shiftDate: oldDate,
+        startTime: '16:00',
+        endTime: '23:00',
+        templateId: null,
+        isOverride: false,
+      });
+      const keptShift = await scheduledShiftRepo.create({
+        employeeId,
+        department: 'bar',
+        shiftDate: keptDate,
+        startTime: '16:00',
+        endTime: '23:00',
+        templateId: null,
+        isOverride: false,
+      });
+
+      await scheduledShiftService.pruneShiftsOlderThanTwoWeeks();
+
+      expect(await scheduledShiftRepo.getById(oldShift.id)).toBeUndefined();
+      expect(await scheduledShiftRepo.getById(keptShift.id)).toBeDefined();
+    });
   });
 });

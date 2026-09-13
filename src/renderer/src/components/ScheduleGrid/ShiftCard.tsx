@@ -13,6 +13,8 @@ interface ShiftCardProps {
   /** The shift's actual clock time for its date, already resolved through `resolveShiftTimeFromHours`. */
   resolvedStartTime: string | null;
   resolvedEndTime: string | null;
+  /** Name of the shift template this shift was assigned from, or null for a one-off custom time. */
+  templateName: string | null;
   onClick: () => void;
 }
 
@@ -23,6 +25,7 @@ export function ShiftCard({
   preferenceMatch,
   resolvedStartTime,
   resolvedEndTime,
+  templateName,
   onClick,
 }: ShiftCardProps): React.JSX.Element {
   const isAnchored = shift.startAnchor !== 'fixed' || shift.endAnchor !== 'fixed';
@@ -67,9 +70,9 @@ export function ShiftCard({
           Edited
         </span>
       )}
-      {!shift.isOverride && shift.templateId === null && (
-        <span className="shift-card-custom" data-testid={`shift-card-custom-${shift.id}`}>
-          Custom
+      {!shift.isOverride && shift.templateId !== null && templateName && (
+        <span className="shift-card-template" data-testid={`shift-card-template-${shift.id}`}>
+          {templateName}
         </span>
       )}
     </button>

@@ -1,5 +1,5 @@
 import { DEPARTMENT_LABELS } from '@shared/types/domain';
-import type { Department, ScheduledShift } from '@shared/types/domain';
+import type { Department, ScheduledShift, ShiftTemplate } from '@shared/types/domain';
 import type { EmployeeWithDepartments } from '@shared/types/ipc';
 import { formatWeekLabel } from '@shared/logic/weekRange';
 import { resolveShiftTimeFromHours } from '@shared/logic/hoursResolution';
@@ -12,6 +12,7 @@ interface PrintScheduleProps {
   employees: EmployeeWithDepartments[];
   days: DayColumn[];
   shifts: ScheduledShift[];
+  templatesById: Map<number, ShiftTemplate>;
 }
 
 /** The day column header's effective store hours, as plain printable text (no color-only signal — see PrintSchedule.css). */
@@ -27,15 +28,22 @@ function formatDayHours(hours: ResolvedHours): string {
 }
 
 /** Text labels for one shift — never color-only, since the printed page is grayscale. */
-function shiftLabels(shift: ScheduledShift, isSalaried: boolean): string[] {
+function shiftLabels(
+  shift: ScheduledShift,
+  isSalaried: boolean,
+  templatesById: Map<number, ShiftTemplate>,
+): string[] {
   const labels: string[] = [];
   if (isSalaried) {
     labels.push('Flexible');
   }
   if (shift.isOverride) {
     labels.push('Edited');
-  } else if (shift.templateId === null) {
-    labels.push('Custom');
+  } else if (shift.templateId !== null) {
+    const templateName = templatesById.get(shift.templateId)?.name;
+    if (templateName) {
+      labels.push(templateName);
+    }
   }
   return labels;
 }
@@ -57,6 +65,7 @@ export function PrintSchedule({
   employees,
   days,
   shifts,
+  templatesById,
 }: PrintScheduleProps): React.JSX.Element {
   return (
     <div className="print-schedule">
@@ -107,7 +116,7 @@ export function PrintSchedule({
                           shift.endTime,
                           day.hours,
                         );
-                        const labels = shiftLabels(shift, employee.isSalaried);
+                        const labels = shiftLabels(shift, employee.isSalaried, templatesById);
                         return (
                           <div className="print-shift" key={shift.id}>
                             <div className="print-shift-time">

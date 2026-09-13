@@ -35,6 +35,7 @@ import { useEmployees, useReorderEmployees } from '../hooks/useEmployees';
 import {
   useAssignCustomShift,
   useAssignShiftTemplate,
+  useCarryOverWeek,
   useOverrideShift,
   useRemoveShift,
   useScheduleWeek,
@@ -52,6 +53,9 @@ const CLOSED_HOURS: ResolvedHours = {
   isClosed: true,
   isOverride: false,
 };
+
+/** A manager can build the schedule at most this many weeks ahead of the current week. */
+const MAX_WEEKS_AHEAD = 8;
 
 interface AssignTarget {
   employeeId: number;
@@ -72,6 +76,10 @@ export function ScheduleBoardPage(): React.JSX.Element {
   const [unavailabilityOverride, setUnavailabilityOverride] =
     useState<PendingUnavailabilityAssignment | null>(null);
   const [dialogError, setDialogError] = useState<string | null>(null);
+  const [carryOverEmployeeId, setCarryOverEmployeeId] = useState<string>('');
+  const [carryOverMessage, setCarryOverMessage] = useState<
+    { kind: 'success' | 'error'; text: string } | null
+  >(null);
 
   const { data: employees } = useEmployees();
   const { data: templates } = useShiftTemplates();
@@ -87,6 +95,11 @@ export function ScheduleBoardPage(): React.JSX.Element {
   const overrideMutation = useOverrideShift(department, weekStart);
   const removeMutation = useRemoveShift(department, weekStart);
   const reorderEmployeesMutation = useReorderEmployees();
+  const carryOverMutation = useCarryOverWeek(department, weekStart);
+
+  const maxWeekStart = useMemo(() => shiftWeek(getWeekStart(getTodayIso()), MAX_WEEKS_AHEAD), []);
+  const isAtMaxWeek = weekStart >= maxWeekStart;
+  const lastWeekStart = useMemo(() => shiftWeek(weekStart, -1), [weekStart]);
 
   const weekDates = useMemo(() => getWeekDates(weekStart), [weekStart]);
   const days = useMemo(
@@ -341,6 +354,51 @@ export function ScheduleBoardPage(): React.JSX.Element {
     reorderEmployeesMutation.mutate({ orderedIds: mergedOrderIds });
   };
 
+  const handleCarryOverEmployee = async (): Promise<void> => {
+    if (!carryOverEmployeeId) return;
+    const employee = departmentEmployees.find(
+      (candidate) => String(candidate.id) === carryOverEmployeeId,
+    );
+    setCarryOverMessage(null);
+    try {
+      const created = await carryOverMutation.mutateAsync({
+        sourceWeekStart: lastWeekStart,
+        employeeId: Number(carryOverEmployeeId),
+      });
+      setCarryOverMessage({
+        kind: 'success',
+        text:
+          created.length > 0
+            ? `Copied ${created.length} shift${created.length === 1 ? '' : 's'} from last week for ${employee?.name ?? 'this employee'}.`
+            : `${employee?.name ?? 'This employee'} had no shifts last week to copy, or this week's days already had shifts.`,
+      });
+    } catch (err) {
+      setCarryOverMessage({
+        kind: 'error',
+        text: err instanceof Error ? err.message : 'Could not carry over last week',
+      });
+    }
+  };
+
+  const handleCarryOverAll = async (): Promise<void> => {
+    setCarryOverMessage(null);
+    try {
+      const created = await carryOverMutation.mutateAsync({ sourceWeekStart: lastWeekStart });
+      setCarryOverMessage({
+        kind: 'success',
+        text:
+          created.length > 0
+            ? `Copied ${created.length} shift${created.length === 1 ? '' : 's'} from last week.`
+            : 'No shifts from last week to copy, or this week already had shifts on those days.',
+      });
+    } catch (err) {
+      setCarryOverMessage({
+        kind: 'error',
+        text: err instanceof Error ? err.message : 'Could not carry over last week',
+      });
+    }
+  };
+
   const assignTargetEmployee = assignTarget
     ? departmentEmployees.find((employee) => employee.id === assignTarget.employeeId)
     : undefined;
@@ -379,7 +437,14 @@ export function ScheduleBoardPage(): React.JSX.Element {
 
       <OverlapBanner warnings={overlaps} />
 
-      <DepartmentTabs value={department} onChange={setDepartment} />
+      <DepartmentTabs
+        value={department}
+        onChange={(nextDepartment) => {
+          setDepartment(nextDepartment);
+          setCarryOverEmployeeId('');
+          setCarryOverMessage(null);
+        }}
+      />
 
       <div className="week-nav">
         <button
@@ -395,11 +460,60 @@ export function ScheduleBoardPage(): React.JSX.Element {
         <button
           type="button"
           className="btn"
+          disabled={isAtMaxWeek}
+          title={isAtMaxWeek ? `You can schedule at most ${MAX_WEEKS_AHEAD} weeks ahead` : undefined}
           onClick={() => setWeekStart((prev) => shiftWeek(prev, 1))}
         >
           Next week →
         </button>
+
+        <div className="week-nav-carryover">
+          <label className="week-nav-carryover-label" htmlFor="carry-over-employee">
+            Carry over last week:
+            <select
+              id="carry-over-employee"
+              className="week-nav-carryover-select"
+              value={carryOverEmployeeId}
+              onChange={(event) => setCarryOverEmployeeId(event.target.value)}
+            >
+              <option value="">Select employee…</option>
+              {departmentEmployees.map((employee) => (
+                <option key={employee.id} value={employee.id}>
+                  {employee.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button
+            type="button"
+            className="btn"
+            data-testid="carry-over-employee-button"
+            disabled={!carryOverEmployeeId || carryOverMutation.isPending}
+            onClick={handleCarryOverEmployee}
+          >
+            Carry over
+          </button>
+        </div>
+        <button
+          type="button"
+          className="btn week-nav-carryover-all-btn"
+          data-testid="carry-over-all-button"
+          disabled={carryOverMutation.isPending || departmentEmployees.length === 0}
+          onClick={handleCarryOverAll}
+        >
+          Carry over all employees
+        </button>
       </div>
+
+      {carryOverMessage && (
+        <div
+          role={carryOverMessage.kind === 'error' ? 'alert' : 'status'}
+          className={carryOverMessage.kind === 'error' ? 'form-error' : 'form-success'}
+          data-testid="carry-over-message"
+        >
+          {carryOverMessage.text}
+        </div>
+      )}
 
       <ScheduleGrid
         employees={departmentEmployees}
@@ -422,6 +536,7 @@ export function ScheduleBoardPage(): React.JSX.Element {
         employees={departmentEmployees}
         days={days}
         shifts={shifts ?? []}
+        templatesById={templatesById}
       />
 
       {timeOffOverrideTarget && timeOffOverrideEmployee && (

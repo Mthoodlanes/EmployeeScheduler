@@ -41,7 +41,7 @@ export function AssignShiftDialog({
   onAssignCustom,
   onClose,
 }: AssignShiftDialogProps): React.JSX.Element {
-  const [mode, setMode] = useState<Mode>('template');
+  const [mode, setMode] = useState<Mode>('custom');
   const [startAnchor, setStartAnchor] = useState<StartAnchor>('fixed');
   const [startTime, setStartTime] = useState('09:00');
   const [endAnchor, setEndAnchor] = useState<EndAnchor>('fixed');
@@ -85,19 +85,19 @@ export function AssignShiftDialog({
       <div className="assign-mode-toggle">
         <button
           type="button"
-          className={mode === 'template' ? 'btn btn-toggle active' : 'btn btn-toggle'}
-          data-testid="assign-mode-template"
-          onClick={() => setMode('template')}
-        >
-          From template
-        </button>
-        <button
-          type="button"
           className={mode === 'custom' ? 'btn btn-toggle active' : 'btn btn-toggle'}
           data-testid="assign-mode-custom"
           onClick={() => setMode('custom')}
         >
           Custom time
+        </button>
+        <button
+          type="button"
+          className={mode === 'template' ? 'btn btn-toggle active' : 'btn btn-toggle'}
+          data-testid="assign-mode-template"
+          onClick={() => setMode('template')}
+        >
+          From template
         </button>
       </div>
 

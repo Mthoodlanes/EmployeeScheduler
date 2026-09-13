@@ -60,7 +60,7 @@ export function AppLayout(): React.JSX.Element {
           </NavLink>
           {isManager && (
             <>
-              <NavLink to="/time-off" className={navLinkClassName} onClick={closeMenu}>
+              <NavLink to="/time-off" end className={navLinkClassName} onClick={closeMenu}>
                 Time Off Queue
               </NavLink>
               <NavLink to="/schedule" className={navLinkClassName} onClick={closeMenu}>

@@ -3,6 +3,7 @@ import type { Department } from '@shared/types/domain';
 import type {
   ScheduledShiftsAssignCustomRequest,
   ScheduledShiftsAssignTemplateRequest,
+  ScheduledShiftsCarryOverWeekRequest,
   ScheduledShiftsOverrideRequest,
 } from '@shared/types/ipc';
 import { api } from '../api/client';
@@ -58,6 +59,16 @@ export function useRemoveShift(department: Department, weekStart: string) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: number) => api.scheduledShifts.remove({ id }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: scheduleWeekKey(department, weekStart) }),
+  });
+}
+
+export function useCarryOverWeek(department: Department, weekStart: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: Omit<ScheduledShiftsCarryOverWeekRequest, 'department' | 'targetWeekStart'>) =>
+      api.scheduledShifts.carryOverWeek({ ...input, department, targetWeekStart: weekStart }),
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: scheduleWeekKey(department, weekStart) }),
   });

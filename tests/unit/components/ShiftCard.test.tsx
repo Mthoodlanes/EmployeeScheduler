@@ -29,6 +29,7 @@ describe('ShiftCard', () => {
         preferenceMatch="none"
         resolvedStartTime={SHIFT.startTime}
         resolvedEndTime={SHIFT.endTime}
+        templateName={null}
         onClick={() => {}}
       />,
     );
@@ -45,6 +46,7 @@ describe('ShiftCard', () => {
         preferenceMatch="none"
         resolvedStartTime={SHIFT.startTime}
         resolvedEndTime={SHIFT.endTime}
+        templateName={null}
         onClick={() => {}}
       />,
     );
@@ -61,6 +63,7 @@ describe('ShiftCard', () => {
         preferenceMatch="none"
         resolvedStartTime={SHIFT.startTime}
         resolvedEndTime={SHIFT.endTime}
+        templateName={null}
         onClick={() => {}}
       />,
     );
@@ -77,6 +80,7 @@ describe('ShiftCard', () => {
         preferenceMatch="matches"
         resolvedStartTime={SHIFT.startTime}
         resolvedEndTime={SHIFT.endTime}
+        templateName={null}
         onClick={() => {}}
       />,
     );
@@ -94,6 +98,7 @@ describe('ShiftCard', () => {
         preferenceMatch="outside"
         resolvedStartTime={SHIFT.startTime}
         resolvedEndTime={SHIFT.endTime}
+        templateName={null}
         onClick={() => {}}
       />,
     );
@@ -111,6 +116,7 @@ describe('ShiftCard', () => {
         preferenceMatch="none"
         resolvedStartTime={SHIFT.startTime}
         resolvedEndTime={SHIFT.endTime}
+        templateName={null}
         onClick={() => {}}
       />,
     );
@@ -119,7 +125,7 @@ describe('ShiftCard', () => {
     expect(screen.getByTestId('shift-card-edited-1')).toBeInTheDocument();
   });
 
-  it('shows a "Custom" badge for a from-scratch shift with no template and no override', () => {
+  it('shows no template badge for a from-scratch custom-time shift with no template and no override', () => {
     render(
       <ShiftCard
         shift={{ ...SHIFT, templateId: null, isOverride: false }}
@@ -128,11 +134,30 @@ describe('ShiftCard', () => {
         preferenceMatch="none"
         resolvedStartTime={SHIFT.startTime}
         resolvedEndTime={SHIFT.endTime}
+        templateName={null}
         onClick={() => {}}
       />,
     );
 
-    expect(screen.getByTestId('shift-card-custom-1')).toBeInTheDocument();
+    expect(screen.queryByTestId('shift-card-template-1')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('shift-card-edited-1')).not.toBeInTheDocument();
+  });
+
+  it('shows the template name badge for a shift assigned from a standard template', () => {
+    render(
+      <ShiftCard
+        shift={{ ...SHIFT, templateId: 5, isOverride: false }}
+        color="#7C3AED"
+        isSalaried={false}
+        preferenceMatch="none"
+        resolvedStartTime={SHIFT.startTime}
+        resolvedEndTime={SHIFT.endTime}
+        templateName="Bar Open"
+        onClick={() => {}}
+      />,
+    );
+
+    expect(screen.getByTestId('shift-card-template-1')).toHaveTextContent('Bar Open');
     expect(screen.queryByTestId('shift-card-edited-1')).not.toBeInTheDocument();
   });
 
@@ -151,6 +176,7 @@ describe('ShiftCard', () => {
         preferenceMatch="none"
         resolvedStartTime="14:00"
         resolvedEndTime="23:00"
+        templateName={null}
         onClick={() => {}}
       />,
     );
@@ -176,6 +202,7 @@ describe('ShiftCard', () => {
         preferenceMatch="none"
         resolvedStartTime="14:00"
         resolvedEndTime={null}
+        templateName={null}
         onClick={() => {}}
       />,
     );

@@ -355,7 +355,7 @@ function SpecialEventsCard(): React.JSX.Element {
               id="special-event-label"
               className="text-input"
               value={form.label}
-              placeholder="League Night — opens 8am"
+              placeholder="Tournament - Opens at 8am"
               onChange={(event) => setForm((prev) => ({ ...prev, label: event.target.value }))}
               required
             />

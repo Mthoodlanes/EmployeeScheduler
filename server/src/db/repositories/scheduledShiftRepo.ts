@@ -1,4 +1,4 @@
-import { and, asc, between, eq, sql } from 'drizzle-orm';
+import { and, asc, between, eq, lt, sql } from 'drizzle-orm';
 import { getDb } from '../../db.js';
 import { scheduledShifts } from '../schema.js';
 import type { Department, EndAnchor, ScheduledShift, StartAnchor } from '../domain-types.js';
@@ -127,4 +127,10 @@ export async function updateOverride(
 export async function remove(id: number): Promise<void> {
   const db = getDb();
   await db.delete(scheduledShifts).where(eq(scheduledShifts.id, id));
+}
+
+/** Deletes every scheduled shift dated strictly before `cutoffDate` (YYYY-MM-DD). */
+export async function deleteOlderThan(cutoffDate: string): Promise<void> {
+  const db = getDb();
+  await db.delete(scheduledShifts).where(lt(scheduledShifts.shiftDate, cutoffDate));
 }
