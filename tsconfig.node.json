@@ -11,6 +11,17 @@
     "scripts/**/*",
     "tests/**/*.ts"
   ],
+  // Milestone 24: tests/unit/server/** exercises server/src (the standalone
+  // Postgres/Express server, type-checked separately by tsconfig.server.json
+  // via `npm run server:build`) against the real Neon TEST branch through
+  // Vitest, which transpiles per-file via esbuild rather than doing a project
+  // -wide `tsc` check — so, unlike every other tests/**/*.ts file, it was
+  // never meant to be resolvable from THIS project. Excluded here so
+  // `npm run build`'s `tsc --noEmit -p tsconfig.node.json` doesn't fail
+  // trying to resolve server/src imports that tsconfig.node.json's own
+  // `include` list intentionally never lists (they belong to
+  // tsconfig.server.json's rootDir instead).
+  "exclude": ["tests/unit/server/**"],
   "compilerOptions": {
     "composite": true,
     "strict": true,

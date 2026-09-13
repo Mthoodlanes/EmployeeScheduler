@@ -14,6 +14,7 @@
     "format": "prettier --write .",
     "test:unit": "vitest run",
     "test:unit:watch": "vitest",
+    "test:unit:server": "vitest run tests/unit/server",
     "test:e2e": "playwright test",
     "package": "npm run build && electron-builder",
     "icons:generate": "tsx scripts/generate-pwa-icons.ts",

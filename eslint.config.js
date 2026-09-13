@@ -42,7 +42,12 @@ export default [
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.web.json', './tsconfig.server.json'],
+        project: [
+          './tsconfig.node.json',
+          './tsconfig.web.json',
+          './tsconfig.server.json',
+          './tsconfig.test-server.json',
+        ],
         tsconfigRootDir: __dirname,
         ecmaFeatures: { jsx: true },
       },
@@ -59,7 +64,12 @@ export default [
       react: { version: 'detect' },
       'import/resolver': {
         typescript: {
-          project: ['./tsconfig.node.json', './tsconfig.web.json', './tsconfig.server.json'],
+          project: [
+            './tsconfig.node.json',
+            './tsconfig.web.json',
+            './tsconfig.server.json',
+            './tsconfig.test-server.json',
+          ],
         },
       },
     },
