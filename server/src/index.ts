@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import cookieParser from 'cookie-parser';
+import cors from 'cors';
 import { sql } from 'drizzle-orm';
 import { getDb } from './db.js';
 import { getJwtSecret } from './auth/jwt.js';
@@ -37,6 +38,25 @@ const PLACEHOLDER_HTML = `<!doctype html>
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
+
+// Milestone 19: dev-only CORS. Until Milestone 20 unifies frontend+backend
+// onto one origin, local dev runs the Vite renderer dev server (typically
+// http://localhost:5173) and this Express API (http://localhost:3000) as two
+// separate processes/ports, so the dual-mode `client.ts`'s fetch calls are
+// cross-origin. `credentials: true` is required so the httpOnly JWT session
+// cookie is sent/accepted. Gated strictly behind non-production so a
+// deployed instance (same-origin per Milestone 20) never runs with any CORS
+// allowance at all — this must never reach production as a general
+// permissive policy.
+if (process.env.NODE_ENV !== 'production') {
+  const devRendererOrigin = process.env.DEV_RENDERER_ORIGIN ?? 'http://localhost:5173';
+  app.use(
+    cors({
+      origin: devRendererOrigin,
+      credentials: true,
+    }),
+  );
+}
 
 app.use(express.json());
 app.use(cookieParser());

@@ -2,9 +2,18 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!--
+      Milestone 19: `connect-src` additionally allows `http://localhost:3000`
+      so the fetch-based dual-mode client (`src/renderer/src/api/client.ts`)
+      can reach the local Express API when the renderer dev server and the
+      backend run on different ports (see `VITE_API_BASE_URL`). Harmless in
+      the Electron app (no fetch calls, IPC only) and in production hosting
+      (Milestone 20 serves both from one origin, so `'self'` already covers
+      it) — nothing listens on that port there.
+    -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline';"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://localhost:3000;"
     />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Mt Hood Lanes Scheduler</title>
