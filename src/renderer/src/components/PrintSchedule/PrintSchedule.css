@@ -1,0 +1,114 @@
+/* ==========================================================================
+   Print-only weekly schedule (Milestone 10) — a purpose-built table layout
+   for physically posting one department's week, entirely separate from the
+   on-screen `ScheduleGrid` CSS grid. `.print-schedule` stays hidden on
+   screen and is revealed only inside `@media print` (the rest of the app's
+   chrome is hidden the other way around — see the print rules at the bottom
+   of styles.css). Colors here are hardcoded black/white/gray rather than
+   the theme's custom properties: the printed page must stay legible on a
+   grayscale printer regardless of whether the app is currently in light or
+   dark mode on screen.
+   ========================================================================== */
+
+.print-schedule {
+  display: none;
+}
+
+/* Landscape fits 7 day columns + an employee column far better than portrait. */
+@page {
+  size: landscape;
+  margin: 12mm;
+}
+
+@media print {
+  .print-schedule {
+    display: block;
+    color: #000;
+    background: #fff;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .print-schedule-header {
+    margin-bottom: 10px;
+  }
+
+  .print-schedule-title {
+    margin: 0;
+    font-size: 18pt;
+    font-weight: 700;
+    color: #000;
+  }
+
+  .print-schedule-subtitle {
+    margin: 2px 0 0;
+    font-size: 11pt;
+    color: #222;
+  }
+
+  .print-schedule-empty {
+    font-size: 11pt;
+    color: #333;
+  }
+
+  .print-schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  .print-schedule-table th,
+  .print-schedule-table td {
+    border: 1px solid #444;
+    padding: 6px 8px;
+    text-align: left;
+    vertical-align: top;
+    font-size: 9.5pt;
+    color: #000;
+  }
+
+  .print-schedule-table thead {
+    display: table-header-group;
+    background: #eee;
+  }
+
+  .print-schedule-table tr {
+    page-break-inside: avoid;
+  }
+
+  .print-schedule-employee-col {
+    width: 13%;
+    font-weight: 600;
+  }
+
+  .print-day-label {
+    font-weight: 700;
+    font-size: 10pt;
+  }
+
+  .print-day-hours {
+    font-weight: 400;
+    font-size: 8.5pt;
+    color: #333;
+    margin-top: 2px;
+  }
+
+  .print-shift + .print-shift {
+    margin-top: 5px;
+    padding-top: 5px;
+    border-top: 1px dashed #999;
+  }
+
+  .print-shift-time {
+    font-weight: 700;
+  }
+
+  .print-shift-labels {
+    font-size: 8pt;
+    font-style: italic;
+    color: #333;
+  }
+
+  .print-shift-empty {
+    color: #888;
+  }
+}

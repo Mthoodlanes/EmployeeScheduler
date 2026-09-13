@@ -1,0 +1,250 @@
+/*
+ * Design tokens — single source of truth for color, spacing, radius,
+ * shadow, typography and motion across the whole app. Every stylesheet in
+ * the app should read from these custom properties rather than introducing
+ * new magic numbers or one-off colors.
+ */
+
+:root {
+  /* ---- Neutral scale (warm slate) — light mode ---- */
+  --gray-0: #ffffff;
+  --gray-50: #faf6f0;
+  --gray-100: #f1ece3;
+  --gray-200: #e4dcd0;
+  --gray-300: #d3c7b7;
+  --gray-400: #ac9f8f;
+  --gray-500: #8a7d6f;
+  --gray-600: #6b6058;
+  --gray-700: #4d443c;
+  --gray-800: #362f29;
+  --gray-900: #2b2420;
+
+  /* ---- Amber accent scale — light mode ---- */
+  --amber-50: #fdf2e3;
+  --amber-100: #fbe4c2;
+  --amber-300: #eab160;
+  --amber-500: #d97706;
+  --amber-600: #b45309;
+  --amber-700: #92400e;
+
+  /* ---- Semantic surfaces ---- */
+  --color-bg: var(--gray-50);
+  --color-surface: var(--gray-0);
+  --color-surface-muted: var(--gray-100);
+  --color-surface-raised: var(--gray-0);
+  --color-text: var(--gray-900);
+  --color-text-muted: var(--gray-600);
+  --color-text-subtle: var(--gray-500);
+  --color-border: var(--gray-200);
+  --color-border-strong: var(--gray-300);
+
+  /* ---- Accent (brand) ---- */
+  --color-accent-subtle: var(--amber-50);
+  --color-accent-muted: var(--amber-100);
+  --color-accent: var(--amber-600);
+  --color-accent-hover: var(--amber-700);
+  --color-accent-active: var(--amber-700);
+  --color-accent-contrast: #ffffff;
+  --color-accent-text: var(--amber-700);
+
+  /* ---- Semantic status colors (used consistently for success/warning/danger states) ---- */
+  --color-success: #1e7a34;
+  --color-success-bg: #e4f5e6;
+  --color-success-border: #bfe4c4;
+
+  --color-warning: #92620a;
+  --color-warning-bg: #fbeecb;
+  --color-warning-border: #f0d999;
+
+  --color-danger: #b3261e;
+  --color-danger-bg: #fbeceb;
+  --color-danger-border: #f3c6c2;
+
+  /* ---- Spacing scale ---- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+  --space-8: 40px;
+
+  /* ---- Radius ---- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  /* Subtle corner rounding for the frameless main window itself (applied to
+     #root below) — Windows 10 doesn't round frameless windows the way
+     Windows 11 does, so the app clips its own corners in CSS. Deliberately
+     small/subtle, distinct from the card-level --radius-lg. */
+  --radius-window: 8px;
+
+  /* ---- Shadow ---- */
+  --shadow-xs: 0 1px 2px rgba(30, 20, 10, 0.06);
+  --shadow-sm: 0 1px 3px rgba(30, 20, 10, 0.08);
+  --shadow-md: 0 6px 20px rgba(30, 20, 10, 0.12);
+  --shadow-lg: 0 16px 40px rgba(30, 20, 10, 0.18);
+
+  /* ---- Typography ---- */
+  --font-sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --text-xs: 0.72rem;
+  --text-sm: 0.85rem;
+  --text-base: 0.95rem;
+  --text-lg: 1.1rem;
+  --text-xl: 1.35rem;
+  --text-2xl: 1.7rem;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ---- Motion ---- */
+  --transition-fast: 130ms;
+  --transition-base: 180ms;
+  --transition-slow: 240ms;
+  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
+
+  /* ---- Focus ring ---- */
+  --focus-ring-color: var(--amber-600);
+  --focus-ring: 0 0 0 3px var(--color-accent-subtle), 0 0 0 1px var(--focus-ring-color);
+}
+
+:root[data-theme='dark'] {
+  /* ---- Neutral scale — dark mode ----
+     Milestone 11: re-anchored to the Mt Hood Lanes logo's deep forest green
+     (sampled from the logo artwork as #19362b) rather than the generic warm
+     slate used in earlier milestones. Hue drifts gradually from that forest
+     green (~160°) at the dark/structural end of the scale toward the logo's
+     cream/tan (~42°, sampled as #e0ccac) at the light/text end, so body text
+     reads as a warm brand-appropriate cream instead of a flat off-white,
+     while backgrounds/surfaces/borders read as a desaturated, sophisticated
+     green-charcoal rather than a literal green wash. */
+  --gray-0: #1b2823;
+  --gray-50: #121c19;
+  --gray-100: #24332c;
+  --gray-200: #304138;
+  --gray-300: #405446;
+  --gray-400: #63735e;
+  --gray-500: #8c957e;
+  --gray-600: #b5b7a4;
+  --gray-700: #ceccbb;
+  --gray-800: #e2ded4;
+  --gray-900: #f1efe9;
+
+  /* ---- Amber/accent scale — dark mode ----
+     Milestone 11: re-derived from the logo's brick-red/brown (sampled as
+     #713025) rather than the earlier amber-on-black placeholder. The base
+     brick hue is too dark/low-contrast to use verbatim as an interactive
+     accent on a near-black background, so it's brightened and lifted for
+     the mid/high steps (600/700) that carry buttons, links, active-tab
+     text and the focus ring, while the low steps (50/100) stay dark, warm
+     chip tints for subtle accent backgrounds. Variable names are unchanged
+     (still --amber-*) since components only ever reference the semantic
+     --color-accent-* tokens below, never the scale directly. */
+  --amber-50: #32201a;
+  --amber-100: #442a22;
+  --amber-300: #cc8066;
+  --amber-500: #ce5b3b;
+  --amber-600: #b1492f;
+  --amber-700: #d8775a;
+
+  --color-bg: var(--gray-50);
+  --color-surface: var(--gray-0);
+  --color-surface-muted: var(--gray-100);
+  --color-surface-raised: #202f29;
+  --color-text: var(--gray-900);
+  --color-text-muted: var(--gray-600);
+  --color-text-subtle: var(--gray-500);
+  --color-border: var(--gray-200);
+  --color-border-strong: var(--gray-300);
+
+  --color-accent-subtle: var(--amber-50);
+  --color-accent-muted: var(--amber-100);
+  --color-accent: var(--amber-600);
+  --color-accent-hover: var(--amber-700);
+  --color-accent-active: var(--amber-700);
+  --color-accent-contrast: var(--gray-900);
+  --color-accent-text: var(--amber-700);
+
+  --color-success: #7fce93;
+  --color-success-bg: #21351f;
+  --color-success-border: #375a34;
+
+  --color-warning: #f0c766;
+  --color-warning-bg: #3a2e15;
+  --color-warning-border: #5c4a20;
+
+  --color-danger: #f2b8b5;
+  --color-danger-bg: #3a2320;
+  --color-danger-border: #5c332d;
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.55);
+
+  --focus-ring-color: var(--amber-700);
+  --focus-ring: 0 0 0 3px var(--color-accent-subtle), 0 0 0 1px var(--focus-ring-color);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  /* The main window itself is transparent (see src/main/index.ts) so the
+     corners #root clips below show the desktop through, not a black/white
+     rectangle — body must stay see-through, not paint the window's bg. */
+  background-color: transparent;
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.45;
+  transition: color var(--transition-base) var(--ease-standard);
+}
+
+#root {
+  /* Visually rounds the frameless window's corners by clipping #root to the
+     window bounds — see --radius-window. The window itself is transparent,
+     so the four corner slivers outside this radius show the desktop behind
+     the app rather than a hard-edged rectangle. */
+  overflow: hidden;
+  border-radius: var(--radius-window);
+  background-color: var(--color-bg);
+  transition: background-color var(--transition-base) var(--ease-standard);
+}
+
+/* Consistent, visible keyboard focus everywhere — no component should rely
+   on the browser default outline or suppress it without a replacement. */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+/* Respect the user's reduced-motion preference: collapse every transition
+   and animation to effectively instant rather than removing the state
+   change itself. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

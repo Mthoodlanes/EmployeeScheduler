@@ -1,0 +1,14 @@
+node_modules
+out
+out-tsc
+dist
+build/Output
+release
+playwright-report
+test-results
+.vite
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
