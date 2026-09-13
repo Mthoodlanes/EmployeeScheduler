@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   EmployeesCreateRequest,
   EmployeesSetDepartmentsRequest,
+  EmployeesUpdateOwnProfileRequest,
   EmployeesUpdateRequest,
 } from '@shared/types/ipc';
 import { api } from '../api/client';
@@ -43,6 +44,21 @@ export function useSetEmployeeDepartments() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: EmployeesSetDepartmentsRequest) => api.employees.setDepartments(input),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: EMPLOYEES_KEY }),
+  });
+}
+
+/**
+ * Self-service counterpart to `useUpdateEmployee` — any logged-in user
+ * (employee or manager) updating their OWN name/password via
+ * `employees:updateOwnProfile` (IPC) / `PUT /api/employees/me` (HTTP). Also
+ * invalidates the employees list, since a manager's own row appears there
+ * too.
+ */
+export function useUpdateOwnProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: EmployeesUpdateOwnProfileRequest) => api.employees.updateOwnProfile(input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: EMPLOYEES_KEY }),
   });
 }

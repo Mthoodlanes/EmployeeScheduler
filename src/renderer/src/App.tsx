@@ -6,6 +6,7 @@ import { RequireManager } from './components/RequireManager';
 import { TitleBar } from './components/TitleBar';
 import { FirstRunSetupPage } from './pages/FirstRunSetupPage';
 import { LoginPage } from './pages/LoginPage';
+import { MyAccountPage } from './pages/MyAccountPage';
 import { MySchedulePage } from './pages/MySchedulePage';
 import { ScheduleBoardPage } from './pages/ScheduleBoardPage';
 import { TimeOffQueuePage } from './pages/TimeOffQueuePage';
@@ -85,6 +86,7 @@ export function App(): React.JSX.Element {
               <Route path="/" element={<Navigate to="/my-schedule" replace />} />
               <Route path="/my-schedule" element={<MySchedulePage />} />
               <Route path="/time-off/request" element={<RequestTimeOffPage />} />
+              <Route path="/account" element={<MyAccountPage />} />
               <Route element={<RequireManager />}>
                 <Route path="/time-off" element={<TimeOffQueuePage />} />
                 <Route path="/schedule" element={<ScheduleBoardPage />} />

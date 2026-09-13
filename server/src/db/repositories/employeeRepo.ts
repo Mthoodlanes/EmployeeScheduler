@@ -45,6 +45,18 @@ export interface UpdateEmployeeInput {
   passwordHash?: string;
 }
 
+/**
+ * Self-service counterpart to `UpdateEmployeeInput`/`update` — deliberately
+ * narrower: no `role`/`isSalaried`/`isActive`, since those stay
+ * manager-only via `update` above. Both fields are optional so a
+ * name-only change never has to re-supply an unrelated password hash.
+ */
+export interface UpdateOwnProfileInput {
+  id: number;
+  name?: string;
+  passwordHash?: string;
+}
+
 async function getDepartmentsFor(db: Db, employeeId: number): Promise<Department[]> {
   const rows = await db
     .select({ department: employeeDepartments.department })
@@ -165,6 +177,33 @@ export async function update(input: UpdateEmployeeInput): Promise<EmployeeWithDe
   const updated = await getById(input.id);
   if (!updated) {
     throw new Error(`Employee ${input.id} not found after update`);
+  }
+  return updated;
+}
+
+export async function updateOwnProfile(
+  input: UpdateOwnProfileInput,
+): Promise<EmployeeWithDepartmentsRow> {
+  const db = getDb();
+
+  const changes: Partial<typeof employees.$inferInsert> = {};
+  if (input.name !== undefined) {
+    changes.name = input.name;
+  }
+  if (input.passwordHash !== undefined) {
+    changes.passwordHash = input.passwordHash;
+  }
+
+  if (Object.keys(changes).length > 0) {
+    await db
+      .update(employees)
+      .set({ ...changes, updatedAt: sql`now()` })
+      .where(eq(employees.id, input.id));
+  }
+
+  const updated = await getById(input.id);
+  if (!updated) {
+    throw new Error(`Employee ${input.id} not found after updating own profile`);
   }
   return updated;
 }

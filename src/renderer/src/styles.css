@@ -412,6 +412,20 @@ textarea.text-input {
   animation: rise-in var(--transition-base) var(--ease-standard);
 }
 
+.form-success {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--color-success-bg);
+  border: 1px solid var(--color-success-border);
+  color: var(--color-success);
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-2);
+  animation: rise-in var(--transition-base) var(--ease-standard);
+}
+
 .color-swatch {
   display: inline-block;
   width: 20px;

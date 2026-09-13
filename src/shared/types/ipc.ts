@@ -32,6 +32,7 @@ export const IpcChannels = {
   employeesUpdate: 'employees:update',
   employeesDeactivate: 'employees:deactivate',
   employeesSetDepartments: 'employees:setDepartments',
+  employeesUpdateOwnProfile: 'employees:updateOwnProfile',
   shiftTemplatesList: 'shiftTemplates:list',
   shiftTemplatesCreate: 'shiftTemplates:create',
   shiftTemplatesUpdate: 'shiftTemplates:update',
@@ -146,6 +147,22 @@ export interface EmployeesSetDepartmentsRequest {
   departments: Department[];
 }
 export type EmployeesSetDepartmentsResponse = EmployeeWithDepartments;
+
+// ---- employees:updateOwnProfile ----
+/**
+ * Self-service counterpart to `employees:update`: operates on the CALLER's
+ * own record (identity comes from the session/JWT, never from this
+ * request), and can only ever change `name`/password — never
+ * role/departments/isSalaried/isActive. `newPassword` requires
+ * `currentPassword` to also be supplied and to verify correctly against the
+ * stored hash.
+ */
+export interface EmployeesUpdateOwnProfileRequest {
+  name?: string;
+  currentPassword?: string;
+  newPassword?: string;
+}
+export type EmployeesUpdateOwnProfileResponse = EmployeeWithDepartments;
 
 // ---- shiftTemplates:list ----
 export type ShiftTemplatesListRequest = undefined;

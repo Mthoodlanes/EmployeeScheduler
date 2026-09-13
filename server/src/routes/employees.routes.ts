@@ -11,6 +11,13 @@
  *   employees:update         -> PUT    /api/employees/:id
  *   employees:deactivate     -> POST   /api/employees/:id/deactivate
  *   employees:setDepartments -> PUT    /api/employees/:id/departments
+ *
+ * Plus a new, additional self-service route (no IPC-channel precursor —
+ * ported the other direction, IPC channel added alongside this route, see
+ * `src/main/ipc/employees.ipc.ts`'s `employees:updateOwnProfile`):
+ *   PUT /api/employees/me -> employeeService.updateOwnProfile(actor, ...)
+ *   Any authenticated actor may call this for THEMSELVES (no `assertManager`
+ *   — enforced by acting on `actor.id`, never a body/param-supplied id).
  */
 import { Router } from 'express';
 import * as employeeService from '../services/employeeService.js';
@@ -27,7 +34,7 @@ import {
 } from './validation.js';
 import type { Department, RequestingActor, Role } from '../db/domain-types.js';
 
-const DEPARTMENTS = ['front_desk', 'cafe', 'bar'] as const satisfies readonly Department[];
+const DEPARTMENTS = ['front_desk', 'cafe', 'bar', 'mechanic'] as const satisfies readonly Department[];
 const ROLES = ['manager', 'employee'] as const satisfies readonly Role[];
 
 const router = Router();
@@ -52,6 +59,21 @@ router.post(
       departments: requireArrayOf(body.departments, 'departments', DEPARTMENTS),
     });
   }, 201),
+);
+
+// Registered BEFORE `/:id` — Express matches routes in registration order,
+// and `/:id`'s `requireIdParam` would otherwise try (and fail) to parse the
+// literal segment "me" as a numeric id.
+router.put(
+  '/me',
+  handleRoute((req) => {
+    const body = bodyOf(req);
+    return employeeService.updateOwnProfile(req.actor as RequestingActor, {
+      name: optionalString(body.name, 'name'),
+      currentPassword: optionalString(body.currentPassword, 'currentPassword'),
+      newPassword: optionalString(body.newPassword, 'newPassword'),
+    });
+  }),
 );
 
 router.put(

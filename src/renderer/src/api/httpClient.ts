@@ -35,6 +35,8 @@ import type {
   EmployeesListResponse,
   EmployeesSetDepartmentsRequest,
   EmployeesSetDepartmentsResponse,
+  EmployeesUpdateOwnProfileRequest,
+  EmployeesUpdateOwnProfileResponse,
   EmployeesUpdateRequest,
   EmployeesUpdateResponse,
   FirstRunStatusResponse,
@@ -244,6 +246,8 @@ const employees: Api['employees'] = {
     put<EmployeesSetDepartmentsResponse>(`/employees/${setDepartmentsRequest.id}/departments`, {
       departments: setDepartmentsRequest.departments,
     }),
+  updateOwnProfile: (updateOwnProfileRequest: EmployeesUpdateOwnProfileRequest) =>
+    put<EmployeesUpdateOwnProfileResponse>('/employees/me', updateOwnProfileRequest),
 };
 
 const shiftTemplates: Api['shiftTemplates'] = {

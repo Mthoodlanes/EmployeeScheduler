@@ -8,17 +8,23 @@ import type {
   EmployeesListResponse,
   EmployeesSetDepartmentsRequest,
   EmployeesSetDepartmentsResponse,
+  EmployeesUpdateOwnProfileRequest,
+  EmployeesUpdateOwnProfileResponse,
   EmployeesUpdateRequest,
   EmployeesUpdateResponse,
 } from '../../shared/types/ipc';
+import type { Employee } from '../../shared/types/domain';
 import * as employeeService from '../services/employeeService';
 import { session } from '../session';
 import { toIpcResult, UnauthorizedError } from './ipcResult';
 
-function requireLoggedIn(): void {
-  if (!session.getCurrent()) {
+/** Returns the current session's employee, or throws. Reads/self-service actions are gated on being logged in at all. */
+function requireLoggedIn(): Employee {
+  const current = session.getCurrent();
+  if (!current) {
     throw new UnauthorizedError('You must be logged in');
   }
+  return current;
 }
 
 function requireManager(): void {
@@ -63,6 +69,19 @@ export function registerEmployeesIpc(): void {
       toIpcResult<EmployeesSetDepartmentsResponse>(() => {
         requireManager();
         return employeeService.setEmployeeDepartments(request.id, request.departments);
+      }),
+  );
+
+  // Self-service: any logged-in user (employee or manager) may update their
+  // OWN name/password. Never manager-gated — the actor id always comes from
+  // the session, never from the renderer-supplied request body, and the
+  // service layer refuses to touch role/departments/isSalaried/isActive.
+  ipcMain.handle(
+    IpcChannels.employeesUpdateOwnProfile,
+    (_event, request: EmployeesUpdateOwnProfileRequest) =>
+      toIpcResult<EmployeesUpdateOwnProfileResponse>(() => {
+        const actor = requireLoggedIn();
+        return employeeService.updateOwnProfile(actor.id, request);
       }),
   );
 }

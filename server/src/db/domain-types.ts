@@ -17,7 +17,7 @@
  * every repo function's return shape matches the original SQLite repos.
  */
 
-export type Department = 'front_desk' | 'cafe' | 'bar';
+export type Department = 'front_desk' | 'cafe' | 'bar' | 'mechanic';
 
 export type Role = 'manager' | 'employee';
 

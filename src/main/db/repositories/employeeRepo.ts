@@ -57,6 +57,18 @@ export interface UpdateEmployeeInput {
   passwordHash?: string;
 }
 
+/**
+ * Self-service counterpart to `UpdateEmployeeInput`/`update` — deliberately
+ * narrower: no `role`/`isSalaried`/`isActive`, since those stay
+ * manager-only via `update` above. Both fields are optional so a
+ * name-only change never has to re-supply an unrelated password hash.
+ */
+export interface UpdateOwnProfileInput {
+  id: number;
+  name?: string;
+  passwordHash?: string;
+}
+
 function getDepartmentsFor(db: Database.Database, employeeId: number): Department[] {
   const rows = db
     .prepare(
@@ -165,6 +177,33 @@ export function update(input: UpdateEmployeeInput): EmployeeWithDepartmentsRow {
   const updated = getById(input.id);
   if (!updated) {
     throw new Error(`Employee ${input.id} not found after update`);
+  }
+  return updated;
+}
+
+export function updateOwnProfile(input: UpdateOwnProfileInput): EmployeeWithDepartmentsRow {
+  const db = getDb();
+  const sets: string[] = [];
+  const params: unknown[] = [];
+
+  if (input.name !== undefined) {
+    sets.push('name = ?');
+    params.push(input.name);
+  }
+  if (input.passwordHash !== undefined) {
+    sets.push('password_hash = ?');
+    params.push(input.passwordHash);
+  }
+
+  if (sets.length > 0) {
+    sets.push(`updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`);
+    params.push(input.id);
+    db.prepare(`UPDATE employees SET ${sets.join(', ')} WHERE id = ?`).run(...params);
+  }
+
+  const updated = getById(input.id);
+  if (!updated) {
+    throw new Error(`Employee ${input.id} not found after updating own profile`);
   }
   return updated;
 }

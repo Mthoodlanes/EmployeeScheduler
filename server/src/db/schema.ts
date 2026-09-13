@@ -37,7 +37,7 @@ import { sql } from 'drizzle-orm';
  */
 
 export const roleEnum = pgEnum('role', ['manager', 'employee']);
-export const departmentEnum = pgEnum('department', ['front_desk', 'cafe', 'bar']);
+export const departmentEnum = pgEnum('department', ['front_desk', 'cafe', 'bar', 'mechanic']);
 export const requestStatusEnum = pgEnum('request_status', ['pending', 'approved', 'denied']);
 export const startAnchorEnum = pgEnum('start_anchor', ['fixed', 'open']);
 export const endAnchorEnum = pgEnum('end_anchor', ['fixed', 'close']);

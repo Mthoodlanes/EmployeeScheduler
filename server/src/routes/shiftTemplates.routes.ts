@@ -27,7 +27,7 @@ import {
 } from './validation.js';
 import type { Department, EndAnchor, RequestingActor, StartAnchor } from '../db/domain-types.js';
 
-const DEPARTMENTS = ['front_desk', 'cafe', 'bar'] as const satisfies readonly Department[];
+const DEPARTMENTS = ['front_desk', 'cafe', 'bar', 'mechanic'] as const satisfies readonly Department[];
 const START_ANCHORS = ['fixed', 'open'] as const satisfies readonly StartAnchor[];
 const END_ANCHORS = ['fixed', 'close'] as const satisfies readonly EndAnchor[];
 

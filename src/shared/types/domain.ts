@@ -4,14 +4,15 @@
  * src/main/db/migrations/001_init.ts.
  */
 
-export type Department = 'front_desk' | 'cafe' | 'bar';
+export type Department = 'front_desk' | 'cafe' | 'bar' | 'mechanic';
 
-export const DEPARTMENTS: Department[] = ['front_desk', 'cafe', 'bar'];
+export const DEPARTMENTS: Department[] = ['front_desk', 'cafe', 'bar', 'mechanic'];
 
 export const DEPARTMENT_LABELS: Record<Department, string> = {
   front_desk: 'Front Desk',
   cafe: 'Cafe',
   bar: 'Bar',
+  mechanic: 'Mechanic',
 };
 
 export type Role = 'manager' | 'employee';

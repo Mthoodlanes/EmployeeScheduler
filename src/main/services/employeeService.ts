@@ -1,5 +1,5 @@
 import * as employeeRepo from '../db/repositories/employeeRepo';
-import { hashPassword } from './authService';
+import { hashPassword, InvalidCredentialsError, verifyPassword } from './authService';
 import type { Department, Role } from '../../shared/types/domain';
 import type { EmployeeWithDepartmentsRow } from '../db/repositories/employeeRepo';
 
@@ -86,4 +86,50 @@ export function setEmployeeDepartments(
   departments: Department[],
 ): EmployeeWithDepartmentsRow {
   return employeeRepo.setDepartments(id, departments);
+}
+
+export interface UpdateOwnProfileInput {
+  name?: string;
+  currentPassword?: string;
+  newPassword?: string;
+}
+
+/**
+ * Self-service counterpart to `updateEmployee` — lets ANY logged-in actor
+ * (employee or manager) update their OWN display name and/or password.
+ * Deliberately narrower than the manager-only path above: it can never touch
+ * role/departments/isSalaried/isActive.
+ *
+ * Changing the password additionally requires the caller to submit their
+ * CURRENT password, verified via bcrypt against the stored hash, before the
+ * new one is accepted — this app runs on a shared store computer as well as
+ * personal phones, so a session left open must not let someone walk up and
+ * silently take over the account by just typing a new password. Reuses
+ * `InvalidCredentialsError` from authService (rather than a new error class)
+ * for both "no current password supplied" and "current password doesn't
+ * match" — from the caller's perspective both are simply "you didn't prove
+ * you're still you".
+ */
+export function updateOwnProfile(
+  actorId: number,
+  input: UpdateOwnProfileInput,
+): EmployeeWithDepartmentsRow {
+  let passwordHash: string | undefined;
+  if (input.newPassword !== undefined) {
+    const actor = employeeRepo.findById(actorId);
+    if (
+      !actor ||
+      !input.currentPassword ||
+      !verifyPassword(input.currentPassword, actor.passwordHash)
+    ) {
+      throw new InvalidCredentialsError();
+    }
+    passwordHash = hashPassword(input.newPassword);
+  }
+
+  return employeeRepo.updateOwnProfile({
+    id: actorId,
+    name: input.name,
+    passwordHash,
+  });
 }

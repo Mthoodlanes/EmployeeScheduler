@@ -78,6 +78,9 @@ export function AppLayout(): React.JSX.Element {
             </>
           )}
           <span className="app-nav-spacer" />
+          <NavLink to="/account" className={navLinkClassName} onClick={closeMenu}>
+            My Account
+          </NavLink>
           <button
             type="button"
             className="btn btn-link"

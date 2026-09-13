@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { initDb } from '../../../src/main/db/connection';
 import * as employeeService from '../../../src/main/services/employeeService';
+import * as authService from '../../../src/main/services/authService';
 
 beforeEach(() => {
   // Fresh in-memory database per test: initDb() memoizes a singleton keyed
@@ -110,5 +111,84 @@ describe('employeeService', () => {
 
     const updated = employeeService.setEmployeeDepartments(created.id, ['front_desk']);
     expect(updated.departments).toEqual(['front_desk']);
+  });
+
+  describe('updateOwnProfile', () => {
+    it('updates just the display name, without requiring a current password', () => {
+      const created = employeeService.createEmployee({
+        name: 'Original Name',
+        username: 'ownprofile1',
+        password: 'password123',
+        role: 'employee',
+        isSalaried: false,
+        departments: [],
+      });
+
+      const updated = employeeService.updateOwnProfile(created.id, { name: 'Updated Name' });
+
+      expect(updated.name).toBe('Updated Name');
+      // The password must be untouched by a name-only update: the original
+      // password still logs in successfully.
+      expect(authService.login('ownprofile1', 'password123').id).toBe(created.id);
+    });
+
+    it('changes the password when the correct current password is supplied', () => {
+      const created = employeeService.createEmployee({
+        name: 'Password Changer',
+        username: 'ownprofile2',
+        password: 'old-password',
+        role: 'employee',
+        isSalaried: false,
+        departments: [],
+      });
+
+      employeeService.updateOwnProfile(created.id, {
+        currentPassword: 'old-password',
+        newPassword: 'new-password',
+      });
+
+      expect(authService.login('ownprofile2', 'new-password').id).toBe(created.id);
+      expect(() => authService.login('ownprofile2', 'old-password')).toThrow(
+        authService.InvalidCredentialsError,
+      );
+    });
+
+    it('rejects a password change when the current password is incorrect', () => {
+      const created = employeeService.createEmployee({
+        name: 'Rejected Changer',
+        username: 'ownprofile3',
+        password: 'correct-password',
+        role: 'employee',
+        isSalaried: false,
+        departments: [],
+      });
+
+      expect(() =>
+        employeeService.updateOwnProfile(created.id, {
+          currentPassword: 'wrong-password',
+          newPassword: 'new-password',
+        }),
+      ).toThrow(authService.InvalidCredentialsError);
+
+      // The password must be unchanged after the rejected attempt.
+      expect(authService.login('ownprofile3', 'correct-password').id).toBe(created.id);
+    });
+
+    it('rejects a password change when newPassword is provided without currentPassword', () => {
+      const created = employeeService.createEmployee({
+        name: 'No Current Password',
+        username: 'ownprofile4',
+        password: 'correct-password',
+        role: 'employee',
+        isSalaried: false,
+        departments: [],
+      });
+
+      expect(() =>
+        employeeService.updateOwnProfile(created.id, { newPassword: 'new-password' }),
+      ).toThrow(authService.InvalidCredentialsError);
+
+      expect(authService.login('ownprofile4', 'correct-password').id).toBe(created.id);
+    });
   });
 });

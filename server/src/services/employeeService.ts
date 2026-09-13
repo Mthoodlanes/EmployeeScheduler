@@ -27,7 +27,7 @@
  * signature consistency across all 9 services.
  */
 import * as employeeRepo from '../db/repositories/employeeRepo.js';
-import { hashPassword } from './authService.js';
+import { hashPassword, InvalidCredentialsError, verifyPassword } from './authService.js';
 import type { Department, RequestingActor, Role } from '../db/domain-types.js';
 import type { EmployeeWithDepartmentsRow } from '../db/repositories/employeeRepo.js';
 
@@ -176,4 +176,52 @@ export async function setEmployeeDepartments(
 ): Promise<EmployeeWithDepartmentsRow> {
   assertManager(actor);
   return employeeRepo.setDepartments(id, departments);
+}
+
+export interface UpdateOwnProfileInput {
+  name?: string;
+  currentPassword?: string;
+  newPassword?: string;
+}
+
+/**
+ * Self-service counterpart to `updateEmployee` — any authenticated actor may
+ * call this for THEMSELVES (no `assertManager`), and it acts on `actor.id`
+ * rather than an arbitrary target id from the request body. Deliberately
+ * narrower than the manager-only path above: it can never touch
+ * role/departments/isSalaried/isActive.
+ *
+ * Changing the password additionally requires the caller to submit their
+ * CURRENT password, verified via bcrypt against the stored hash, before the
+ * new one is accepted — this app runs on a shared store computer as well as
+ * personal phones, so a session left open must not let someone walk up and
+ * silently take over the account by just typing a new password. Reuses
+ * `InvalidCredentialsError` from authService (rather than a new error class,
+ * which would push this file over the repo's `max-classes-per-file: 2` lint
+ * rule) for both "no current password supplied" and "current password
+ * doesn't match" — from the caller's perspective both are simply "you didn't
+ * prove you're still you".
+ */
+export async function updateOwnProfile(
+  actor: RequestingActor,
+  input: UpdateOwnProfileInput,
+): Promise<EmployeeWithDepartmentsRow> {
+  let passwordHash: string | undefined;
+  if (input.newPassword !== undefined) {
+    const current = await employeeRepo.findById(actor.id);
+    if (
+      !current ||
+      !input.currentPassword ||
+      !verifyPassword(input.currentPassword, current.passwordHash)
+    ) {
+      throw new InvalidCredentialsError();
+    }
+    passwordHash = hashPassword(input.newPassword);
+  }
+
+  return employeeRepo.updateOwnProfile({
+    id: actor.id,
+    name: input.name,
+    passwordHash,
+  });
 }
