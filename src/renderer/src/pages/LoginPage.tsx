@@ -35,6 +35,7 @@ export function LoginPage(): React.JSX.Element {
           handleSubmit(event);
         }}
       >
+        <img className="auth-logo" src="./mt-hood-lanes-logo.png" alt="Mt Hood Lanes" />
         <h1>Mt Hood Lanes</h1>
         <p className="auth-subtitle">Sign in to view or manage the schedule</p>
         {error && (

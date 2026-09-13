@@ -4,7 +4,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useTheme } from '../theme/ThemeProvider';
 import { useSessionStore } from '../store/useSessionStore';
 import { api } from '../api/client';
-import { IconBowlingPin, IconMenu, IconMoon, IconSun } from './icons';
+import { IconMenu, IconMoon, IconSun } from './icons';
 
 function navLinkClassName({ isActive }: { isActive: boolean }): string {
   return isActive ? 'app-nav-link active' : 'app-nav-link';
@@ -37,9 +37,7 @@ export function AppLayout(): React.JSX.Element {
       <nav className="app-nav">
         <div className="app-nav-bar">
           <span className="app-nav-brand">
-            <span className="app-nav-brand-mark" aria-hidden="true">
-              <IconBowlingPin />
-            </span>
+            <img className="app-nav-brand-mark" src="./icons/icon-192.png" alt="" aria-hidden="true" />
             Mt Hood Lanes
           </span>
           <button

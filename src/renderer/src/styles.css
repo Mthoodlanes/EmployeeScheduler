@@ -133,6 +133,14 @@
   letter-spacing: -0.01em;
 }
 
+.auth-logo {
+  display: block;
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  margin: 0 auto var(--space-3);
+}
+
 .auth-subtitle {
   margin: 0 0 var(--space-4);
   color: var(--color-text-muted);
@@ -188,16 +196,11 @@
 }
 
 .app-nav-brand-mark {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: inline-block;
   width: 26px;
   height: 26px;
-  border-radius: var(--radius-sm);
-  background: var(--color-accent);
-  color: var(--color-accent-contrast);
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-bold);
+  object-fit: contain;
+  flex: 0 0 auto;
 }
 
 .app-nav-link {

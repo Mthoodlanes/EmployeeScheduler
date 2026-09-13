@@ -49,6 +49,7 @@ export function FirstRunSetupPage(): React.JSX.Element {
           handleSubmit(event);
         }}
       >
+        <img className="auth-logo" src="./mt-hood-lanes-logo.png" alt="Mt Hood Lanes" />
         <h1>Welcome to Mt Hood Lanes</h1>
         <p className="auth-subtitle">Create the first manager account to get started</p>
         {error && (
