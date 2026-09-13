@@ -1,4 +1,6 @@
 import 'dotenv/config';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -20,21 +22,15 @@ import specialEventsRoutes from './routes/specialEvents.routes.js';
 // only discovering it on the first login attempt.
 getJwtSecret();
 
-// Milestone 13 placeholder page: the real hosted frontend isn't served from
-// here until Milestone 20 (once `client.ts` is HTTP-based). This just proves
-// the Express app is up.
-const PLACEHOLDER_HTML = `<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Mt Hood Lanes Scheduler</title>
-  </head>
-  <body>
-    <h1>Mt Hood Lanes Scheduler — backend is live</h1>
-    <p>See <a href="/api/health">/api/health</a> for a database connectivity check.</p>
-  </body>
-</html>
-`;
+// Milestone 20: the built renderer (electron-vite's `renderer` build target,
+// see electron.vite.config.ts) lands in `out/renderer` at the repo root. The
+// compiled server runs from `dist-server/index.js` (see
+// tsconfig.server.json's `outDir`/`rootDir`), so resolve relative to this
+// file's own location rather than `process.cwd()` — correct regardless of
+// which directory the process is started from.
+const moduleDir = path.dirname(fileURLToPath(import.meta.url));
+const rendererDistPath = path.join(moduleDir, '..', 'out', 'renderer');
+const rendererIndexHtml = path.join(rendererDistPath, 'index.html');
 
 const app = express();
 const port = Number(process.env.PORT ?? 3000);
@@ -95,12 +91,31 @@ app.get('/api/health', async (_req, res) => {
   }
 });
 
+// Milestone 20: serve the built renderer as static files, same-origin with
+// the API (mounted after every `/api/*` route above so it can never shadow
+// them). `index: false` disables express.static's own automatic `/` ->
+// `index.html` handling so the fallback below is the single place
+// `index.html` is served, keeping the "unmatched /api/* gets JSON" behavior
+// correct too.
+app.use(express.static(rendererDistPath, { index: false }));
+
 // Plain `app.use` (rather than an `app.get('*', ...)` wildcard route) avoids
 // Express 5's path-to-regexp v8 requirement that wildcards be named
-// (`/*splat`) — this middleware simply runs for anything `/api/health` didn't
-// already handle.
-app.use((_req, res) => {
-  res.status(200).type('html').send(PLACEHOLDER_HTML);
+// (`/*splat`) — this middleware simply runs for anything the routes/static
+// serving above didn't already handle.
+//
+// The renderer uses `HashRouter` (see `src/renderer/src/App.tsx`), so every
+// client-side route lives after a `#` fragment the browser never sends to
+// the server — unlike a `BrowserRouter` SPA, no wildcard route forwarding
+// arbitrary paths to `index.html` is needed. This just serves `index.html`
+// for `/` and any other non-API GET (e.g. a hard refresh), while an
+// unmatched `/api/*` request gets a proper JSON 404 instead of HTML.
+app.use((req, res) => {
+  if (req.path.startsWith('/api')) {
+    res.status(404).json({ ok: false, error: 'Not found' });
+    return;
+  }
+  res.sendFile(rendererIndexHtml);
 });
 
 app.listen(port, () => {

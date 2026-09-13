@@ -4,8 +4,22 @@ services:
     runtime: node
     plan: free
     region: oregon
-    buildCommand: npm ci && npm run server:build
+    # Milestone 20: `--include=dev` overrides npm's NODE_ENV-driven default of
+    # skipping devDependencies during `npm ci` (verified locally: with
+    # NODE_ENV=production set, a plain `npm ci` silently omits
+    # devDependencies) — required here because `npm run build` needs
+    # typescript/vite/electron-vite, all devDependencies, to produce
+    # `out/renderer` (the static files Express now serves) before
+    # `server:build` compiles the server itself.
+    buildCommand: npm ci --include=dev && npm run build && npm run server:build
     startCommand: npm run server:start
     envVars:
       - key: DATABASE_URL
         sync: false
+      # Milestone 20: explicit rather than relying on Render's own default,
+      # since both the dev-CORS gate and the session cookie's `secure` flag
+      # (server/src/index.ts, server/src/auth/cookie.ts) branch on this, and
+      # dev CORS must never be reachable in production under any
+      # circumstance.
+      - key: NODE_ENV
+        value: production
