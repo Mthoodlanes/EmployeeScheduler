@@ -53,6 +53,28 @@ describe('employeeService', () => {
     ).toThrow(employeeService.DuplicateUsernameError);
   });
 
+  it('rejects a case-variant duplicate username (e.g. "Sam" vs "sam")', () => {
+    employeeService.createEmployee({
+      name: 'First Employee',
+      username: 'CaseSam',
+      password: 'password123',
+      role: 'employee',
+      isSalaried: false,
+      departments: [],
+    });
+
+    expect(() =>
+      employeeService.createEmployee({
+        name: 'Second Employee',
+        username: 'casesam',
+        password: 'a-different-password',
+        role: 'employee',
+        isSalaried: false,
+        departments: [],
+      }),
+    ).toThrow(employeeService.DuplicateUsernameError);
+  });
+
   it('deactivates an employee and then reactivates them via updateEmployee', () => {
     const created = employeeService.createEmployee({
       name: 'Toggle Employee',

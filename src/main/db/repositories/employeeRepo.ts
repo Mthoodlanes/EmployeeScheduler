@@ -74,8 +74,11 @@ export function countEmployees(): number {
 
 export function findByUsername(username: string): EmployeeWithHash | undefined {
   const db = getDb();
-  const row = db.prepare('SELECT * FROM employees WHERE username = ?').get(username) as
-    EmployeeRow | undefined;
+  // Case-insensitive: "Doug" and "doug" are the same account for sign-in and
+  // duplicate-checking purposes (see employeeService.createEmployee).
+  const row = db.prepare('SELECT * FROM employees WHERE username = ? COLLATE NOCASE').get(
+    username,
+  ) as EmployeeRow | undefined;
   return row ? toEmployeeWithHash(row) : undefined;
 }
 

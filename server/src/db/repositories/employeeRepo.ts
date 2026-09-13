@@ -68,7 +68,14 @@ export async function countEmployees(): Promise<number> {
 
 export async function findByUsername(username: string): Promise<EmployeeWithHash | undefined> {
   const db = getDb();
-  const [row] = await db.select().from(employees).where(eq(employees.username, username));
+  // Case-insensitive: "Doug" and "doug" are the same account for sign-in and
+  // duplicate-checking purposes (see employeeService.createEmployee). Plain
+  // `eq()` is case-sensitive in Postgres, so this needs the explicit LOWER()
+  // comparison rather than the `unique()` schema constraint alone.
+  const [row] = await db
+    .select()
+    .from(employees)
+    .where(sql`lower(${employees.username}) = lower(${username})`);
   return row ? toEmployeeWithHash(row) : undefined;
 }
 

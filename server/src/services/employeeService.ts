@@ -109,6 +109,14 @@ export async function createEmployee(
   input: CreateEmployeeInput,
 ): Promise<EmployeeWithDepartmentsRow> {
   assertManager(actor);
+  // Proactive case-insensitive check: the DB's UNIQUE constraint on
+  // `username` is case-sensitive, so "Doug" and "doug" wouldn't collide at
+  // that layer even though findByUsername (used for sign-in) now treats them
+  // as the same account. Catch it here instead of letting a case-variant
+  // duplicate slip in and become unreachable/ambiguous at login.
+  if (await employeeRepo.findByUsername(input.username)) {
+    throw new DuplicateUsernameError(input.username);
+  }
   try {
     return await employeeRepo.create({
       name: input.name,

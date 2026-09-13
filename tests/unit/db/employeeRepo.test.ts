@@ -132,6 +132,21 @@ describe('employeeRepo', () => {
     ).toThrow();
   });
 
+  it('finds an employee by username regardless of case', () => {
+    const username = `CaseTest-${Date.now()}`;
+    employeeRepo.create({
+      name: 'Case Test',
+      username,
+      passwordHash: 'hash',
+      role: 'employee',
+      isSalaried: false,
+      departments: [],
+    });
+
+    expect(employeeRepo.findByUsername(username.toUpperCase())?.username).toBe(username);
+    expect(employeeRepo.findByUsername(username.toLowerCase())?.username).toBe(username);
+  });
+
   it('replaces department assignments', () => {
     const created = employeeRepo.create({
       name: 'Dept Swap',
