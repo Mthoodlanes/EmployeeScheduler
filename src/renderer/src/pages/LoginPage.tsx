@@ -36,11 +36,7 @@ export function LoginPage(): React.JSX.Element {
         }}
       >
         <img className="auth-logo" src="./mt-hood-lanes-logo.png" alt="Mt Hood Lanes" />
-        {/* Visually hidden: the logo above already spells out "Mt Hood
-            Lanes," so showing the name again as text would be redundant —
-            but the page still needs a real heading for accessibility/document
-            structure. */}
-        <h1 className="sr-only">Mt Hood Lanes</h1>
+        <h1>Employee Portal</h1>
         <p className="auth-subtitle">Sign in to view or manage the schedule</p>
         {error && (
           <div role="alert" className="form-error" data-testid="login-error">
