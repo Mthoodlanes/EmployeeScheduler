@@ -141,6 +141,20 @@
   margin: 0 auto var(--space-3);
 }
 
+/* Visually hidden but present for screen readers/document structure — see
+   LoginPage.tsx's h1 for the current usage. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .auth-subtitle {
   margin: 0 0 var(--space-4);
   color: var(--color-text-muted);
