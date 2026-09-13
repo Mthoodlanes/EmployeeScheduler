@@ -97,6 +97,25 @@ export default defineConfig({
           // assets are served without a network round-trip, and a changed
           // hash (new deploy) fetches only the changed files.
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+          // These two flags are the actual fix for the reported "stale
+          // content after a deploy" bug. `registerType: 'autoUpdate'` above
+          // only controls the *client* register script's behavior (see
+          // main.tsx) — vite-plugin-pwa only wires these workbox flags in
+          // for you automatically when `injectRegister` is left at its
+          // "auto"/default value. This app sets `injectRegister: false`
+          // (registration is done by hand in main.tsx so it can be skipped
+          // inside Electron), which silently opts out of that automatic
+          // wiring. Without setting them explicitly here, a newly-fetched
+          // service worker sits in the `waiting` state until every open tab
+          // is closed — exactly the stale-cache bug this milestone fixes —
+          // regardless of `registerType`. `skipWaiting` lets the new SW
+          // activate immediately after install; `clientsClaim` then hands it
+          // control of already-open pages without a reload. Neither of
+          // these forces a page *reload* on its own — that's handled
+          // explicitly (and non-silently) via the `onNeedReload` callback in
+          // src/renderer/src/pwa/pwaUpdate.ts.
+          skipWaiting: true,
+          clientsClaim: true,
           // Never let the SW's SPA navigation fallback intercept /api/*
           // (the app uses HashRouter, so this mostly can't happen anyway —
           // every client-side route lives after a `#` the browser never

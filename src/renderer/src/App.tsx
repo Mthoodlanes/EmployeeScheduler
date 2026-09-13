@@ -4,6 +4,7 @@ import { AppLayout } from './components/AppLayout';
 import { RequireAuth } from './components/RequireAuth';
 import { RequireManager } from './components/RequireManager';
 import { TitleBar } from './components/TitleBar';
+import { UpdateAvailableToast } from './components/UpdateAvailableToast';
 import { FirstRunSetupPage } from './pages/FirstRunSetupPage';
 import { LoginPage } from './pages/LoginPage';
 import { MyAccountPage } from './pages/MyAccountPage';
@@ -70,6 +71,7 @@ export function App(): React.JSX.Element {
           <span className="spinner" aria-hidden="true" />
           Loading…
         </div>
+        <UpdateAvailableToast />
       </div>
     );
   }
@@ -99,6 +101,7 @@ export function App(): React.JSX.Element {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </HashRouter>
+      <UpdateAvailableToast />
     </div>
   );
 }

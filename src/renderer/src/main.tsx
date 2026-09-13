@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { registerSW } from 'virtual:pwa-register';
+import { initPwaUpdate } from './pwa/pwaUpdate';
 import { App } from './App';
 import { ThemeProvider } from './theme/ThemeProvider';
 import { queryClient } from './api/queryClient';
@@ -39,8 +39,14 @@ if (isElectronShell) {
 // proxy for itself is surprising behavior with no upside, so it's skipped
 // explicitly via the same `window.api` feature-detect used above, rather
 // than left to fail quietly on its own.
+//
+// Milestone 23 (PWA update UX): registration itself, plus the "is a new
+// version already active in the background?" state, now lives in
+// pwa/pwaUpdate.ts (see that file for the update-propagation fix and the
+// periodic update-check strategy) so `UpdateAvailableToast` — rendered near
+// the root in App.tsx — can react to it without a forced page reload.
 if (!isElectronShell) {
-  registerSW({ immediate: true });
+  initPwaUpdate();
 }
 
 ReactDOM.createRoot(container).render(

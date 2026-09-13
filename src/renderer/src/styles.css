@@ -1184,6 +1184,67 @@ table.data-table tbody tr:last-child td {
 }
 
 /* ==========================================================================
+   PWA update toast (Milestone 23) — shown on the web/PWA build only, once a
+   new deploy's service worker has taken over in the background (see
+   src/renderer/src/pwa/pwaUpdate.ts). Fixed to the bottom of the viewport,
+   centered, and deliberately small/quiet so it never blocks the app's own
+   UI — a manager mid-edit on the Schedule Board should barely notice it
+   until they choose to act on it.
+   ========================================================================== */
+
+.pwa-update-toast {
+  position: fixed;
+  left: 50%;
+  bottom: var(--space-5);
+  transform: translateX(-50%);
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  max-width: calc(100vw - var(--space-6) * 2);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-raised);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  animation: rise-in var(--transition-slow) var(--ease-emphasized);
+}
+
+.pwa-update-toast-message {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.pwa-update-toast-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.pwa-update-toast-refresh {
+  padding: 6px 14px;
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 600px) {
+  .pwa-update-toast {
+    left: var(--space-4);
+    right: var(--space-4);
+    bottom: var(--space-4);
+    transform: none;
+    max-width: none;
+    flex-wrap: wrap;
+  }
+
+  .pwa-update-toast-message {
+    white-space: normal;
+  }
+}
+
+/* ==========================================================================
    Print (Milestone 10) — the Schedule Board's "Print Schedule" button calls
    `window.print()` directly; there is no separate print-preview render. All
    interactive app chrome is hidden here so only PrintSchedule.tsx's
@@ -1199,7 +1260,8 @@ table.data-table tbody tr:last-child td {
   .week-nav,
   .overlap-banner,
   .schedule-grid-wrapper,
-  .modal-overlay {
+  .modal-overlay,
+  .pwa-update-toast {
     display: none !important;
   }
 
