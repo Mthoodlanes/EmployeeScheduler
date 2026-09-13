@@ -20,8 +20,21 @@ import { WindowControls } from './WindowControls';
  * that's only free for the native title bar/frame. Confirmed by driving a
  * real double-click through Playwright against the built app and observing
  * the OS window bounds not change. So it's wired by hand here.
+ *
+ * Feature-detected on the RAW `window.api` global, not the `api/client.ts`
+ * export — `client.ts` always resolves to *something* (the real Electron
+ * bridge, or the fetch-based `httpApi` fallback with inert `windowControls`
+ * no-op stubs so calls don't throw, see Milestone 19), so checking `api`
+ * itself can't distinguish "really running inside Electron" from "running as
+ * a plain web page." `window.api` is only ever injected by the Electron
+ * preload script, so its presence is the correct signal: there is no window
+ * chrome to draw or drag on a website, so this renders nothing there.
  */
-export function TitleBar(): React.JSX.Element {
+export function TitleBar(): React.JSX.Element | null {
+  if (!window.api) {
+    return null;
+  }
+
   const handleDoubleClick = (): void => {
     api.windowControls.toggleMaximize();
   };
