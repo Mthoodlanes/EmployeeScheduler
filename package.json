@@ -19,7 +19,10 @@
     "seed": "cross-env ELECTRON_RUN_AS_NODE=1 electron ./node_modules/tsx/dist/cli.mjs scripts/seed.ts",
     "server:dev": "tsx watch server/src/index.ts",
     "server:build": "tsc -p tsconfig.server.json",
-    "server:start": "node dist-server/index.js"
+    "server:start": "node dist-server/index.js",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
   },
   "engines": {
     "node": ">=18.18"
@@ -55,6 +58,7 @@
     "@typescript-eslint/parser": "^7.18.0",
     "@vitejs/plugin-react": "^4.3.1",
     "cross-env": "^7.0.3",
+    "drizzle-kit": "^0.31.10",
     "electron": "32.3.3",
     "electron-builder": "^24.13.3",
     "electron-vite": "^2.3.0",

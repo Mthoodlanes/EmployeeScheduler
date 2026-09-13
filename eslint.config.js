@@ -90,6 +90,7 @@ export default [
             'playwright.config.ts',
             'electron.vite.config.ts',
             'eslint.config.js',
+            'drizzle.config.ts',
           ],
         },
       ],
