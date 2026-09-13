@@ -21,6 +21,19 @@ export type Department = 'front_desk' | 'cafe' | 'bar';
 
 export type Role = 'manager' | 'employee';
 
+/**
+ * Milestone 16: the employee performing an action, as will be established by
+ * the request-scoped JWT auth middleware added in Milestone 17 (`req.actor`)
+ * — replaces `src/main/session.ts`'s module-level singleton from Phase 1.
+ * Defined once here (rather than redeclared per service file, as the
+ * original `src/main/services/*.ts` each did) since all 9 ported services
+ * now share this exact shape as their uniform authorization signature.
+ */
+export interface RequestingActor {
+  id: number;
+  role: Role;
+}
+
 export interface Employee {
   id: number;
   name: string;
