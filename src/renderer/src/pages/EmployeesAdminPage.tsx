@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { DAY_OF_WEEK_LABELS, DEPARTMENTS, DEPARTMENT_LABELS } from '@shared/types/domain';
 import type { Department, Role } from '@shared/types/domain';
@@ -244,6 +244,12 @@ export function EmployeesAdminPage(): React.JSX.Element {
   const [form, setForm] = useState<EmployeeFormState>(EMPTY_FORM);
   const [formError, setFormError] = useState<string | null>(null);
   const isEditing = form.id !== null;
+  const formCardRef = useRef<HTMLDivElement>(null);
+
+  const editEmployee = (employee: EmployeeWithDepartments): void => {
+    setForm(toFormState(employee));
+    formCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   const resetForm = (): void => {
     setForm(EMPTY_FORM);
@@ -355,7 +361,7 @@ export function EmployeesAdminPage(): React.JSX.Element {
                     <button
                       type="button"
                       className="btn btn-link"
-                      onClick={() => setForm(toFormState(employee))}
+                      onClick={() => editEmployee(employee)}
                     >
                       Edit
                     </button>
@@ -378,7 +384,7 @@ export function EmployeesAdminPage(): React.JSX.Element {
         )}
       </div>
 
-      <div className="card">
+      <div className="card" ref={formCardRef}>
         <h2>{isEditing ? `Edit ${form.name}` : 'Add employee'}</h2>
         <form
           className="form-grid"
