@@ -2,6 +2,7 @@ node_modules
 out
 out-tsc
 dist
+dist-server
 build/Output
 release
 playwright-report

@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: mt-hood-lanes-scheduler-backend
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: npm ci && npm run server:build
+    startCommand: npm run server:start
+    envVars:
+      - key: DATABASE_URL
+        sync: false

@@ -24,6 +24,7 @@ export default [
       'out/**',
       'out-tsc/**',
       'dist/**',
+      'dist-server/**',
       'node_modules/**',
       'playwright-report/**',
       'test-results/**',
@@ -41,7 +42,7 @@ export default [
     languageOptions: {
       parser: tsParser,
       parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.web.json'],
+        project: ['./tsconfig.node.json', './tsconfig.web.json', './tsconfig.server.json'],
         tsconfigRootDir: __dirname,
         ecmaFeatures: { jsx: true },
       },
@@ -58,7 +59,7 @@ export default [
       react: { version: 'detect' },
       'import/resolver': {
         typescript: {
-          project: ['./tsconfig.node.json', './tsconfig.web.json'],
+          project: ['./tsconfig.node.json', './tsconfig.web.json', './tsconfig.server.json'],
         },
       },
     },
