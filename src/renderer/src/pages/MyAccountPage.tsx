@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { InstallAppPrompt } from '../components/InstallAppPrompt';
 import { useSessionStore } from '../store/useSessionStore';
 import { useUpdateOwnProfile } from '../hooks/useEmployees';
 
@@ -86,6 +87,8 @@ export function MyAccountPage(): React.JSX.Element {
       <div className="page-header">
         <h1>My Account</h1>
       </div>
+
+      <InstallAppPrompt />
 
       <div className="card section">
         <form className="form-grid" onSubmit={handleSubmit}>

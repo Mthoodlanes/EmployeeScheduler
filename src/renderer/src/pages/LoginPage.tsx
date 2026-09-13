@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
+import { InstallAppPrompt } from '../components/InstallAppPrompt';
 import { useSessionStore } from '../store/useSessionStore';
 
 export function LoginPage(): React.JSX.Element {
@@ -29,56 +30,59 @@ export function LoginPage(): React.JSX.Element {
 
   return (
     <div className="auth-screen">
-      <form
-        className="auth-card"
-        onSubmit={(event) => {
-          handleSubmit(event);
-        }}
-      >
-        <img className="auth-logo" src="./mt-hood-lanes-logo.png" alt="Mt Hood Lanes" />
-        <h1>Employee Portal</h1>
-        <p className="auth-subtitle">Sign in to view or manage the schedule</p>
-        {error && (
-          <div role="alert" className="form-error" data-testid="login-error">
-            {error}
-          </div>
-        )}
-        <label className="field-label" htmlFor="login-username">
-          Username
-          <input
-            id="login-username"
-            className="text-input"
-            name="username"
-            autoComplete="username"
-            data-testid="login-username"
-            value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            required
-          />
-        </label>
-        <label className="field-label" htmlFor="login-password">
-          Password
-          <input
-            id="login-password"
-            className="text-input"
-            name="password"
-            type="password"
-            autoComplete="current-password"
-            data-testid="login-password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
-            required
-          />
-        </label>
-        <button
-          type="submit"
-          className="btn btn-primary"
-          disabled={isSubmitting}
-          data-testid="login-submit"
+      <div className="auth-screen-stack">
+        <form
+          className="auth-card"
+          onSubmit={(event) => {
+            handleSubmit(event);
+          }}
         >
-          {isSubmitting ? 'Signing in…' : 'Sign in'}
-        </button>
-      </form>
+          <img className="auth-logo" src="./mt-hood-lanes-logo.png" alt="Mt Hood Lanes" />
+          <h1>Employee Portal</h1>
+          <p className="auth-subtitle">Sign in to view or manage the schedule</p>
+          {error && (
+            <div role="alert" className="form-error" data-testid="login-error">
+              {error}
+            </div>
+          )}
+          <label className="field-label" htmlFor="login-username">
+            Username
+            <input
+              id="login-username"
+              className="text-input"
+              name="username"
+              autoComplete="username"
+              data-testid="login-username"
+              value={username}
+              onChange={(event) => setUsername(event.target.value)}
+              required
+            />
+          </label>
+          <label className="field-label" htmlFor="login-password">
+            Password
+            <input
+              id="login-password"
+              className="text-input"
+              name="password"
+              type="password"
+              autoComplete="current-password"
+              data-testid="login-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              required
+            />
+          </label>
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={isSubmitting}
+            data-testid="login-submit"
+          >
+            {isSubmitting ? 'Signing in…' : 'Sign in'}
+          </button>
+        </form>
+        <InstallAppPrompt />
+      </div>
     </div>
   );
 }

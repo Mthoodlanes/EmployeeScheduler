@@ -193,6 +193,9 @@ export function MySchedulePage(): React.JSX.Element {
                       }
                       resolvedStartTime={resolvedStartTime}
                       resolvedEndTime={resolvedEndTime}
+                      templateName={
+                        (shift.templateId && templatesById.get(shift.templateId)?.name) || null
+                      }
                       onClick={() => {}}
                     />
                   </div>

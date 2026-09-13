@@ -283,6 +283,48 @@ export function IconGripVertical(): React.JSX.Element {
   );
 }
 
+/** iOS "Share" glyph — used in the Add to Home Screen instructions (Milestone 25). */
+export function IconShare(): React.JSX.Element {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 15V3" />
+      <path d="M8 7l4-4 4 4" />
+      <path d="M5 12v6.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V12" />
+    </svg>
+  );
+}
+
+/** Install/download tray glyph — the Android/desktop "Install App" button (Milestone 25). */
+export function IconDownload(): React.JSX.Element {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3v10" />
+      <path d="M8 9l4 4 4-4" />
+      <path d="M5 16v2.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V16" />
+    </svg>
+  );
+}
+
 /* ---- Custom title-bar window controls (Milestone 9) ---- */
 
 export function IconWindowMinimize(): React.JSX.Element {
