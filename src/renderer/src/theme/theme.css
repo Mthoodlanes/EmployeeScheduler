@@ -3,6 +3,17 @@
  * shadow, typography and motion across the whole app. Every stylesheet in
  * the app should read from these custom properties rather than introducing
  * new magic numbers or one-off colors.
+ *
+ * Milestone 22 (mobile responsiveness): the app uses a single mobile-first
+ * breakpoint at 600px (`@media (max-width: 600px)`), applied here and in
+ * styles.css/ScheduleGrid.css. 600px sits comfortably above both target
+ * phone widths (375px iPhone SE, 414px larger phones) with margin, while
+ * staying well below tablet widths (768px+) where this app's desktop-style
+ * layouts still read fine. The Electron shell's window has a hard
+ * `minWidth: 960` (src/main/index.ts, unchanged), so it can never cross this
+ * breakpoint — the rules below are inert there and only ever apply to the
+ * web/PWA at phone width. A literal 600px is used directly in each media
+ * query (custom properties aren't usable as media-query values).
  */
 
 :root {
@@ -211,6 +222,12 @@ body {
   font-size: var(--text-base);
   line-height: 1.45;
   transition: color var(--transition-base) var(--ease-standard);
+  /* Safety net, not a layout crutch: every horizontally-wide element in the
+     app (the schedule grid, data tables) owns its own overflow-x:auto
+     scroll container, so the page itself should never need to scroll
+     sideways. This just guards against any stray 1px rounding/overflow
+     rather than relying on it to hide a real layout bug. */
+  overflow-x: hidden;
 }
 
 /* `is-electron-shell` is added to <body> at boot only when `window.api` is

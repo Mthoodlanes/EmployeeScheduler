@@ -243,6 +243,25 @@ export function IconPrinter(): React.JSX.Element {
   );
 }
 
+/** Mobile nav menu toggle (Milestone 22) — a plain hamburger glyph. */
+export function IconMenu(): React.JSX.Element {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="20"
+      height="20"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M4 6.5h16M4 12h16M4 17.5h16" />
+    </svg>
+  );
+}
+
 /* ---- Custom title-bar window controls (Milestone 9) ---- */
 
 export function IconWindowMinimize(): React.JSX.Element {

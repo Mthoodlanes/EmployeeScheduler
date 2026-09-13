@@ -157,13 +157,16 @@ function WeeklyHoursCard(): React.JSX.Element {
                   />
                 </td>
                 <td>
-                  <input
-                    type="checkbox"
-                    aria-label={`${label} closed`}
-                    data-testid={`store-hours-closed-${day}`}
-                    checked={row.isClosed}
-                    onChange={(event) => updateRow(day, { isClosed: event.target.checked })}
-                  />
+                  <label className="table-checkbox-tap" htmlFor={`store-hours-closed-${day}`}>
+                    <input
+                      id={`store-hours-closed-${day}`}
+                      type="checkbox"
+                      aria-label={`${label} closed`}
+                      data-testid={`store-hours-closed-${day}`}
+                      checked={row.isClosed}
+                      onChange={(event) => updateRow(day, { isClosed: event.target.checked })}
+                    />
+                  </label>
                 </td>
                 <td>
                   <button

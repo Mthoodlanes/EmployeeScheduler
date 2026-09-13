@@ -146,6 +146,15 @@
   flex-direction: column;
 }
 
+/*
+ * Milestone 22: `.app-nav` wraps two groups — `.app-nav-bar` (brand + the
+ * mobile-only hamburger toggle) and `.app-nav-links` (every link, the theme
+ * toggle, the user tag, logout). At desktop width both groups render as
+ * `display: contents` — invisible to layout — so their children fall
+ * straight into `.app-nav`'s own flex row exactly as before this
+ * restructuring; the mobile breakpoint below turns them into a real
+ * collapsible menu instead.
+ */
 .app-nav {
   flex: 0 0 auto;
   display: flex;
@@ -155,6 +164,15 @@
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   flex-wrap: wrap;
+}
+
+.app-nav-bar,
+.app-nav-links {
+  display: contents;
+}
+
+.app-nav-toggle {
+  display: none;
 }
 
 .app-nav-brand {
@@ -612,6 +630,7 @@ table.data-table tbody tr:last-child td {
 
 .department-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 2px;
   margin-bottom: var(--space-5);
   border-bottom: 1px solid var(--color-border);
@@ -934,6 +953,202 @@ table.data-table tbody tr:last-child td {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   Mobile responsiveness (Milestone 22) — single breakpoint at 600px, see the
+   comment atop theme.css for why. Two concerns are handled here:
+   (1) layout — employee-facing screens (auth, My Schedule, Request Time
+   Off, the AppLayout nav) get real phone-width layouts instead of just
+   "doesn't overflow"; manager-only admin pages get a lighter pass so tables
+   and forms aren't actively broken; (2) iOS/touch: form control font-size
+   is bumped to 16px (below that, iOS Safari auto-zooms the whole page on
+   focus) and small interactive elements get a ~44px minimum touch target.
+   The Electron shell's window can't shrink below 960px wide (see
+   src/main/index.ts), so none of this ever applies there.
+   ========================================================================== */
+
+@media (max-width: 600px) {
+  /* ---- iOS zoom-on-focus fix — every text input/select/textarea ---- */
+  .text-input,
+  select.text-input,
+  textarea.text-input {
+    font-size: 16px;
+  }
+
+  /* ---- Touch targets — buttons, links-as-buttons, nav items, tabs ---- */
+  .btn,
+  .btn-link,
+  .app-nav-link,
+  .department-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+  }
+
+  .btn-link {
+    padding: 10px 12px;
+  }
+
+  .color-input {
+    height: 44px;
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    width: 20px;
+    height: 20px;
+  }
+
+  .checkbox-row {
+    min-height: 44px;
+  }
+
+  /* The "Closed" checkbox on the Store Hours admin table isn't wrapped in a
+     label (see StoreHoursAdminPage.tsx's `.table-checkbox-tap`), so give its
+     own wrapper a bigger tap area rather than relying on the ~20px box. */
+  .table-checkbox-tap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* ---- Page chrome — reclaim side padding for narrow viewports ---- */
+  .app-content {
+    padding: var(--space-4);
+  }
+
+  /* ---- AppLayout nav — a manager's full link set (7 items) stacked
+     one-per-row would eat almost the entire phone viewport before any page
+     content is visible, so collapse it behind a hamburger toggle instead:
+     the brand bar always shows, the link list opens as a full-width
+     dropdown only on demand. ---- */
+  .app-nav {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 0;
+  }
+
+  .app-nav-bar,
+  .app-nav-links.open {
+    display: flex;
+  }
+
+  .app-nav-bar {
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-3) var(--space-4);
+  }
+
+  .app-nav-brand {
+    margin: 0;
+  }
+
+  .app-nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    flex: 0 0 auto;
+  }
+
+  .app-nav-toggle:hover {
+    background: var(--color-surface-muted);
+  }
+
+  .app-nav-links {
+    display: none;
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-1);
+    padding: 0 var(--space-4) var(--space-3);
+  }
+
+  .app-nav-spacer {
+    display: none;
+  }
+
+  .app-nav-link {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px var(--space-3);
+  }
+
+  .app-nav-user {
+    margin: var(--space-2) 0 0;
+  }
+
+  .app-nav-links > .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* ---- Auth screens (Login / First-run setup) ---- */
+  .auth-screen {
+    padding: var(--space-4);
+  }
+
+  .auth-card {
+    padding: var(--space-5);
+  }
+
+  /* ---- Week navigator (My Schedule + Schedule Board) — the label's fixed
+     min-width plus two buttons doesn't fit a phone width side by side, so
+     put the label on its own full-width row and split the buttons evenly
+     beneath it. ---- */
+  .week-nav {
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .week-nav-label {
+    order: -1;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .week-nav .btn {
+    flex: 1 1 0;
+  }
+
+  /* ---- Data tables (time-off/unavailability history, admin CRUD lists) —
+     scroll horizontally within the table itself rather than forcing the
+     whole page to scroll sideways, the same fallback pattern already used
+     for the manager Schedule Board's grid. ---- */
+  table.data-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  table.data-table th,
+  table.data-table td {
+    white-space: nowrap;
+  }
+
+  /* ---- Modals — reclaim padding at phone width ---- */
+  .modal-overlay {
+    padding: var(--space-3);
+  }
+
+  .modal-card {
+    padding: var(--space-4);
   }
 }
 
