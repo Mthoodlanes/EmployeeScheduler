@@ -2,9 +2,20 @@
  * IPC channel names and request/response contracts shared between
  * main (handlers), preload (bridge) and renderer (callers).
  *
- * Only auth + employee channels are defined for Milestone 1. Extend this
- * file with additional channels/contracts as later milestones add
- * schedule/time-off/hours features.
+ * Milestone 23: the Electron shell now loads the hosted site directly
+ * instead of running its own local backend, so `IpcChannels` below only
+ * lists the `windowControls:*` channels — the one namespace with no web
+ * equivalent (see `src/main/ipc/windowControls.ipc.ts`,
+ * `src/preload/index.ts`). The request/response interfaces for every OTHER
+ * namespace (`auth`, `employees`, `shiftTemplates`, `scheduledShifts`,
+ * `timeOff`, `unavailability`, `preferences`, `storeHours`,
+ * `specialEvents`) are still defined below and still very much alive —
+ * they're no longer used as IPC contracts, but
+ * `src/renderer/src/api/httpClient.ts` imports every one of them to type
+ * its `fetch`-based implementations of the same HTTP routes
+ * (`server/src/routes/*.routes.ts`), which preserve the same
+ * request/response shapes on purpose (see the Phase 2 plan's "HTTP API
+ * Surface" section).
  */
 import type {
   Department,
@@ -22,50 +33,6 @@ import type {
 } from './domain';
 
 export const IpcChannels = {
-  authLogin: 'auth:login',
-  authLogout: 'auth:logout',
-  authGetSession: 'auth:getSession',
-  authFirstRunStatus: 'auth:firstRunStatus',
-  authCreateFirstManager: 'auth:createFirstManager',
-  employeesList: 'employees:list',
-  employeesCreate: 'employees:create',
-  employeesUpdate: 'employees:update',
-  employeesDeactivate: 'employees:deactivate',
-  employeesSetDepartments: 'employees:setDepartments',
-  employeesUpdateOwnProfile: 'employees:updateOwnProfile',
-  employeesReorder: 'employees:reorder',
-  shiftTemplatesList: 'shiftTemplates:list',
-  shiftTemplatesCreate: 'shiftTemplates:create',
-  shiftTemplatesUpdate: 'shiftTemplates:update',
-  shiftTemplatesDeactivate: 'shiftTemplates:deactivate',
-  scheduledShiftsListWeek: 'scheduledShifts:listWeek',
-  scheduledShiftsAssignTemplate: 'scheduledShifts:assignTemplate',
-  scheduledShiftsAssignCustom: 'scheduledShifts:assignCustom',
-  scheduledShiftsOverride: 'scheduledShifts:override',
-  scheduledShiftsRemove: 'scheduledShifts:remove',
-  timeOffCreateRequest: 'timeOff:createRequest',
-  timeOffCreateForEmployee: 'timeOff:createForEmployee',
-  timeOffListOwn: 'timeOff:listOwn',
-  timeOffListAll: 'timeOff:listAll',
-  timeOffDecide: 'timeOff:decide',
-  timeOffListApprovedForRange: 'timeOff:listApprovedForRange',
-  unavailabilityCreateOwnRequest: 'unavailability:createOwnRequest',
-  unavailabilityCreateForEmployee: 'unavailability:createForEmployee',
-  unavailabilityListOwn: 'unavailability:listOwn',
-  unavailabilityListAll: 'unavailability:listAll',
-  unavailabilityListApprovedAll: 'unavailability:listApprovedAll',
-  unavailabilityDecide: 'unavailability:decide',
-  preferencesListAll: 'preferences:listAll',
-  preferencesListForEmployee: 'preferences:listForEmployee',
-  preferencesCreate: 'preferences:create',
-  preferencesUpdate: 'preferences:update',
-  preferencesRemove: 'preferences:remove',
-  storeHoursList: 'storeHours:list',
-  storeHoursUpsert: 'storeHours:upsert',
-  specialEventsList: 'specialEvents:list',
-  specialEventsCreate: 'specialEvents:create',
-  specialEventsUpdate: 'specialEvents:update',
-  specialEventsRemove: 'specialEvents:remove',
   windowControlsMinimize: 'windowControls:minimize',
   windowControlsToggleMaximize: 'windowControls:toggleMaximize',
   windowControlsClose: 'windowControls:close',

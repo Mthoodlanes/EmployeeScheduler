@@ -8,9 +8,13 @@ declare global {
     /**
      * Injected by the Electron preload script (`src/preload/index.ts`) via
      * `contextBridge` — present only when this renderer bundle is running
-     * inside the Electron desktop app. Absent in a plain browser/PWA
-     * context, where `api/client.ts` falls back to the fetch-based
-     * `httpApi` (`api/httpClient.ts`) instead. See Milestone 19.
+     * inside the Electron desktop shell. Absent in a plain browser/PWA
+     * context. Since Milestone 23 the preload exposes ONLY `windowControls`
+     * (the shell just loads the hosted site now, so every data namespace
+     * goes over `fetch` via `api/httpClient.ts` instead) — see
+     * `api/client.ts`'s merge logic, which is why this type is now much
+     * smaller than the full app-facing `Api` shape (`httpClient.ts`'s own
+     * `Api` interface).
      */
     api?: Api;
   }

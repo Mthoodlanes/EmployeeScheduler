@@ -1,14 +1,18 @@
 /**
- * Milestone 19: fetch-based implementation of the `Api` shape (see
- * `src/preload/index.ts`) for contexts with no Electron preload — a plain
- * browser tab or installed PWA. `client.ts` uses this whenever `window.api`
- * is undefined at module load.
+ * Milestone 19: fetch-based implementation of the `Api` shape (see the
+ * `Api` interface below). Originally used only for contexts with no
+ * Electron preload — a plain browser tab or installed PWA. Since Milestone
+ * 23 (the Electron shell now just loads the hosted site instead of running
+ * its own local backend) this is ALSO the implementation for every data
+ * namespace inside the Electron shell itself — only `windowControls` still
+ * comes from the real preload bridge there. See `client.ts`'s merge logic.
  *
- * Every method here has the exact same name/signature/return shape as its
- * IPC counterpart in the preload bridge, targeting the Milestone 18 HTTP
- * routes (`server/src/routes/*.routes.ts`) instead of `ipcRenderer.invoke`.
- * That symmetry is what lets every page/hook in the renderer import `{ api }`
- * from `client.ts` without caring which implementation backs it.
+ * Every method here has the exact same name/signature/return shape its IPC
+ * counterpart had back when the preload exposed every namespace, targeting
+ * the Milestone 18 HTTP routes (`server/src/routes/*.routes.ts`) instead of
+ * `ipcRenderer.invoke`. That symmetry is what lets every page/hook in the
+ * renderer import `{ api }` from `client.ts` without caring which
+ * implementation backs it.
  *
  * Two response shapes exist server-side, mirrored here by two small request
  * helpers:
@@ -101,18 +105,128 @@ import type {
   UnavailabilityListAllResponse,
   UnavailabilityListApprovedAllResponse,
   UnavailabilityListOwnResponse,
+  WindowControlsCloseResponse,
+  WindowControlsIsMaximizedResponse,
+  WindowControlsMaximizedChangedPayload,
+  WindowControlsMinimizeResponse,
+  WindowControlsToggleMaximizeResponse,
 } from '@shared/types/ipc';
 
 /**
- * `Api`'s canonical definition lives in `src/preload/index.ts`. It's pulled
- * in structurally here via the global `Window.api` augmentation
- * (`env.d.ts`) rather than an explicit import of that module, because
- * `src/preload` and `src/renderer` are checked as separate TypeScript
- * composite projects (`tsconfig.node.json` / `tsconfig.web.json`) — an
- * explicit cross-project import from a regular source file trips TS6307
- * ("File ... is not listed within the file list of project ...").
+ * Canonical shape of the whole app-facing `api` surface — every namespace
+ * the renderer calls through `client.ts`, not just the ones this file backs.
+ *
+ * Before Milestone 23 this was derived structurally from `Window['api']`
+ * (the Electron preload's own exported `Api` type), which worked because
+ * the preload exposed every namespace, making it a safe stand-in for "the
+ * full contract". Milestone 23 shrinks the preload down to `windowControls`
+ * only (see `src/preload/index.ts` — the shell now loads the hosted site
+ * directly, so every data namespace goes over `fetch` instead of IPC), so
+ * `Window['api']`'s shape no longer covers `auth`/`employees`/etc. and can
+ * no longer be reused here. This interface is now the source of truth for
+ * the full contract, built from the same request/response types the HTTP
+ * implementations below already import — `client.ts` imports it from here
+ * (not from the preload) to type its merged `api` export.
  */
-type Api = NonNullable<Window['api']>;
+export interface Api {
+  auth: {
+    login: (request: LoginRequest) => Promise<LoginResponse>;
+    logout: () => Promise<LogoutResponse>;
+    getSession: () => Promise<GetSessionResponse>;
+    firstRunStatus: () => Promise<FirstRunStatusResponse>;
+    createFirstManager: (request: CreateFirstManagerRequest) => Promise<CreateFirstManagerResponse>;
+  };
+  employees: {
+    list: () => Promise<EmployeesListResponse>;
+    create: (request: EmployeesCreateRequest) => Promise<EmployeesCreateResponse>;
+    update: (request: EmployeesUpdateRequest) => Promise<EmployeesUpdateResponse>;
+    deactivate: (request: EmployeesDeactivateRequest) => Promise<EmployeesDeactivateResponse>;
+    setDepartments: (
+      request: EmployeesSetDepartmentsRequest,
+    ) => Promise<EmployeesSetDepartmentsResponse>;
+    updateOwnProfile: (
+      request: EmployeesUpdateOwnProfileRequest,
+    ) => Promise<EmployeesUpdateOwnProfileResponse>;
+    reorder: (request: EmployeesReorderRequest) => Promise<EmployeesReorderResponse>;
+  };
+  shiftTemplates: {
+    list: () => Promise<ShiftTemplatesListResponse>;
+    create: (request: ShiftTemplatesCreateRequest) => Promise<ShiftTemplatesCreateResponse>;
+    update: (request: ShiftTemplatesUpdateRequest) => Promise<ShiftTemplatesUpdateResponse>;
+    deactivate: (
+      request: ShiftTemplatesDeactivateRequest,
+    ) => Promise<ShiftTemplatesDeactivateResponse>;
+  };
+  scheduledShifts: {
+    listWeek: (request: ScheduledShiftsListWeekRequest) => Promise<ScheduledShiftsListWeekResponse>;
+    assignTemplate: (
+      request: ScheduledShiftsAssignTemplateRequest,
+    ) => Promise<ScheduledShiftsAssignTemplateResponse>;
+    assignCustom: (
+      request: ScheduledShiftsAssignCustomRequest,
+    ) => Promise<ScheduledShiftsAssignCustomResponse>;
+    override: (request: ScheduledShiftsOverrideRequest) => Promise<ScheduledShiftsOverrideResponse>;
+    remove: (request: ScheduledShiftsRemoveRequest) => Promise<ScheduledShiftsRemoveResponse>;
+  };
+  timeOff: {
+    createRequest: (request: TimeOffCreateRequestRequest) => Promise<TimeOffCreateRequestResponse>;
+    createForEmployee: (
+      request: TimeOffCreateForEmployeeRequest,
+    ) => Promise<TimeOffCreateForEmployeeResponse>;
+    listOwn: () => Promise<TimeOffListOwnResponse>;
+    listAll: () => Promise<TimeOffListAllResponse>;
+    decide: (request: TimeOffDecideRequest) => Promise<TimeOffDecideResponse>;
+    listApprovedForRange: (
+      request: TimeOffListApprovedForRangeRequest,
+    ) => Promise<TimeOffListApprovedForRangeResponse>;
+  };
+  unavailability: {
+    createOwnRequest: (
+      request: UnavailabilityCreateOwnRequestRequest,
+    ) => Promise<UnavailabilityCreateOwnRequestResponse>;
+    createForEmployee: (
+      request: UnavailabilityCreateForEmployeeRequest,
+    ) => Promise<UnavailabilityCreateForEmployeeResponse>;
+    listOwn: () => Promise<UnavailabilityListOwnResponse>;
+    listAll: () => Promise<UnavailabilityListAllResponse>;
+    listApprovedAll: () => Promise<UnavailabilityListApprovedAllResponse>;
+    decide: (request: UnavailabilityDecideRequest) => Promise<UnavailabilityDecideResponse>;
+  };
+  preferences: {
+    listAll: () => Promise<PreferencesListAllResponse>;
+    listForEmployee: (
+      request: PreferencesListForEmployeeRequest,
+    ) => Promise<PreferencesListForEmployeeResponse>;
+    create: (request: PreferencesCreateRequest) => Promise<PreferencesCreateResponse>;
+    update: (request: PreferencesUpdateRequest) => Promise<PreferencesUpdateResponse>;
+    remove: (request: PreferencesRemoveRequest) => Promise<PreferencesRemoveResponse>;
+  };
+  storeHours: {
+    list: () => Promise<StoreHoursListResponse>;
+    upsert: (request: StoreHoursUpsertRequest) => Promise<StoreHoursUpsertResponse>;
+  };
+  specialEvents: {
+    list: () => Promise<SpecialEventsListResponse>;
+    create: (request: SpecialEventsCreateRequest) => Promise<SpecialEventsCreateResponse>;
+    update: (request: SpecialEventsUpdateRequest) => Promise<SpecialEventsUpdateResponse>;
+    remove: (request: SpecialEventsRemoveRequest) => Promise<SpecialEventsRemoveResponse>;
+  };
+  /**
+   * The one namespace with no web equivalent (see Milestone 9/19/23). In the
+   * Electron shell this is backed by the real preload bridge; everywhere
+   * else (and as the Electron shell's own fallback before the preload
+   * value is known) it's the inert stub defined below.
+   */
+  windowControls: {
+    minimize: () => Promise<WindowControlsMinimizeResponse>;
+    toggleMaximize: () => Promise<WindowControlsToggleMaximizeResponse>;
+    close: () => Promise<WindowControlsCloseResponse>;
+    isMaximized: () => Promise<WindowControlsIsMaximizedResponse>;
+    onMaximizedChange: (
+      callback: (isMaximized: WindowControlsMaximizedChangedPayload) => void,
+    ) => () => void;
+  };
+}
 
 /** See `env.d.ts` for the `ImportMetaEnv` declaration. Trims a trailing slash so callers can join with `${API_BASE}/path` uniformly. */
 const API_BASE = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/+$/, '');
@@ -341,12 +455,16 @@ const specialEvents: Api['specialEvents'] = {
 };
 
 /**
- * Milestone 19 explicitly excludes `windowControls` from the HTTP rewrite —
- * it has no web equivalent and isn't part of the Milestone 18 route surface.
+ * `windowControls` has no web equivalent and isn't part of the HTTP route
+ * surface (Milestone 19), so it's never implemented via `fetch` here.
  * `TitleBar`/`WindowControls` (see those components) render unconditionally
- * today and call these methods regardless of context, so this stays present
- * as inert stubs purely to avoid crashing a plain browser/PWA session; giving
+ * and call these methods regardless of context, so this stays present as
+ * inert stubs purely to avoid crashing a plain browser/PWA session — giving
  * the browser its own feature-detected chrome-free layout is Milestone 22.
+ * Since Milestone 23 shrank the Electron preload to expose ONLY
+ * `windowControls`, `client.ts` uses this stub as the Electron shell's
+ * fallback too, for the brief window before/if the real preload value is
+ * unavailable — see `client.ts`'s merge logic.
  */
 const windowControls: Api['windowControls'] = {
   minimize: () => Promise.resolve({ success: true }),

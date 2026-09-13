@@ -1,9 +1,21 @@
 import path from 'node:path';
+import 'dotenv/config';
 import { app, BrowserWindow, shell } from 'electron';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils';
+import { electronApp, optimizer } from '@electron-toolkit/utils';
 import { IpcChannels } from '../shared/types/ipc';
-import { initDb } from './db/connection';
 import { registerIpc } from './ipc/registerIpc';
+
+/**
+ * The hosted site the shell loads (Milestone 23 — see the Phase 2 plan's
+ * "Electron shell" architecture decision). Hardcoded default is the real
+ * production site, so a normal/packaged install works with zero
+ * configuration; override via a real environment variable or a `.env` file
+ * at the project root (loaded the same way `server/src/index.ts` loads its
+ * own env vars, via `dotenv/config`) for local development or testing
+ * against a different deployment (e.g. a local `npm run server:dev`
+ * instance or a staging URL).
+ */
+const APP_URL = process.env.APP_URL ?? 'https://mymthoodlanes.com';
 
 function createMainWindow(): void {
   const mainWindow = new BrowserWindow({
@@ -54,11 +66,10 @@ function createMainWindow(): void {
     return { action: 'deny' };
   });
 
-  if (is.dev && process.env.ELECTRON_RENDERER_URL) {
-    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
-  } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
-  }
+  // Milestone 23: the shell is now just a native window around the hosted
+  // site — no more dev-server-or-local-file branching, no local database to
+  // initialize first.
+  mainWindow.loadURL(APP_URL);
 }
 
 app
@@ -69,9 +80,6 @@ app
     app.on('browser-window-created', (_event, window) => {
       optimizer.watchWindowShortcuts(window);
     });
-
-    const dbPath = path.join(app.getPath('userData'), 'app.db');
-    initDb(dbPath);
 
     registerIpc();
 

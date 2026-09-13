@@ -1,82 +1,7 @@
 import { contextBridge, ipcRenderer } from 'electron';
 import { IpcChannels } from '../shared/types/ipc';
 import type {
-  CreateFirstManagerRequest,
-  CreateFirstManagerResponse,
-  EmployeesCreateRequest,
-  EmployeesCreateResponse,
-  EmployeesDeactivateRequest,
-  EmployeesDeactivateResponse,
-  EmployeesListResponse,
-  EmployeesReorderRequest,
-  EmployeesReorderResponse,
-  EmployeesSetDepartmentsRequest,
-  EmployeesSetDepartmentsResponse,
-  EmployeesUpdateOwnProfileRequest,
-  EmployeesUpdateOwnProfileResponse,
-  EmployeesUpdateRequest,
-  EmployeesUpdateResponse,
-  FirstRunStatusResponse,
-  GetSessionResponse,
   IpcResult,
-  LoginRequest,
-  LoginResponse,
-  LogoutResponse,
-  PreferencesCreateRequest,
-  PreferencesCreateResponse,
-  PreferencesListAllResponse,
-  PreferencesListForEmployeeRequest,
-  PreferencesListForEmployeeResponse,
-  PreferencesRemoveRequest,
-  PreferencesRemoveResponse,
-  PreferencesUpdateRequest,
-  PreferencesUpdateResponse,
-  ScheduledShiftsAssignCustomRequest,
-  ScheduledShiftsAssignCustomResponse,
-  ScheduledShiftsAssignTemplateRequest,
-  ScheduledShiftsAssignTemplateResponse,
-  ScheduledShiftsListWeekRequest,
-  ScheduledShiftsListWeekResponse,
-  ScheduledShiftsOverrideRequest,
-  ScheduledShiftsOverrideResponse,
-  ScheduledShiftsRemoveRequest,
-  ScheduledShiftsRemoveResponse,
-  ShiftTemplatesCreateRequest,
-  ShiftTemplatesCreateResponse,
-  ShiftTemplatesDeactivateRequest,
-  ShiftTemplatesDeactivateResponse,
-  ShiftTemplatesListResponse,
-  ShiftTemplatesUpdateRequest,
-  ShiftTemplatesUpdateResponse,
-  SpecialEventsCreateRequest,
-  SpecialEventsCreateResponse,
-  SpecialEventsListResponse,
-  SpecialEventsRemoveRequest,
-  SpecialEventsRemoveResponse,
-  SpecialEventsUpdateRequest,
-  SpecialEventsUpdateResponse,
-  StoreHoursListResponse,
-  StoreHoursUpsertRequest,
-  StoreHoursUpsertResponse,
-  TimeOffCreateForEmployeeRequest,
-  TimeOffCreateForEmployeeResponse,
-  TimeOffCreateRequestRequest,
-  TimeOffCreateRequestResponse,
-  TimeOffDecideRequest,
-  TimeOffDecideResponse,
-  TimeOffListAllResponse,
-  TimeOffListApprovedForRangeRequest,
-  TimeOffListApprovedForRangeResponse,
-  TimeOffListOwnResponse,
-  UnavailabilityCreateForEmployeeRequest,
-  UnavailabilityCreateForEmployeeResponse,
-  UnavailabilityCreateOwnRequestRequest,
-  UnavailabilityCreateOwnRequestResponse,
-  UnavailabilityDecideRequest,
-  UnavailabilityDecideResponse,
-  UnavailabilityListAllResponse,
-  UnavailabilityListApprovedAllResponse,
-  UnavailabilityListOwnResponse,
   WindowControlsCloseResponse,
   WindowControlsIsMaximizedResponse,
   WindowControlsMaximizedChangedPayload,
@@ -92,109 +17,20 @@ async function invoke<T>(channel: string, request?: unknown): Promise<T> {
   return result.data;
 }
 
+/**
+ * Milestone 23: the Electron app is now a thin shell whose `BrowserWindow`
+ * just loads the hosted site (`loadURL(APP_URL)` in `src/main/index.ts`)
+ * instead of running its own local SQLite-backed backend. Every data
+ * namespace this bridge used to expose (`auth`, `employees`,
+ * `shiftTemplates`, `scheduledShifts`, `timeOff`, `unavailability`,
+ * `preferences`, `storeHours`, `specialEvents`) now flows through the SAME
+ * `fetch`-based `httpApi` the plain web/PWA build already uses
+ * (`src/renderer/src/api/httpClient.ts`, Milestone 19), hitting the real
+ * `/api/*` routes same-origin. `windowControls` has no web equivalent —
+ * native window chrome can't be driven from a page's own `fetch` calls — so
+ * it's the only namespace left here.
+ */
 const api = {
-  auth: {
-    login: (request: LoginRequest) => invoke<LoginResponse>(IpcChannels.authLogin, request),
-    logout: () => invoke<LogoutResponse>(IpcChannels.authLogout),
-    getSession: () => invoke<GetSessionResponse>(IpcChannels.authGetSession),
-    firstRunStatus: () => invoke<FirstRunStatusResponse>(IpcChannels.authFirstRunStatus),
-    createFirstManager: (request: CreateFirstManagerRequest) =>
-      invoke<CreateFirstManagerResponse>(IpcChannels.authCreateFirstManager, request),
-  },
-  employees: {
-    list: () => invoke<EmployeesListResponse>(IpcChannels.employeesList),
-    create: (request: EmployeesCreateRequest) =>
-      invoke<EmployeesCreateResponse>(IpcChannels.employeesCreate, request),
-    update: (request: EmployeesUpdateRequest) =>
-      invoke<EmployeesUpdateResponse>(IpcChannels.employeesUpdate, request),
-    deactivate: (request: EmployeesDeactivateRequest) =>
-      invoke<EmployeesDeactivateResponse>(IpcChannels.employeesDeactivate, request),
-    setDepartments: (request: EmployeesSetDepartmentsRequest) =>
-      invoke<EmployeesSetDepartmentsResponse>(IpcChannels.employeesSetDepartments, request),
-    updateOwnProfile: (request: EmployeesUpdateOwnProfileRequest) =>
-      invoke<EmployeesUpdateOwnProfileResponse>(IpcChannels.employeesUpdateOwnProfile, request),
-    reorder: (request: EmployeesReorderRequest) =>
-      invoke<EmployeesReorderResponse>(IpcChannels.employeesReorder, request),
-  },
-  shiftTemplates: {
-    list: () => invoke<ShiftTemplatesListResponse>(IpcChannels.shiftTemplatesList),
-    create: (request: ShiftTemplatesCreateRequest) =>
-      invoke<ShiftTemplatesCreateResponse>(IpcChannels.shiftTemplatesCreate, request),
-    update: (request: ShiftTemplatesUpdateRequest) =>
-      invoke<ShiftTemplatesUpdateResponse>(IpcChannels.shiftTemplatesUpdate, request),
-    deactivate: (request: ShiftTemplatesDeactivateRequest) =>
-      invoke<ShiftTemplatesDeactivateResponse>(IpcChannels.shiftTemplatesDeactivate, request),
-  },
-  scheduledShifts: {
-    listWeek: (request: ScheduledShiftsListWeekRequest) =>
-      invoke<ScheduledShiftsListWeekResponse>(IpcChannels.scheduledShiftsListWeek, request),
-    assignTemplate: (request: ScheduledShiftsAssignTemplateRequest) =>
-      invoke<ScheduledShiftsAssignTemplateResponse>(
-        IpcChannels.scheduledShiftsAssignTemplate,
-        request,
-      ),
-    assignCustom: (request: ScheduledShiftsAssignCustomRequest) =>
-      invoke<ScheduledShiftsAssignCustomResponse>(IpcChannels.scheduledShiftsAssignCustom, request),
-    override: (request: ScheduledShiftsOverrideRequest) =>
-      invoke<ScheduledShiftsOverrideResponse>(IpcChannels.scheduledShiftsOverride, request),
-    remove: (request: ScheduledShiftsRemoveRequest) =>
-      invoke<ScheduledShiftsRemoveResponse>(IpcChannels.scheduledShiftsRemove, request),
-  },
-  timeOff: {
-    createRequest: (request: TimeOffCreateRequestRequest) =>
-      invoke<TimeOffCreateRequestResponse>(IpcChannels.timeOffCreateRequest, request),
-    createForEmployee: (request: TimeOffCreateForEmployeeRequest) =>
-      invoke<TimeOffCreateForEmployeeResponse>(IpcChannels.timeOffCreateForEmployee, request),
-    listOwn: () => invoke<TimeOffListOwnResponse>(IpcChannels.timeOffListOwn),
-    listAll: () => invoke<TimeOffListAllResponse>(IpcChannels.timeOffListAll),
-    decide: (request: TimeOffDecideRequest) =>
-      invoke<TimeOffDecideResponse>(IpcChannels.timeOffDecide, request),
-    listApprovedForRange: (request: TimeOffListApprovedForRangeRequest) =>
-      invoke<TimeOffListApprovedForRangeResponse>(IpcChannels.timeOffListApprovedForRange, request),
-  },
-  unavailability: {
-    createOwnRequest: (request: UnavailabilityCreateOwnRequestRequest) =>
-      invoke<UnavailabilityCreateOwnRequestResponse>(
-        IpcChannels.unavailabilityCreateOwnRequest,
-        request,
-      ),
-    createForEmployee: (request: UnavailabilityCreateForEmployeeRequest) =>
-      invoke<UnavailabilityCreateForEmployeeResponse>(
-        IpcChannels.unavailabilityCreateForEmployee,
-        request,
-      ),
-    listOwn: () => invoke<UnavailabilityListOwnResponse>(IpcChannels.unavailabilityListOwn),
-    listAll: () => invoke<UnavailabilityListAllResponse>(IpcChannels.unavailabilityListAll),
-    listApprovedAll: () =>
-      invoke<UnavailabilityListApprovedAllResponse>(IpcChannels.unavailabilityListApprovedAll),
-    decide: (request: UnavailabilityDecideRequest) =>
-      invoke<UnavailabilityDecideResponse>(IpcChannels.unavailabilityDecide, request),
-  },
-  preferences: {
-    listAll: () => invoke<PreferencesListAllResponse>(IpcChannels.preferencesListAll),
-    listForEmployee: (request: PreferencesListForEmployeeRequest) =>
-      invoke<PreferencesListForEmployeeResponse>(IpcChannels.preferencesListForEmployee, request),
-    create: (request: PreferencesCreateRequest) =>
-      invoke<PreferencesCreateResponse>(IpcChannels.preferencesCreate, request),
-    update: (request: PreferencesUpdateRequest) =>
-      invoke<PreferencesUpdateResponse>(IpcChannels.preferencesUpdate, request),
-    remove: (request: PreferencesRemoveRequest) =>
-      invoke<PreferencesRemoveResponse>(IpcChannels.preferencesRemove, request),
-  },
-  storeHours: {
-    list: () => invoke<StoreHoursListResponse>(IpcChannels.storeHoursList),
-    upsert: (request: StoreHoursUpsertRequest) =>
-      invoke<StoreHoursUpsertResponse>(IpcChannels.storeHoursUpsert, request),
-  },
-  specialEvents: {
-    list: () => invoke<SpecialEventsListResponse>(IpcChannels.specialEventsList),
-    create: (request: SpecialEventsCreateRequest) =>
-      invoke<SpecialEventsCreateResponse>(IpcChannels.specialEventsCreate, request),
-    update: (request: SpecialEventsUpdateRequest) =>
-      invoke<SpecialEventsUpdateResponse>(IpcChannels.specialEventsUpdate, request),
-    remove: (request: SpecialEventsRemoveRequest) =>
-      invoke<SpecialEventsRemoveResponse>(IpcChannels.specialEventsRemove, request),
-  },
   windowControls: {
     minimize: () => invoke<WindowControlsMinimizeResponse>(IpcChannels.windowControlsMinimize),
     toggleMaximize: () =>

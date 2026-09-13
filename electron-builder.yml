@@ -6,8 +6,6 @@ directories:
 files:
   - out/**/*
   - package.json
-asarUnpack:
-  - '**/*.node'
 win:
   target: nsis
   artifactName: '${productName}-${version}-setup.${ext}'

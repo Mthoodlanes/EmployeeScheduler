@@ -12,11 +12,10 @@
     "lint": "eslint . --max-warnings 0",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "test:unit": "cross-env ELECTRON_RUN_AS_NODE=1 electron ./node_modules/vitest/vitest.mjs run",
-    "test:unit:watch": "cross-env ELECTRON_RUN_AS_NODE=1 electron ./node_modules/vitest/vitest.mjs",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
     "test:e2e": "playwright test",
     "package": "npm run build && electron-builder",
-    "seed": "cross-env ELECTRON_RUN_AS_NODE=1 electron ./node_modules/tsx/dist/cli.mjs scripts/seed.ts",
     "icons:generate": "tsx scripts/generate-pwa-icons.ts",
     "server:dev": "tsx watch server/src/index.ts",
     "server:build": "tsc -p tsconfig.server.json",
@@ -35,7 +34,6 @@
     "@electron-toolkit/utils": "^3.0.0",
     "@tanstack/react-query": "^5.56.2",
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "11.10.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
@@ -56,7 +54,6 @@
     "@testing-library/jest-dom": "^6.5.0",
     "@testing-library/react": "^16.0.1",
     "@types/bcryptjs": "^2.4.6",
-    "@types/better-sqlite3": "^7.6.11",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
@@ -67,7 +64,6 @@
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
     "@vitejs/plugin-react": "^4.3.1",
-    "cross-env": "^7.0.3",
     "drizzle-kit": "^0.31.10",
     "electron": "32.3.3",
     "electron-builder": "^24.13.3",
@@ -98,7 +94,6 @@
     "electron@32.3.3": true,
     "esbuild@0.21.5": true,
     "esbuild@0.28.2": true,
-    "unrs-resolver@1.12.2": true,
-    "better-sqlite3@11.10.0": true
+    "unrs-resolver@1.12.2": true
   }
 }
