@@ -38,6 +38,7 @@ describe('runMigrations', () => {
       { id: 6, name: 'scheduled_shift_anchors' },
       { id: 7, name: 'employee_unavailability' },
       { id: 8, name: 'add_mechanic_department' },
+      { id: 9, name: 'employee_sort_order' },
     ]);
 
     db.close();
@@ -51,7 +52,7 @@ describe('runMigrations', () => {
     const { count } = db.prepare('SELECT COUNT(*) as count FROM schema_migrations').get() as {
       count: number;
     };
-    expect(count).toBe(8);
+    expect(count).toBe(9);
 
     db.close();
   });

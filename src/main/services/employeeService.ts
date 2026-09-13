@@ -88,6 +88,11 @@ export function setEmployeeDepartments(
   return employeeRepo.setDepartments(id, departments);
 }
 
+/** Manager-only (enforced by the IPC layer's `requireManager()`, see `employees.ipc.ts`). */
+export function reorderEmployees(orderedIds: number[]): EmployeeWithDepartmentsRow[] {
+  return employeeRepo.reorder(orderedIds);
+}
+
 export interface UpdateOwnProfileInput {
   name?: string;
   currentPassword?: string;

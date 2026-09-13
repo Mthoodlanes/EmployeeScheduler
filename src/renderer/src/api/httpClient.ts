@@ -33,6 +33,8 @@ import type {
   EmployeesDeactivateRequest,
   EmployeesDeactivateResponse,
   EmployeesListResponse,
+  EmployeesReorderRequest,
+  EmployeesReorderResponse,
   EmployeesSetDepartmentsRequest,
   EmployeesSetDepartmentsResponse,
   EmployeesUpdateOwnProfileRequest,
@@ -248,6 +250,8 @@ const employees: Api['employees'] = {
     }),
   updateOwnProfile: (updateOwnProfileRequest: EmployeesUpdateOwnProfileRequest) =>
     put<EmployeesUpdateOwnProfileResponse>('/employees/me', updateOwnProfileRequest),
+  reorder: (reorderRequest: EmployeesReorderRequest) =>
+    put<EmployeesReorderResponse>('/employees/reorder', reorderRequest),
 };
 
 const shiftTemplates: Api['shiftTemplates'] = {

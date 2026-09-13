@@ -1,9 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type {
   EmployeesCreateRequest,
+  EmployeesReorderRequest,
   EmployeesSetDepartmentsRequest,
   EmployeesUpdateOwnProfileRequest,
   EmployeesUpdateRequest,
+  EmployeeWithDepartments,
 } from '@shared/types/ipc';
 import { api } from '../api/client';
 
@@ -60,5 +62,42 @@ export function useUpdateOwnProfile() {
   return useMutation({
     mutationFn: (input: EmployeesUpdateOwnProfileRequest) => api.employees.updateOwnProfile(input),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: EMPLOYEES_KEY }),
+  });
+}
+
+/**
+ * Manager-only Schedule Board drag-and-drop reordering. `input.orderedIds`
+ * must already be the COMPLETE merged order (see
+ * `@shared/logic/employeeOrder`'s `mergeReorderedSubset`, used by
+ * `ScheduleBoardPage` to fold a single department tab's drag result back
+ * into the full list) — this hook does not do that merging itself.
+ *
+ * Optimistically reorders the cached employee list immediately (per the
+ * feature plan) rather than waiting on the round trip, so the Schedule
+ * Board's rows don't sit at the pre-drop position until the request
+ * resolves; rolls back to the previous cached order if the request fails.
+ */
+export function useReorderEmployees() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: EmployeesReorderRequest) => api.employees.reorder(input),
+    onMutate: async (input) => {
+      await queryClient.cancelQueries({ queryKey: EMPLOYEES_KEY });
+      const previous = queryClient.getQueryData<EmployeeWithDepartments[]>(EMPLOYEES_KEY);
+      if (previous) {
+        const byId = new Map(previous.map((employee) => [employee.id, employee]));
+        const reordered = input.orderedIds
+          .map((id) => byId.get(id))
+          .filter((employee): employee is EmployeeWithDepartments => employee !== undefined);
+        queryClient.setQueryData(EMPLOYEES_KEY, reordered);
+      }
+      return { previous };
+    },
+    onError: (_err, _input, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(EMPLOYEES_KEY, context.previous);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: EMPLOYEES_KEY }),
   });
 }

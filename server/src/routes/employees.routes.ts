@@ -18,6 +18,12 @@
  *   PUT /api/employees/me -> employeeService.updateOwnProfile(actor, ...)
  *   Any authenticated actor may call this for THEMSELVES (no `assertManager`
  *   — enforced by acting on `actor.id`, never a body/param-supplied id).
+ *
+ * Plus one more additional manager-only route, backing the Schedule Board's
+ * persistent drag-and-drop employee reordering feature (no IPC-channel
+ * precursor at first; the IPC channel was added alongside this route, see
+ * `src/main/ipc/employees.ipc.ts`'s `employees:reorder`):
+ *   PUT /api/employees/reorder -> employeeService.reorderEmployees(actor, ...)
  */
 import { Router } from 'express';
 import * as employeeService from '../services/employeeService.js';
@@ -27,6 +33,7 @@ import {
   bodyOf,
   optionalString,
   requireArrayOf,
+  requireArrayOfIntegers,
   requireBoolean,
   requireIdParam,
   requireOneOf,
@@ -73,6 +80,20 @@ router.put(
       currentPassword: optionalString(body.currentPassword, 'currentPassword'),
       newPassword: optionalString(body.newPassword, 'newPassword'),
     });
+  }),
+);
+
+// Registered BEFORE `/:id` for the same reason `/me` is — `requireIdParam`
+// would otherwise try (and fail) to parse the literal segment "reorder" as a
+// numeric id.
+router.put(
+  '/reorder',
+  handleRoute((req) => {
+    const body = bodyOf(req);
+    return employeeService.reorderEmployees(
+      req.actor as RequestingActor,
+      requireArrayOfIntegers(body.orderedIds, 'orderedIds'),
+    );
   }),
 );
 

@@ -41,6 +41,13 @@ export interface Employee {
   role: Role;
   isSalaried: boolean;
   isActive: boolean;
+  /**
+   * Global position on the Schedule Board (ascending), independent of
+   * department — an employee working multiple departments has one
+   * consistent position everywhere. Drives `employeeRepo.listAll()`'s
+   * default order; `EmployeesAdminPage` sorts by name client-side instead.
+   */
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
 }

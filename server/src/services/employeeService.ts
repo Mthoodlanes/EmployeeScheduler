@@ -178,6 +178,15 @@ export async function setEmployeeDepartments(
   return employeeRepo.setDepartments(id, departments);
 }
 
+/** Only a manager may reorder the Schedule Board's employee rows. */
+export async function reorderEmployees(
+  actor: RequestingActor,
+  orderedIds: number[],
+): Promise<EmployeeWithDepartmentsRow[]> {
+  assertManager(actor);
+  return employeeRepo.reorder(orderedIds);
+}
+
 export interface UpdateOwnProfileInput {
   name?: string;
   currentPassword?: string;

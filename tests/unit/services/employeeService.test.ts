@@ -113,6 +113,31 @@ describe('employeeService', () => {
     expect(updated.departments).toEqual(['front_desk']);
   });
 
+  describe('reorderEmployees', () => {
+    it('persists the new global order and returns it in that order', () => {
+      const a = employeeService.createEmployee({
+        name: 'Order A',
+        username: `order-a-${Date.now()}`,
+        password: 'password123',
+        role: 'employee',
+        isSalaried: false,
+        departments: [],
+      });
+      const b = employeeService.createEmployee({
+        name: 'Order B',
+        username: `order-b-${Date.now()}`,
+        password: 'password123',
+        role: 'employee',
+        isSalaried: false,
+        departments: [],
+      });
+
+      const reordered = employeeService.reorderEmployees([b.id, a.id]);
+      expect(reordered.map((e) => e.id)).toEqual([b.id, a.id]);
+      expect(employeeService.listEmployees().map((e) => e.id)).toEqual([b.id, a.id]);
+    });
+  });
+
   describe('updateOwnProfile', () => {
     it('updates just the display name, without requiring a current password', () => {
       const created = employeeService.createEmployee({

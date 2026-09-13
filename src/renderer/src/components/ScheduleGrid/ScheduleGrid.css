@@ -19,8 +19,20 @@
   min-width: 780px;
 }
 
+/*
+ * Each row spans every column track via CSS Grid's `subgrid` (inheriting the
+ * exact column sizing `.schedule-grid` defines inline) rather than the
+ * simpler `display: contents` used before the drag-and-drop reordering
+ * feature — `display: contents` gives a row no box at all, so it can't
+ * receive the `transform`/`transition` a dragged row needs to visually lift
+ * and glide between other rows. `grid-column: 1 / -1` makes the row itself
+ * span the full width; `subgrid` then lets its own cells (the employee cell
+ * + one per day) align to the parent's tracks exactly as before.
+ */
 .schedule-grid-row {
-  display: contents;
+  display: grid;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
 }
 
 /* ---- Header row ---- */
@@ -79,6 +91,49 @@
   padding: var(--space-3);
   border-top: 1px solid var(--color-border);
   min-width: 160px;
+}
+
+/*
+ * Drag handle for persistent Schedule Board row reordering — a dedicated
+ * grip rather than the whole row/cell, so clicking the employee's name area
+ * doesn't accidentally start a drag and clicking a day cell still opens its
+ * assign/edit dialog normally. `touch-action: none` stops the browser from
+ * treating a touch-drag on the handle as a page scroll gesture (this app is
+ * used on phones — see Milestone 22); the ~44px touch target matches the
+ * convention already used for other small interactive controls below.
+ */
+.schedule-grid-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin: -10px -8px -10px -12px;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  cursor: grab;
+  touch-action: none;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.schedule-grid-drag-handle:hover {
+  color: var(--color-text);
+  background: var(--color-surface-muted);
+}
+
+.schedule-grid-drag-handle:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 2px var(--focus-ring-color);
+}
+
+.schedule-grid-drag-handle:active {
+  cursor: grabbing;
+}
+
+.schedule-grid-employee-name {
+  overflow-wrap: anywhere;
 }
 
 /* ---- Hours badges (day column header + closed states) ---- */

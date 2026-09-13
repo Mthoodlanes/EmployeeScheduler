@@ -15,6 +15,13 @@
       "when": 1789281041424,
       "tag": "0001_many_eddie_brock",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789294189389,
+      "tag": "0002_sloppy_onslaught",
+      "breakpoints": true
     }
   ]
 }

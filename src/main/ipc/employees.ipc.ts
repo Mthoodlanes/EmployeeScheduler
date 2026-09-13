@@ -6,6 +6,8 @@ import type {
   EmployeesDeactivateRequest,
   EmployeesDeactivateResponse,
   EmployeesListResponse,
+  EmployeesReorderRequest,
+  EmployeesReorderResponse,
   EmployeesSetDepartmentsRequest,
   EmployeesSetDepartmentsResponse,
   EmployeesUpdateOwnProfileRequest,
@@ -70,6 +72,13 @@ export function registerEmployeesIpc(): void {
         requireManager();
         return employeeService.setEmployeeDepartments(request.id, request.departments);
       }),
+  );
+
+  ipcMain.handle(IpcChannels.employeesReorder, (_event, request: EmployeesReorderRequest) =>
+    toIpcResult<EmployeesReorderResponse>(() => {
+      requireManager();
+      return employeeService.reorderEmployees(request.orderedIds);
+    }),
   );
 
   // Self-service: any logged-in user (employee or manager) may update their

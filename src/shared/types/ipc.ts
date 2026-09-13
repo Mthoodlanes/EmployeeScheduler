@@ -33,6 +33,7 @@ export const IpcChannels = {
   employeesDeactivate: 'employees:deactivate',
   employeesSetDepartments: 'employees:setDepartments',
   employeesUpdateOwnProfile: 'employees:updateOwnProfile',
+  employeesReorder: 'employees:reorder',
   shiftTemplatesList: 'shiftTemplates:list',
   shiftTemplatesCreate: 'shiftTemplates:create',
   shiftTemplatesUpdate: 'shiftTemplates:update',
@@ -163,6 +164,19 @@ export interface EmployeesUpdateOwnProfileRequest {
   newPassword?: string;
 }
 export type EmployeesUpdateOwnProfileResponse = EmployeeWithDepartments;
+
+// ---- employees:reorder ----
+/**
+ * Manager-only. `orderedIds` must be the COMPLETE set of every employee id,
+ * in the desired new global order — not a partial/single-item move. The
+ * renderer computes this by merging a department tab's drag-and-drop result
+ * back into the full current order (see
+ * `src/shared/logic/employeeOrder.ts#mergeReorderedSubset`).
+ */
+export interface EmployeesReorderRequest {
+  orderedIds: number[];
+}
+export type EmployeesReorderResponse = EmployeeWithDepartments[];
 
 // ---- shiftTemplates:list ----
 export type ShiftTemplatesListRequest = undefined;

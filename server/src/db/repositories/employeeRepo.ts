@@ -1,4 +1,4 @@
-import { asc, count, eq, sql } from 'drizzle-orm';
+import { asc, count, eq, max, sql } from 'drizzle-orm';
 import { getDb } from '../../db.js';
 import { employeeDepartments, employees } from '../schema.js';
 import type { Department, Employee, EmployeeWithHash, Role } from '../domain-types.js';
@@ -14,6 +14,7 @@ function toEmployee(row: EmployeeRow): Employee {
     role: row.role,
     isSalaried: row.isSalaried,
     isActive: row.isActive,
+    sortOrder: row.sortOrder,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -97,9 +98,20 @@ export async function findById(id: number): Promise<EmployeeWithHash | undefined
   return row ? toEmployeeWithHash(row) : undefined;
 }
 
+/**
+ * Default order is `sortOrder` ascending (the Schedule Board's manual
+ * drag-and-drop order), not alphabetical — see `Employee.sortOrder`'s doc
+ * comment in `domain-types.ts`. `id` is a tiebreaker for determinism when
+ * two rows somehow share a `sortOrder`. Callers that specifically want
+ * alphabetical order (e.g. `EmployeesAdminPage`, for looking someone up)
+ * sort client-side.
+ */
 export async function listAll(): Promise<EmployeeWithDepartmentsRow[]> {
   const db = getDb();
-  const rows = await db.select().from(employees).orderBy(asc(employees.name));
+  const rows = await db
+    .select()
+    .from(employees)
+    .orderBy(asc(employees.sortOrder), asc(employees.id));
   return Promise.all(
     rows.map(async (row) => ({
       ...toEmployee(row),
@@ -119,6 +131,10 @@ export async function create(input: CreateEmployeeInput): Promise<EmployeeWithDe
   const db = getDb();
 
   const employeeId = await db.transaction(async (tx) => {
+    // Appended at the end, never inserted at the top.
+    const [{ maxSortOrder }] = await tx
+      .select({ maxSortOrder: max(employees.sortOrder) })
+      .from(employees);
     const [inserted] = await tx
       .insert(employees)
       .values({
@@ -127,6 +143,7 @@ export async function create(input: CreateEmployeeInput): Promise<EmployeeWithDe
         passwordHash: input.passwordHash,
         role: input.role,
         isSalaried: input.isSalaried,
+        sortOrder: (maxSortOrder ?? -1) + 1,
       })
       .returning({ id: employees.id });
 
@@ -242,4 +259,45 @@ export async function setDepartments(
     throw new Error(`Employee ${employeeId} not found after setting departments`);
   }
   return updated;
+}
+
+/**
+ * Persists a brand-new GLOBAL `sortOrder` for every employee, per
+ * `orderedIds`' array position (0, 1, 2, ...). `orderedIds` must be the
+ * COMPLETE set of employee ids — the Schedule Board only ever shows one
+ * department's subset at a time, so the caller is responsible for merging a
+ * subset's new drag-and-drop order back into the full list (see
+ * `src/shared/logic/employeeOrder.ts#mergeReorderedSubset` on the Electron
+ * side; the renderer bundle here is shared) before calling this. Rejected
+ * outright if `orderedIds` doesn't exactly match the existing employee ids
+ * (no missing id, no extra/unknown id, no duplicate) — a partial list here
+ * would silently leave some employees with a stale `sortOrder`, or worse,
+ * collide two employees onto the same value.
+ *
+ * Deliberately does NOT touch `updatedAt` — purely an ordering concern, not
+ * a profile edit (see the feature's constraints).
+ */
+export async function reorder(orderedIds: number[]): Promise<EmployeeWithDepartmentsRow[]> {
+  const db = getDb();
+
+  const existingRows = await db.select({ id: employees.id }).from(employees);
+  const existingIds = new Set(existingRows.map((row) => row.id));
+  const uniqueOrderedIds = new Set(orderedIds);
+  const isValid =
+    uniqueOrderedIds.size === orderedIds.length &&
+    uniqueOrderedIds.size === existingIds.size &&
+    orderedIds.every((id) => existingIds.has(id));
+  if (!isValid) {
+    throw new Error('orderedIds must include every existing employee id exactly once');
+  }
+
+  await db.transaction(async (tx) => {
+    await Promise.all(
+      orderedIds.map((id, index) =>
+        tx.update(employees).set({ sortOrder: index }).where(eq(employees.id, id)),
+      ),
+    );
+  });
+
+  return listAll();
 }

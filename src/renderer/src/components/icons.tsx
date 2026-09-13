@@ -262,6 +262,27 @@ export function IconMenu(): React.JSX.Element {
   );
 }
 
+/** Drag handle grip — Schedule Board employee row reordering (drag-and-drop). */
+export function IconGripVertical(): React.JSX.Element {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="currentColor"
+      stroke="none"
+      aria-hidden="true"
+    >
+      <circle cx="9" cy="6" r="1.6" />
+      <circle cx="9" cy="12" r="1.6" />
+      <circle cx="9" cy="18" r="1.6" />
+      <circle cx="15" cy="6" r="1.6" />
+      <circle cx="15" cy="12" r="1.6" />
+      <circle cx="15" cy="18" r="1.6" />
+    </svg>
+  );
+}
+
 /* ---- Custom title-bar window controls (Milestone 9) ---- */
 
 export function IconWindowMinimize(): React.JSX.Element {

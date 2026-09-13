@@ -53,6 +53,10 @@ export const employees = pgTable('employees', {
   role: roleEnum('role').notNull(),
   isSalaried: boolean('is_salaried').notNull().default(false),
   isActive: boolean('is_active').notNull().default(true),
+  // Milestone 24 (SQLite migration 009 equivalent): global Schedule Board
+  // row ordering, independent of department. See `domain-types.ts`'s
+  // `Employee.sortOrder` doc comment.
+  sortOrder: integer('sort_order').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

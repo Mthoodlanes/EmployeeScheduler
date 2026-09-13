@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { DAY_OF_WEEK_LABELS, DEPARTMENTS, DEPARTMENT_LABELS } from '@shared/types/domain';
 import type { Department, Role } from '@shared/types/domain';
@@ -246,6 +246,17 @@ export function EmployeesAdminPage(): React.JSX.Element {
   const isEditing = form.id !== null;
   const formCardRef = useRef<HTMLDivElement>(null);
 
+  // `useEmployees()` returns the Schedule Board's `sort_order` order (drag-
+  // and-drop position), not alphabetical. This page is about finding/editing
+  // a specific person by name, not matching the physical schedule board, so
+  // it sorts alphabetically here rather than adopting that order — keeps
+  // this table's existing lookup usability unchanged by the reordering
+  // feature.
+  const alphabeticalEmployees = useMemo(
+    () => [...(employees ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
+    [employees],
+  );
+
   const editEmployee = (employee: EmployeeWithDepartments): void => {
     setForm(toFormState(employee));
     formCardRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -337,7 +348,7 @@ export function EmployeesAdminPage(): React.JSX.Element {
               </tr>
             </thead>
             <tbody>
-              {employees.map((employee) => (
+              {alphabeticalEmployees.map((employee) => (
                 <tr key={employee.id}>
                   <td>{employee.name}</td>
                   <td>{employee.username}</td>

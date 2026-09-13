@@ -8,6 +8,8 @@ import type {
   EmployeesDeactivateRequest,
   EmployeesDeactivateResponse,
   EmployeesListResponse,
+  EmployeesReorderRequest,
+  EmployeesReorderResponse,
   EmployeesSetDepartmentsRequest,
   EmployeesSetDepartmentsResponse,
   EmployeesUpdateOwnProfileRequest,
@@ -111,6 +113,8 @@ const api = {
       invoke<EmployeesSetDepartmentsResponse>(IpcChannels.employeesSetDepartments, request),
     updateOwnProfile: (request: EmployeesUpdateOwnProfileRequest) =>
       invoke<EmployeesUpdateOwnProfileResponse>(IpcChannels.employeesUpdateOwnProfile, request),
+    reorder: (request: EmployeesReorderRequest) =>
+      invoke<EmployeesReorderResponse>(IpcChannels.employeesReorder, request),
   },
   shiftTemplates: {
     list: () => invoke<ShiftTemplatesListResponse>(IpcChannels.shiftTemplatesList),

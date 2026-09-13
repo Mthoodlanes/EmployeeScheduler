@@ -20,6 +20,7 @@ import type { PreferenceMatchResult } from '@shared/logic/preferenceMatch';
 import { resolveHoursForDate, resolveShiftTimeFromHours } from '@shared/logic/hoursResolution';
 import type { ResolvedHours } from '@shared/logic/hoursResolution';
 import { findUnavailabilityConflicts, findUnavailabilityForDay } from '@shared/logic/unavailabilityConflict';
+import { mergeReorderedSubset } from '@shared/logic/employeeOrder';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DepartmentTabs } from '../components/DepartmentTabs';
 import { IconPrinter } from '../components/icons';
@@ -30,7 +31,7 @@ import { AssignShiftDialog } from '../components/ScheduleGrid/AssignShiftDialog'
 import { EditShiftDialog } from '../components/ScheduleGrid/EditShiftDialog';
 import { ScheduleGrid } from '../components/ScheduleGrid/Grid';
 import { useEmployeePreferences } from '../hooks/useEmployeePreferences';
-import { useEmployees } from '../hooks/useEmployees';
+import { useEmployees, useReorderEmployees } from '../hooks/useEmployees';
 import {
   useAssignCustomShift,
   useAssignShiftTemplate,
@@ -85,6 +86,7 @@ export function ScheduleBoardPage(): React.JSX.Element {
   const assignCustomMutation = useAssignCustomShift(department, weekStart);
   const overrideMutation = useOverrideShift(department, weekStart);
   const removeMutation = useRemoveShift(department, weekStart);
+  const reorderEmployeesMutation = useReorderEmployees();
 
   const weekDates = useMemo(() => getWeekDates(weekStart), [weekStart]);
   const days = useMemo(
@@ -326,6 +328,19 @@ export function ScheduleBoardPage(): React.JSX.Element {
     }
   };
 
+  /**
+   * `newDepartmentOrderIds` is only the CURRENT tab's subset (the Schedule
+   * Board shows one department at a time) in its new post-drag order. Merge
+   * it back into the full global order — every employee outside this
+   * department keeps their exact position — before persisting, per the
+   * feature's merge rule (see `mergeReorderedSubset`).
+   */
+  const handleReorderDepartment = (newDepartmentOrderIds: number[]): void => {
+    const fullOrderIds = (employees ?? []).map((employee) => employee.id);
+    const mergedOrderIds = mergeReorderedSubset(fullOrderIds, newDepartmentOrderIds);
+    reorderEmployeesMutation.mutate({ orderedIds: mergedOrderIds });
+  };
+
   const assignTargetEmployee = assignTarget
     ? departmentEmployees.find((employee) => employee.id === assignTarget.employeeId)
     : undefined;
@@ -398,6 +413,7 @@ export function ScheduleBoardPage(): React.JSX.Element {
           setDialogError(null);
           setEditTarget(shift);
         }}
+        onReorderDepartment={handleReorderDepartment}
       />
 
       <PrintSchedule

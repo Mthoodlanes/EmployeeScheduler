@@ -99,6 +99,15 @@ export function requireArrayOf<T extends string>(
   return value as T[];
 }
 
+/** Like `requireArrayOf`, but for an array of plain integers (e.g. `orderedIds`) rather than a string enum. */
+export function requireArrayOfIntegers(value: unknown, field: string): number[] {
+  if (!Array.isArray(value)) {
+    throw new Error(`"${field}" is required and must be an array`);
+  }
+  value.forEach((item) => requireInteger(item, `${field}[]`));
+  return value as number[];
+}
+
 /** Treats both `undefined` and `null` as "no value" -> `null`; otherwise validates a non-empty string. */
 export function nullableString(value: unknown, field: string): string | null {
   if (value === undefined || value === null) {

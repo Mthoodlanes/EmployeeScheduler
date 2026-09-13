@@ -10,6 +10,7 @@ interface EmployeeRow {
   role: Role;
   is_salaried: number;
   is_active: number;
+  sort_order: number;
   created_at: string;
   updated_at: string;
 }
@@ -26,6 +27,7 @@ function toEmployee(row: EmployeeRow): Employee {
     role: row.role,
     isSalaried: row.is_salaried === 1,
     isActive: row.is_active === 1,
+    sortOrder: row.sort_order,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -100,9 +102,19 @@ export function findById(id: number): EmployeeWithHash | undefined {
   return row ? toEmployeeWithHash(row) : undefined;
 }
 
+/**
+ * Default order is `sort_order` ascending (the Schedule Board's manual
+ * drag-and-drop order), not alphabetical — see `EmployeeWithDepartments`'s
+ * `sortOrder` field. `id` is a tiebreaker for determinism when two rows
+ * somehow share a `sort_order` (never produced by `reorder`/`create` below,
+ * but not relied upon). Callers that specifically want alphabetical order
+ * (e.g. `EmployeesAdminPage`, for looking someone up) sort client-side.
+ */
 export function listAll(): EmployeeWithDepartmentsRow[] {
   const db = getDb();
-  const rows = db.prepare('SELECT * FROM employees ORDER BY name').all() as EmployeeRow[];
+  const rows = db
+    .prepare('SELECT * FROM employees ORDER BY sort_order ASC, id ASC')
+    .all() as EmployeeRow[];
   return rows.map((row) => ({
     ...toEmployee(row),
     departments: getDepartmentsFor(db, row.id),
@@ -116,12 +128,20 @@ export function getById(id: number): EmployeeWithDepartmentsRow | undefined {
   return { ...toEmployee(row), departments: getDepartmentsFor(db, row.id) };
 }
 
+/** Next `sort_order` for a newly-created employee: appended at the end, never inserted at the top. */
+function nextSortOrder(db: Database.Database): number {
+  const row = db.prepare('SELECT COALESCE(MAX(sort_order), -1) as maxSortOrder FROM employees').get() as {
+    maxSortOrder: number;
+  };
+  return row.maxSortOrder + 1;
+}
+
 export function create(input: CreateEmployeeInput): EmployeeWithDepartmentsRow {
   const db = getDb();
 
   const insertEmployee = db.prepare(`
-    INSERT INTO employees (name, username, password_hash, role, is_salaried, is_active)
-    VALUES (@name, @username, @passwordHash, @role, @isSalaried, 1)
+    INSERT INTO employees (name, username, password_hash, role, is_salaried, is_active, sort_order)
+    VALUES (@name, @username, @passwordHash, @role, @isSalaried, 1, @sortOrder)
   `);
   const insertDepartment = db.prepare(
     'INSERT INTO employee_departments (employee_id, department) VALUES (?, ?)',
@@ -134,6 +154,7 @@ export function create(input: CreateEmployeeInput): EmployeeWithDepartmentsRow {
       passwordHash: input.passwordHash,
       role: input.role,
       isSalaried: input.isSalaried ? 1 : 0,
+      sortOrder: nextSortOrder(db),
     });
     const employeeId = Number(result.lastInsertRowid);
     input.departments.forEach((department) => {
@@ -243,4 +264,45 @@ export function setDepartments(
     throw new Error(`Employee ${employeeId} not found after setting departments`);
   }
   return updated;
+}
+
+/**
+ * Persists a brand-new GLOBAL `sort_order` for every employee, per
+ * `orderedIds`' array position (0, 1, 2, ...). `orderedIds` must be the
+ * COMPLETE set of employee ids — the Schedule Board only ever shows one
+ * department's subset at a time, so the renderer is responsible for merging
+ * a subset's new drag-and-drop order back into the full list (see
+ * `src/shared/logic/employeeOrder.ts#mergeReorderedSubset`) before calling
+ * this. Rejected outright if `orderedIds` doesn't exactly match the existing
+ * employee ids (no missing id, no extra/unknown id, no duplicate) — a
+ * partial list here would silently leave some employees with a stale
+ * `sort_order`, or worse, collide two employees onto the same value.
+ *
+ * Deliberately does NOT touch `updated_at` — purely an ordering concern,
+ * not a profile edit (see the feature's constraints).
+ */
+export function reorder(orderedIds: number[]): EmployeeWithDepartmentsRow[] {
+  const db = getDb();
+
+  const existingIds = new Set(
+    (db.prepare('SELECT id FROM employees').all() as { id: number }[]).map((row) => row.id),
+  );
+  const uniqueOrderedIds = new Set(orderedIds);
+  const isValid =
+    uniqueOrderedIds.size === orderedIds.length &&
+    uniqueOrderedIds.size === existingIds.size &&
+    orderedIds.every((id) => existingIds.has(id));
+  if (!isValid) {
+    throw new Error('orderedIds must include every existing employee id exactly once');
+  }
+
+  const setSortOrder = db.prepare('UPDATE employees SET sort_order = ? WHERE id = ?');
+  const runInTransaction = db.transaction(() => {
+    orderedIds.forEach((id, index) => {
+      setSortOrder.run(index, id);
+    });
+  });
+  runInTransaction();
+
+  return listAll();
 }
