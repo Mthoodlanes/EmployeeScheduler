@@ -41,6 +41,23 @@ function detectIsTouchPrimary(): boolean {
   return window.matchMedia('(pointer: coarse)').matches;
 }
 
+/**
+ * Chrome only fires `beforeinstallprompt` once its own engagement heuristic
+ * is satisfied (return visits, time on site) — on a fresh or infrequent
+ * visit `canInstall` can stay false indefinitely even though the browser
+ * genuinely supports installing this app. Chromium browsers (Chrome, Edge)
+ * always expose a manual install affordance regardless (an icon in the
+ * address bar, or a menu item) — this flags those browsers so the desktop
+ * install card can stay visible and fall back to pointing at that manual
+ * path instead of disappearing while waiting on the heuristic. Firefox and
+ * desktop Safari have no install mechanism at all, so they're excluded
+ * rather than shown instructions that don't apply.
+ */
+function detectIsChromiumBased(): boolean {
+  const ua = window.navigator.userAgent;
+  return /chrome|chromium|edg\//i.test(ua) && !/firefox|fxios/i.test(ua);
+}
+
 export interface InstallPromptState {
   /** True once a real Android/desktop-Chrome install prompt is ready to fire. */
   canInstall: boolean;
@@ -48,6 +65,8 @@ export interface InstallPromptState {
   isIos: boolean;
   /** True on a touch-primary device (phone/tablet) — steers "Install App" copy toward "home screen" vs. desktop wording. */
   isTouchPrimary: boolean;
+  /** True on Chrome/Edge — browsers that always have a manual install affordance even before `canInstall` turns true. */
+  isChromiumBased: boolean;
   /** True if already running installed (standalone display mode) — nothing to prompt for. */
   isStandalone: boolean;
   /** Shows the native install prompt. Only meaningful when `canInstall` is true. */
@@ -89,6 +108,7 @@ export function useInstallPrompt(): InstallPromptState {
     canInstall: deferredEvent !== null,
     isIos: detectIsIos(),
     isTouchPrimary: detectIsTouchPrimary(),
+    isChromiumBased: detectIsChromiumBased(),
     isStandalone,
     promptInstall,
   };
