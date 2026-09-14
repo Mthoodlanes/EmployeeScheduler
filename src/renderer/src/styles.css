@@ -298,10 +298,26 @@
   vertical-align: middle;
 }
 
+/*
+ * Groups the signed-in-as tag with the Log out button so they always wrap
+ * together and land on the right of whatever line they end up on — without
+ * this, `.app-nav`'s single flex row (see above) wraps its LAST item alone
+ * onto a new line starting at the row's left edge (i.e. under the brand)
+ * once the window is too narrow to fit everything on one line but still
+ * wide enough to stay off the mobile hamburger-menu breakpoint. `contents`
+ * at that breakpoint (below) restores the previous plain stacked-children
+ * behavior, since `.app-nav-links` itself becomes a real column there.
+ */
+.app-nav-account {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+
 .app-nav-user {
   font-size: var(--text-sm);
   color: var(--color-text-muted);
-  margin-right: var(--space-2);
   white-space: nowrap;
 }
 
@@ -1290,7 +1306,18 @@ table.data-table tbody tr:last-child td {
     margin: var(--space-2) 0 0;
   }
 
-  .app-nav-links > .btn {
+  /* Desktop-only grouping (see the base rule above) — at this breakpoint
+     `.app-nav-links` itself is a real column, so the account tag and Log
+     out button go back to being plain stacked children of it. */
+  .app-nav-account {
+    display: contents;
+  }
+
+  /* Descendant, not child, selector: the Log out button now sits one level
+     deeper inside `.app-nav-account` (which the rule above un-boxes, but
+     doesn't change the DOM depth CSS selectors match against). Still
+     matches the theme toggle button too, which stays a direct child. */
+  .app-nav-links .btn {
     display: flex;
     align-items: center;
     justify-content: center;

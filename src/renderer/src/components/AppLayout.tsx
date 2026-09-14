@@ -110,21 +110,23 @@ export function AppLayout(): React.JSX.Element {
               </>
             )}
           </button>
-          {currentEmployee && (
-            <span className="app-nav-user">
-              {currentEmployee.name} ({ROLE_LABELS[currentEmployee.role]})
-            </span>
-          )}
-          <button
-            type="button"
-            className="btn"
-            onClick={() => {
-              closeMenu();
-              handleLogout();
-            }}
-          >
-            Log out
-          </button>
+          <div className="app-nav-account">
+            {currentEmployee && (
+              <span className="app-nav-user">
+                {currentEmployee.name} ({ROLE_LABELS[currentEmployee.role]})
+              </span>
+            )}
+            <button
+              type="button"
+              className="btn"
+              onClick={() => {
+                closeMenu();
+                handleLogout();
+              }}
+            >
+              Log out
+            </button>
+          </div>
         </div>
       </nav>
       <div className="app-content">
