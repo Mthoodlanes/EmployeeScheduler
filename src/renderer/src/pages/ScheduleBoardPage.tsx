@@ -431,6 +431,7 @@ export function ScheduleBoardPage(): React.JSX.Element {
           className="btn"
           onClick={() => window.print()}
           data-testid="print-schedule-button"
+          title="For best results, choose Landscape orientation in the print dialog"
         >
           <IconPrinter /> Print Schedule
         </button>

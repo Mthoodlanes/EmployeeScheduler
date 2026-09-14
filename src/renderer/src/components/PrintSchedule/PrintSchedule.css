@@ -14,11 +14,15 @@
   display: none;
 }
 
-/* Landscape fits 7 day columns + an employee column far better than portrait. */
-@page {
-  size: landscape;
-  margin: 12mm;
-}
+/* No `@page` override here on purpose (see the "Print Schedule" button's
+   note in ScheduleBoardPage.tsx): an earlier version forced `size: landscape`
+   + a fixed 12mm margin, which "Save as PDF" (a virtual device that accepts
+   any requested page geometry) rendered fine but a real physical printer's
+   driver could reject outright — surfacing as a printer/driver error with
+   no obvious connection to a CSS rule, rather than just clamping to
+   whatever margins/orientation the driver actually supports. Landscape is
+   still the better fit for 7 day columns + an employee column, but the user
+   now picks it themselves in the print dialog rather than it being forced. */
 
 @media print {
   .print-schedule {
