@@ -1,3 +1,4 @@
+import { InstallAppPrompt } from '../components/InstallAppPrompt';
 import type { TimeFormat } from '../utils/formatShiftTime';
 import { useTimeFormat } from '../settings/TimeFormatProvider';
 
@@ -15,6 +16,8 @@ export function SettingsPage(): React.JSX.Element {
       <div className="page-header">
         <h1>Settings</h1>
       </div>
+
+      <InstallAppPrompt />
 
       <div className="card section">
         <h2>Time Format</h2>
