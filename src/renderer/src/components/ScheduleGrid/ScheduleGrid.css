@@ -46,7 +46,24 @@
   padding: var(--space-2) var(--space-3) var(--space-3);
 }
 
+/*
+ * The corner is the one cell that has to stay pinned on BOTH axes — the
+ * day headers only need `top` (they still scroll horizontally with their
+ * own column) and the employee cells below only need `left` (they still
+ * scroll vertically with their own row), but the corner sits at the
+ * intersection of both frozen edges. Without this, scrolling horizontally
+ * carries the corner away with the header row while the employee column
+ * stays pinned, so the still-sticky employee cells end up sitting under
+ * whatever day column's header happens to have scrolled into that
+ * top-left spot — exactly the "detached" look this fixes. Needs a
+ * strictly HIGHER z-index than the day headers (not just equal — with a
+ * tie, paint order falls back to DOM order, and the day headers come
+ * after the corner in markup, so an equal z-index still let a scrolled-
+ * under day header win and paint over the corner).
+ */
 .schedule-grid-corner {
+  left: 0;
+  z-index: 3;
   color: var(--color-text-muted);
   font-weight: var(--font-weight-semibold);
   font-size: var(--text-xs);
@@ -54,6 +71,7 @@
   letter-spacing: 0.04em;
   display: flex;
   align-items: flex-end;
+  border-right: 1px solid var(--color-border-strong);
 }
 
 .schedule-grid-col-header {
@@ -90,6 +108,18 @@
   font-weight: var(--font-weight-semibold);
   padding: var(--space-3);
   border-top: 1px solid var(--color-border);
+  /*
+   * Every other cell's vertical divider comes from the day cell's own
+   * `border-left` (see `.schedule-grid-cell`) — fine when unscrolled, since
+   * that line sits flush against this cell's right edge. But once this
+   * column is pinned and the grid scrolls underneath it, whichever day
+   * cell now happens to be adjacent contributes that line, not this one —
+   * so the divider's presence/position depended on scroll offset instead
+   * of always being there. Drawing it here instead, on the sticky element
+   * itself, keeps a single, consistent seam between the frozen column and
+   * the scrolling content no matter how far the grid is scrolled.
+   */
+  border-right: 1px solid var(--color-border-strong);
   min-width: 160px;
 }
 

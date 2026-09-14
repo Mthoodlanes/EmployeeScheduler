@@ -62,12 +62,6 @@ export function AppLayout(): React.JSX.Element {
           <NavLink to="/time-off/request" className={navLinkClassName} onClick={closeMenu}>
             Request Time Off
           </NavLink>
-          <NavLink to="/notices" className={navLinkClassName} onClick={closeMenu}>
-            Notice Board
-            {unreadStatus?.hasUnread && (
-              <span className="app-nav-badge" data-testid="notice-board-unread-badge" />
-            )}
-          </NavLink>
           {isManager && (
             <>
               <NavLink to="/time-off" end className={navLinkClassName} onClick={closeMenu}>
@@ -87,6 +81,12 @@ export function AppLayout(): React.JSX.Element {
               </NavLink>
             </>
           )}
+          <NavLink to="/notices" className={navLinkClassName} onClick={closeMenu}>
+            Notice Board
+            {unreadStatus?.hasUnread && (
+              <span className="app-nav-badge" data-testid="notice-board-unread-badge" />
+            )}
+          </NavLink>
           <span className="app-nav-spacer" />
           <NavLink to="/account" className={navLinkClassName} onClick={closeMenu}>
             My Account
