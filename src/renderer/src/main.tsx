@@ -4,6 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { initPwaUpdate } from './pwa/pwaUpdate';
 import { App } from './App';
 import { ThemeProvider } from './theme/ThemeProvider';
+import { TimeFormatProvider } from './settings/TimeFormatProvider';
 import { queryClient } from './api/queryClient';
 import './theme/theme.css';
 import './styles.css';
@@ -53,7 +54,9 @@ ReactDOM.createRoot(container).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <App />
+        <TimeFormatProvider>
+          <App />
+        </TimeFormatProvider>
       </ThemeProvider>
     </QueryClientProvider>
   </React.StrictMode>,

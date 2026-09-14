@@ -1,11 +1,16 @@
 import type { ResolvedHours } from '@shared/logic/hoursResolution';
+import { formatClockTime } from '../utils/formatShiftTime';
+import type { TimeFormat } from '../utils/formatShiftTime';
+import { useTimeFormat } from '../settings/TimeFormatProvider';
 
 interface SpecialEventBadgeProps {
   hours: ResolvedHours;
 }
 
-function formatRange(openTime: string | null, closeTime: string | null): string {
-  return openTime && closeTime ? `${openTime}–${closeTime}` : '';
+function formatRange(openTime: string | null, closeTime: string | null, format: TimeFormat): string {
+  return openTime && closeTime
+    ? `${formatClockTime(openTime, format)}–${formatClockTime(closeTime, format)}`
+    : '';
 }
 
 /**
@@ -16,6 +21,7 @@ function formatRange(openTime: string | null, closeTime: string | null): string 
  * "Closed" treatment; a normal day just shows its open-close range.
  */
 export function SpecialEventBadge({ hours }: SpecialEventBadgeProps): React.JSX.Element {
+  const { timeFormat } = useTimeFormat();
   if (hours.isClosed) {
     return (
       <span className="hours-badge hours-badge-closed" data-testid="hours-badge-closed">
@@ -27,7 +33,7 @@ export function SpecialEventBadge({ hours }: SpecialEventBadgeProps): React.JSX.
   if (hours.isOverride) {
     return (
       <span className="hours-badge hours-badge-event" data-testid="hours-badge-event">
-        {hours.label}: {formatRange(hours.openTime, hours.closeTime)}
+        {hours.label}: {formatRange(hours.openTime, hours.closeTime, timeFormat)}
       </span>
     );
   }
@@ -42,7 +48,7 @@ export function SpecialEventBadge({ hours }: SpecialEventBadgeProps): React.JSX.
 
   return (
     <span className="hours-badge" data-testid="hours-badge-default">
-      {formatRange(hours.openTime, hours.closeTime)}
+      {formatRange(hours.openTime, hours.closeTime, timeFormat)}
     </span>
   );
 }

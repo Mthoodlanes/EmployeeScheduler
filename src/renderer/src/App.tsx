@@ -14,6 +14,7 @@ import { TimeOffQueuePage } from './pages/TimeOffQueuePage';
 import { RequestTimeOffPage } from './pages/RequestTimeOffPage';
 import { EmployeesAdminPage } from './pages/EmployeesAdminPage';
 import { NoticeBoardPage } from './pages/NoticeBoardPage';
+import { SettingsPage } from './pages/SettingsPage';
 import { ShiftTemplatesAdminPage } from './pages/ShiftTemplatesAdminPage';
 import { StoreHoursAdminPage } from './pages/StoreHoursAdminPage';
 import { useSessionStore } from './store/useSessionStore';
@@ -91,6 +92,7 @@ export function App(): React.JSX.Element {
               <Route path="/time-off/request" element={<RequestTimeOffPage />} />
               <Route path="/notices" element={<NoticeBoardPage />} />
               <Route path="/account" element={<MyAccountPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
               <Route element={<RequireManager />}>
                 <Route path="/time-off" element={<TimeOffQueuePage />} />
                 <Route path="/schedule" element={<ScheduleBoardPage />} />

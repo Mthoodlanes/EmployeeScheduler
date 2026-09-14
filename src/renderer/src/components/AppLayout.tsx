@@ -91,6 +91,9 @@ export function AppLayout(): React.JSX.Element {
           <NavLink to="/account" className={navLinkClassName} onClick={closeMenu}>
             My Account
           </NavLink>
+          <NavLink to="/settings" className={navLinkClassName} onClick={closeMenu}>
+            Settings
+          </NavLink>
           <button
             type="button"
             className="btn btn-link"

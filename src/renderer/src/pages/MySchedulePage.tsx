@@ -17,6 +17,8 @@ import { isFullDayUnavailability } from '@shared/logic/unavailabilityConflict';
 import { LoadingState } from '../components/EmptyState';
 import { ShiftCard } from '../components/ScheduleGrid/ShiftCard';
 import { SpecialEventBadge } from '../components/SpecialEventBadge';
+import { formatClockTime } from '../utils/formatShiftTime';
+import { useTimeFormat } from '../settings/TimeFormatProvider';
 import { useEmployeePreferences } from '../hooks/useEmployeePreferences';
 import { useAllDepartmentsScheduleWeek } from '../hooks/useMySchedule';
 import { useShiftTemplates } from '../hooks/useShiftTemplates';
@@ -39,6 +41,7 @@ const DEFAULT_SHIFT_COLOR = '#94a3b8';
  */
 export function MySchedulePage(): React.JSX.Element {
   const currentEmployee = useSessionStore((state) => state.currentEmployee);
+  const { timeFormat } = useTimeFormat();
   const [weekStart, setWeekStart] = useState<string>(() => getWeekStart(getTodayIso()));
 
   const { shifts, isLoading: shiftsLoading } = useAllDepartmentsScheduleWeek(weekStart);
@@ -147,7 +150,7 @@ export function MySchedulePage(): React.JSX.Element {
                 >
                   {isFullDayUnavailability(entry)
                     ? 'Unavailable all day'
-                    : `Unavailable ${entry.startTime}–${entry.endTime}`}
+                    : `Unavailable ${formatClockTime(entry.startTime, timeFormat)}–${formatClockTime(entry.endTime, timeFormat)}`}
                 </span>
               ))}
 

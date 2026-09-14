@@ -763,6 +763,19 @@ table.data-table tbody tr:last-child td {
   border-color: var(--color-danger-border);
 }
 
+.hours-summary-total {
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+.hours-summary-overtime {
+  color: var(--color-danger);
+}
+
+.hours-summary-overtime-tag {
+  margin-left: 0.5rem;
+}
+
 /* ==========================================================================
    Tabs (department tabs, time-off status filter)
    ========================================================================== */
@@ -1453,7 +1466,8 @@ table.data-table tbody tr:last-child td {
   .overlap-banner,
   .schedule-grid-wrapper,
   .modal-overlay,
-  .pwa-update-toast {
+  .pwa-update-toast,
+  .hours-summary {
     display: none !important;
   }
 

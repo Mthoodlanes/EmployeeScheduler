@@ -6,6 +6,7 @@ import { AnchorTimeField } from '../components/AnchorTimeField';
 import { EmptyState, LoadingState } from '../components/EmptyState';
 import { IconFolder } from '../components/icons';
 import { formatEndEdge, formatStartEdge } from '../utils/formatShiftTime';
+import { useTimeFormat } from '../settings/TimeFormatProvider';
 import {
   useCreateShiftTemplate,
   useDeactivateShiftTemplate,
@@ -62,6 +63,7 @@ function toFormState(template: ShiftTemplate): TemplateFormState {
 }
 
 export function ShiftTemplatesAdminPage(): React.JSX.Element {
+  const { timeFormat } = useTimeFormat();
   const { data: templates, isLoading, error } = useShiftTemplates();
   const createTemplate = useCreateShiftTemplate();
   const updateTemplate = useUpdateShiftTemplate();
@@ -182,8 +184,8 @@ export function ShiftTemplatesAdminPage(): React.JSX.Element {
                   <td>{template.name}</td>
                   <td>{departmentLabel(template.department)}</td>
                   <td>
-                    {formatStartEdge(template.startAnchor, template.startTime)}–
-                    {formatEndEdge(template.endAnchor, template.endTime)}
+                    {formatStartEdge(template.startAnchor, template.startTime, timeFormat)}–
+                    {formatEndEdge(template.endAnchor, template.endTime, timeFormat)}
                   </td>
                   <td>
                     <span

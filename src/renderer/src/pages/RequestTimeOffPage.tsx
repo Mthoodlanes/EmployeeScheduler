@@ -7,6 +7,8 @@ import { EmptyState, LoadingState } from '../components/EmptyState';
 import { IconCalendarOff } from '../components/icons';
 import { useEmployees } from '../hooks/useEmployees';
 import { useSessionStore } from '../store/useSessionStore';
+import { formatClockTime } from '../utils/formatShiftTime';
+import { useTimeFormat } from '../settings/TimeFormatProvider';
 import {
   useCreateTimeOffForEmployee,
   useCreateTimeOffRequest,
@@ -43,6 +45,7 @@ const EMPTY_UNAVAILABILITY_FORM: UnavailabilityFormState = {
 };
 
 export function RequestTimeOffPage(): React.JSX.Element {
+  const { timeFormat } = useTimeFormat();
   const currentEmployee = useSessionStore((state) => state.currentEmployee);
   const isManager = currentEmployee?.role === 'manager';
   const { data: employees } = useEmployees();
@@ -407,7 +410,11 @@ export function RequestTimeOffPage(): React.JSX.Element {
               {unavailability.map((entry) => (
                 <tr key={entry.id} data-testid={`my-unavailability-row-${entry.id}`}>
                   <td>{DAY_OF_WEEK_LABELS[entry.dayOfWeek]}</td>
-                  <td>{isFullDayUnavailability(entry) ? 'All day' : `${entry.startTime}–${entry.endTime}`}</td>
+                  <td>
+                    {isFullDayUnavailability(entry)
+                      ? 'All day'
+                      : `${formatClockTime(entry.startTime, timeFormat)}–${formatClockTime(entry.endTime, timeFormat)}`}
+                  </td>
                   <td>{entry.reason ?? '—'}</td>
                   <td>
                     <span

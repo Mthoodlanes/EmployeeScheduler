@@ -30,6 +30,7 @@ import type { CustomShiftInput } from '../components/ScheduleGrid/AssignShiftDia
 import { AssignShiftDialog } from '../components/ScheduleGrid/AssignShiftDialog';
 import { EditShiftDialog } from '../components/ScheduleGrid/EditShiftDialog';
 import { ScheduleGrid } from '../components/ScheduleGrid/Grid';
+import { HoursSummary } from '../components/ScheduleGrid/HoursSummary';
 import { useEmployeePreferences } from '../hooks/useEmployeePreferences';
 import { useEmployees, useReorderEmployees } from '../hooks/useEmployees';
 import {
@@ -528,6 +529,12 @@ export function ScheduleBoardPage(): React.JSX.Element {
           setEditTarget(shift);
         }}
         onReorderDepartment={handleReorderDepartment}
+      />
+
+      <HoursSummary
+        employees={departmentEmployees}
+        shifts={shifts ?? []}
+        getResolvedShiftTimes={getResolvedShiftTimes}
       />
 
       <PrintSchedule

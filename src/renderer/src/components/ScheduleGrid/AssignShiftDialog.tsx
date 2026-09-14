@@ -3,9 +3,14 @@ import type { EmployeeUnavailability, EndAnchor, ShiftTemplate, StartAnchor } fr
 import { isFullDayUnavailability } from '@shared/logic/unavailabilityConflict';
 import { AnchorTimeField } from '../AnchorTimeField';
 import { Modal } from '../Modal';
+import { formatClockTime } from '../../utils/formatShiftTime';
+import type { TimeFormat } from '../../utils/formatShiftTime';
+import { useTimeFormat } from '../../settings/TimeFormatProvider';
 
-function formatUnavailabilityWindow(entry: EmployeeUnavailability): string {
-  return isFullDayUnavailability(entry) ? 'All day' : `${entry.startTime}–${entry.endTime}`;
+function formatUnavailabilityWindow(entry: EmployeeUnavailability, format: TimeFormat): string {
+  return isFullDayUnavailability(entry)
+    ? 'All day'
+    : `${formatClockTime(entry.startTime, format)}–${formatClockTime(entry.endTime, format)}`;
 }
 
 export interface CustomShiftInput {
@@ -41,6 +46,7 @@ export function AssignShiftDialog({
   onAssignCustom,
   onClose,
 }: AssignShiftDialogProps): React.JSX.Element {
+  const { timeFormat } = useTimeFormat();
   const [mode, setMode] = useState<Mode>('custom');
   const [startAnchor, setStartAnchor] = useState<StartAnchor>('fixed');
   const [startTime, setStartTime] = useState('09:00');
@@ -74,7 +80,7 @@ export function AssignShiftDialog({
           <ul>
             {unavailability.map((entry) => (
               <li key={entry.id} data-testid={`unavailability-entry-${entry.id}`}>
-                {formatUnavailabilityWindow(entry)}
+                {formatUnavailabilityWindow(entry, timeFormat)}
                 {entry.reason ? ` — ${entry.reason}` : ''}
               </li>
             ))}

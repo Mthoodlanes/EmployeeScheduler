@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
 import type { ScheduledShift } from '@shared/types/domain';
 import type { PreferenceMatchResult } from '@shared/logic/preferenceMatch';
-import { formatEndEdge, formatStartEdge } from '../../utils/formatShiftTime';
+import { formatClockTime, formatEndEdge, formatStartEdge } from '../../utils/formatShiftTime';
+import { useTimeFormat } from '../../settings/TimeFormatProvider';
 import { PreferenceIndicator } from '../PreferenceIndicator';
 import { SalariedTag } from '../SalariedTag';
 
@@ -28,10 +29,15 @@ export function ShiftCard({
   templateName,
   onClick,
 }: ShiftCardProps): React.JSX.Element {
+  const { timeFormat } = useTimeFormat();
   const isAnchored = shift.startAnchor !== 'fixed' || shift.endAnchor !== 'fixed';
-  const startLabel = formatStartEdge(shift.startAnchor, shift.startTime);
-  const endLabel = formatEndEdge(shift.endAnchor, shift.endTime);
+  const startLabel = formatStartEdge(shift.startAnchor, shift.startTime, timeFormat);
+  const endLabel = formatEndEdge(shift.endAnchor, shift.endTime, timeFormat);
   const isResolved = resolvedStartTime !== null && resolvedEndTime !== null;
+  const resolvedNote =
+    resolvedStartTime !== null && resolvedEndTime !== null
+      ? `Resolves to ${formatClockTime(resolvedStartTime, timeFormat)}–${formatClockTime(resolvedEndTime, timeFormat)}`
+      : 'Store closed this day — time not set';
 
   return (
     <button
@@ -54,9 +60,7 @@ export function ShiftCard({
               : `shift-card-anchor-unresolved-${shift.id}`
           }
         >
-          {isResolved
-            ? `Resolves to ${resolvedStartTime}–${resolvedEndTime}`
-            : 'Store closed this day — time not set'}
+          {resolvedNote}
         </span>
       )}
       {(isSalaried || preferenceMatch !== 'none') && (

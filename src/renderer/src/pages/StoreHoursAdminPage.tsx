@@ -12,6 +12,8 @@ import {
   useUpdateSpecialEvent,
 } from '../hooks/useSpecialEvents';
 import { useStoreHours, useUpsertStoreHours } from '../hooks/useStoreHours';
+import { formatClockTime } from '../utils/formatShiftTime';
+import { useTimeFormat } from '../settings/TimeFormatProvider';
 
 interface DayRowState {
   openTime: string;
@@ -205,6 +207,7 @@ function WeeklyHoursCard(): React.JSX.Element {
 
 /** Manager-only special-event override CRUD: add/edit a one-off date's hours (or full closure) plus a required label. */
 function SpecialEventsCard(): React.JSX.Element {
+  const { timeFormat } = useTimeFormat();
   const { data: specialEvents, isLoading, error } = useSpecialEvents();
   const createEvent = useCreateSpecialEvent();
   const updateEvent = useUpdateSpecialEvent();
@@ -293,7 +296,9 @@ function SpecialEventsCard(): React.JSX.Element {
                   <td>{eventItem.eventDate}</td>
                   <td>{eventItem.label}</td>
                   <td>
-                    {eventItem.isClosed ? 'Closed' : `${eventItem.openTime}–${eventItem.closeTime}`}
+                    {eventItem.isClosed || !eventItem.openTime || !eventItem.closeTime
+                      ? 'Closed'
+                      : `${formatClockTime(eventItem.openTime, timeFormat)}–${formatClockTime(eventItem.closeTime, timeFormat)}`}
                   </td>
                   <td>
                     <button

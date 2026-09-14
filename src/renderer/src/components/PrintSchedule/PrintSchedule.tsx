@@ -4,6 +4,9 @@ import type { EmployeeWithDepartments } from '@shared/types/ipc';
 import { formatWeekLabel } from '@shared/logic/weekRange';
 import { resolveShiftTimeFromHours } from '@shared/logic/hoursResolution';
 import type { ResolvedHours } from '@shared/logic/hoursResolution';
+import { formatClockTime } from '../../utils/formatShiftTime';
+import type { TimeFormat } from '../../utils/formatShiftTime';
+import { useTimeFormat } from '../../settings/TimeFormatProvider';
 import type { DayColumn } from '../ScheduleGrid/Grid';
 
 interface PrintScheduleProps {
@@ -16,14 +19,14 @@ interface PrintScheduleProps {
 }
 
 /** The day column header's effective store hours, as plain printable text (no color-only signal — see PrintSchedule.css). */
-function formatDayHours(hours: ResolvedHours): string {
+function formatDayHours(hours: ResolvedHours, format: TimeFormat): string {
   if (hours.isClosed) {
     return hours.label ? `Closed — ${hours.label}` : 'Closed';
   }
   if (!hours.openTime || !hours.closeTime) {
     return 'Hours not set';
   }
-  const range = `${hours.openTime}–${hours.closeTime}`;
+  const range = `${formatClockTime(hours.openTime, format)}–${formatClockTime(hours.closeTime, format)}`;
   return hours.isOverride && hours.label ? `${range} (${hours.label})` : range;
 }
 
@@ -67,6 +70,7 @@ export function PrintSchedule({
   shifts,
   templatesById,
 }: PrintScheduleProps): React.JSX.Element {
+  const { timeFormat } = useTimeFormat();
   return (
     <div className="print-schedule">
       <div className="print-schedule-header">
@@ -86,7 +90,7 @@ export function PrintSchedule({
               {days.map((day) => (
                 <th key={day.date}>
                   <div className="print-day-label">{day.label}</div>
-                  <div className="print-day-hours">{formatDayHours(day.hours)}</div>
+                  <div className="print-day-hours">{formatDayHours(day.hours, timeFormat)}</div>
                 </th>
               ))}
             </tr>
@@ -120,7 +124,9 @@ export function PrintSchedule({
                         return (
                           <div className="print-shift" key={shift.id}>
                             <div className="print-shift-time">
-                              {start && end ? `${start}–${end}` : 'Time not set'}
+                              {start && end
+                                ? `${formatClockTime(start, timeFormat)}–${formatClockTime(end, timeFormat)}`
+                                : 'Time not set'}
                             </div>
                             {labels.length > 0 && (
                               <div className="print-shift-labels">{labels.join(' · ')}</div>

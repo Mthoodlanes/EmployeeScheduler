@@ -7,6 +7,8 @@ import { Modal } from '../components/Modal';
 import { useEmployees } from '../hooks/useEmployees';
 import { useAllTimeOffRequests, useDecideTimeOffRequest } from '../hooks/useTimeOff';
 import { useAllUnavailability, useDecideUnavailability } from '../hooks/useUnavailability';
+import { formatClockTime } from '../utils/formatShiftTime';
+import { useTimeFormat } from '../settings/TimeFormatProvider';
 
 type QueueKind = 'timeOff' | 'unavailability';
 
@@ -29,6 +31,7 @@ interface DenyTarget {
 }
 
 export function TimeOffQueuePage(): React.JSX.Element {
+  const { timeFormat } = useTimeFormat();
   const [queueKind, setQueueKind] = useState<QueueKind>('timeOff');
 
   const { data: requests, isLoading, error } = useAllTimeOffRequests();
@@ -285,7 +288,7 @@ export function TimeOffQueuePage(): React.JSX.Element {
                     <td>
                       {isFullDayUnavailability(request)
                         ? 'All day'
-                        : `${request.startTime}–${request.endTime}`}
+                        : `${formatClockTime(request.startTime, timeFormat)}–${formatClockTime(request.endTime, timeFormat)}`}
                     </td>
                     <td>{request.reason ?? '—'}</td>
                     <td>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { ScheduledShift } from '@shared/types/domain';
-import { formatEndEdge, formatStartEdge } from '../../utils/formatShiftTime';
+import { formatClockTime, formatEndEdge, formatStartEdge } from '../../utils/formatShiftTime';
+import { useTimeFormat } from '../../settings/TimeFormatProvider';
 import { Modal } from '../Modal';
 
 interface EditShiftDialogProps {
@@ -29,9 +30,14 @@ export function EditShiftDialog({
   onRemove,
   onClose,
 }: EditShiftDialogProps): React.JSX.Element {
+  const { timeFormat } = useTimeFormat();
   const [startTime, setStartTime] = useState(shift.startTime ?? resolvedStartTime ?? '');
   const [endTime, setEndTime] = useState(shift.endTime ?? resolvedEndTime ?? '');
   const isAnchored = shift.startAnchor !== 'fixed' || shift.endAnchor !== 'fixed';
+  const resolvedStartLabel =
+    resolvedStartTime !== null ? formatClockTime(resolvedStartTime, timeFormat) : '?';
+  const resolvedEndLabel =
+    resolvedEndTime !== null ? formatClockTime(resolvedEndTime, timeFormat) : '?';
 
   return (
     <Modal testId="edit-shift-dialog">
@@ -47,9 +53,9 @@ export function EditShiftDialog({
       )}
       {isAnchored && (
         <p className="shift-template-note" data-testid="edit-shift-anchor-note">
-          Currently {formatStartEdge(shift.startAnchor, shift.startTime)}–
-          {formatEndEdge(shift.endAnchor, shift.endTime)}, resolving to {resolvedStartTime ?? '?'}–
-          {resolvedEndTime ?? '?'} today. Saving below sets a fixed time instead.
+          Currently {formatStartEdge(shift.startAnchor, shift.startTime, timeFormat)}–
+          {formatEndEdge(shift.endAnchor, shift.endTime, timeFormat)}, resolving to{' '}
+          {resolvedStartLabel}–{resolvedEndLabel} today. Saving below sets a fixed time instead.
         </p>
       )}
       {error && (

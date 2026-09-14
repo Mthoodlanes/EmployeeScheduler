@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ShiftCard } from '../../../src/renderer/src/components/ScheduleGrid/ShiftCard';
+import { TimeFormatProvider } from '../../../src/renderer/src/settings/TimeFormatProvider';
 import type { ScheduledShift } from '../../../src/shared/types/domain';
 
 const SHIFT: ScheduledShift = {
@@ -19,9 +20,14 @@ const SHIFT: ScheduledShift = {
   updatedAt: '2026-01-01T00:00:00.000Z',
 };
 
+/** `ShiftCard` reads the time-format setting via `useTimeFormat()`, which requires a `TimeFormatProvider` ancestor — this wraps every render the same way `main.tsx` does. */
+function renderShiftCard(ui: React.ReactElement): ReturnType<typeof render> {
+  return render(<TimeFormatProvider>{ui}</TimeFormatProvider>);
+}
+
 describe('ShiftCard', () => {
   it('shows the Flexible tag when the assigned employee is salaried', () => {
-    render(
+    renderShiftCard(
       <ShiftCard
         shift={SHIFT}
         color="#7C3AED"
@@ -38,7 +44,7 @@ describe('ShiftCard', () => {
   });
 
   it('does not show the Flexible tag for a non-salaried employee', () => {
-    render(
+    renderShiftCard(
       <ShiftCard
         shift={SHIFT}
         color="#7C3AED"
@@ -55,7 +61,7 @@ describe('ShiftCard', () => {
   });
 
   it('renders no preference indicator when there is no stated preference', () => {
-    render(
+    renderShiftCard(
       <ShiftCard
         shift={SHIFT}
         color="#7C3AED"
@@ -72,7 +78,7 @@ describe('ShiftCard', () => {
   });
 
   it('renders a "matches" preference indicator', () => {
-    render(
+    renderShiftCard(
       <ShiftCard
         shift={SHIFT}
         color="#7C3AED"
@@ -90,7 +96,7 @@ describe('ShiftCard', () => {
   });
 
   it('renders an "outside" preference indicator', () => {
-    render(
+    renderShiftCard(
       <ShiftCard
         shift={SHIFT}
         color="#7C3AED"
@@ -108,7 +114,7 @@ describe('ShiftCard', () => {
   });
 
   it('shows the shift time range and the edited badge when overridden', () => {
-    render(
+    renderShiftCard(
       <ShiftCard
         shift={{ ...SHIFT, isOverride: true }}
         color="#7C3AED"
@@ -126,7 +132,7 @@ describe('ShiftCard', () => {
   });
 
   it('shows no template badge for a from-scratch custom-time shift with no template and no override', () => {
-    render(
+    renderShiftCard(
       <ShiftCard
         shift={{ ...SHIFT, templateId: null, isOverride: false }}
         color="#7C3AED"
@@ -144,7 +150,7 @@ describe('ShiftCard', () => {
   });
 
   it('shows the template name badge for a shift assigned from a standard template', () => {
-    render(
+    renderShiftCard(
       <ShiftCard
         shift={{ ...SHIFT, templateId: 5, isOverride: false }}
         color="#7C3AED"
@@ -168,7 +174,7 @@ describe('ShiftCard', () => {
       endTime: null,
       endAnchor: 'close',
     };
-    render(
+    renderShiftCard(
       <ShiftCard
         shift={anchoredShift}
         color="#7C3AED"
@@ -194,7 +200,7 @@ describe('ShiftCard', () => {
       endTime: null,
       endAnchor: 'close',
     };
-    render(
+    renderShiftCard(
       <ShiftCard
         shift={anchoredShift}
         color="#7C3AED"
