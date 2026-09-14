@@ -106,6 +106,23 @@ function statusForError(error: unknown): number {
 }
 
 /**
+ * Drizzle wraps a failed query in a `DrizzleQueryError` whose own `.message`
+ * is just `Failed query: <sql>\nparams: <params>` — the actual reason (a
+ * constraint violation, a missing table, etc.) lives on `.cause`, the
+ * underlying driver error, which would otherwise never reach the client or
+ * the log line below.
+ */
+function messageForError(error: unknown): string {
+  if (!(error instanceof Error)) {
+    return 'Unknown error';
+  }
+  if (error.cause instanceof Error) {
+    return `${error.message}: ${error.cause.message}`;
+  }
+  return error.message;
+}
+
+/**
  * Wraps a route handler body: on success responds `{ok:true,data}` with
  * `successStatus` (default `200`; pass `201` for a create endpoint); on a
  * thrown error, maps it to a status via `statusForError` above and responds
@@ -122,13 +139,14 @@ export function handleRoute(
       res.status(successStatus).json({ ok: true, data });
     } catch (error) {
       const status = statusForError(error);
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      if (status === 500) {
-        // Milestone 25: every other status here is an expected, hand-thrown
-        // outcome (validation failure, not-found, wrong role) that doesn't
-        // need log noise — a bare non-Error throw reaching this branch is
-        // the one case genuinely worth surfacing for basic error monitoring
-        // (visible in Render's log dashboard).
+      const message = messageForError(error);
+      // Milestone 25: a plain hand-thrown Error (validation failure,
+      // not-found, wrong role) needs no log noise. A bare non-Error throw
+      // (status 500) or an Error with a `.cause` (an infra-level failure like
+      // `DrizzleQueryError` — see `messageForError` above) is always worth
+      // surfacing for basic error monitoring (visible in Render's log
+      // dashboard), regardless of which status it got mapped to.
+      if (status === 500 || (error instanceof Error && error.cause instanceof Error)) {
         // eslint-disable-next-line no-console -- see comment above
         console.error(`Unexpected error on ${req.method} ${req.originalUrl}:`, error);
       }
