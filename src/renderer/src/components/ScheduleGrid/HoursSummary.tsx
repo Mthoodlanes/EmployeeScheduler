@@ -2,8 +2,13 @@ import type { ScheduledShift } from '@shared/types/domain';
 import type { EmployeeWithDepartments } from '@shared/types/ipc';
 import { shiftDurationMinutes } from '@shared/logic/shiftMath';
 
-/** Standard US weekly overtime threshold — a total at or past this gets flagged. */
-const OVERTIME_HOURS_THRESHOLD = 40;
+/**
+ * Standard US weekly overtime threshold, in minutes — a total STRICTLY PAST
+ * this gets flagged; exactly 40:00 is still a normal full week, not
+ * overtime. Compared in minutes rather than `hours >= 40` to keep the check
+ * an exact integer comparison rather than a floating-point division.
+ */
+const OVERTIME_MINUTES_THRESHOLD = 40 * 60;
 
 interface HoursSummaryProps {
   /** The currently selected department's active employees, already in Schedule Board row order. */
@@ -62,7 +67,7 @@ export function HoursSummary({
         <tbody>
           {hourlyEmployees.map((employee) => {
             const totalMinutes = minutesByEmployeeId.get(employee.id) ?? 0;
-            const isOvertime = totalMinutes / 60 >= OVERTIME_HOURS_THRESHOLD;
+            const isOvertime = totalMinutes > OVERTIME_MINUTES_THRESHOLD;
             return (
               <tr key={employee.id} data-testid={`hours-summary-row-${employee.id}`}>
                 <td>{employee.name}</td>
