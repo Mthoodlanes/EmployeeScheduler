@@ -77,6 +77,7 @@ const TABLES_IN_ANY_ORDER = [
   'store_hours',
   'special_event_overrides',
   'notices',
+  'schedule_publications',
 ];
 
 /**

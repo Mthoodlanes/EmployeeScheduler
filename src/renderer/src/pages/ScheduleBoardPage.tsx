@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { DEPARTMENTS } from '@shared/types/domain';
+import { DEPARTMENT_LABELS, DEPARTMENTS } from '@shared/types/domain';
 import type {
   Department,
   EmployeeUnavailability,
@@ -23,7 +23,7 @@ import { findUnavailabilityConflicts, findUnavailabilityForDay } from '@shared/l
 import { mergeReorderedSubset } from '@shared/logic/employeeOrder';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { DepartmentTabs } from '../components/DepartmentTabs';
-import { IconPrinter } from '../components/icons';
+import { IconCheckCircle, IconPrinter } from '../components/icons';
 import { OverlapBanner } from '../components/OverlapBanner';
 import { PrintSchedule } from '../components/PrintSchedule/PrintSchedule';
 import type { CustomShiftInput } from '../components/ScheduleGrid/AssignShiftDialog';
@@ -38,8 +38,11 @@ import {
   useAssignShiftTemplate,
   useCarryOverWeek,
   useOverrideShift,
+  usePublishWeek,
   useRemoveShift,
   useScheduleWeek,
+  useUnpublishWeek,
+  useWeekPublication,
 } from '../hooks/useSchedule';
 import { useShiftTemplates } from '../hooks/useShiftTemplates';
 import { useSpecialEvents } from '../hooks/useSpecialEvents';
@@ -81,6 +84,7 @@ export function ScheduleBoardPage(): React.JSX.Element {
   const [carryOverMessage, setCarryOverMessage] = useState<
     { kind: 'success' | 'error'; text: string } | null
   >(null);
+  const [confirmUnpublish, setConfirmUnpublish] = useState(false);
 
   const { data: employees } = useEmployees();
   const { data: templates } = useShiftTemplates();
@@ -89,6 +93,7 @@ export function ScheduleBoardPage(): React.JSX.Element {
   const { data: storeHours } = useStoreHours();
   const { data: specialEvents } = useSpecialEvents();
   const { data: approvedUnavailability } = useApprovedUnavailability();
+  const { data: publication } = useWeekPublication(department, weekStart);
   const { overlaps } = useWeekOverlaps(weekStart);
 
   const assignMutation = useAssignShiftTemplate(department, weekStart);
@@ -96,6 +101,8 @@ export function ScheduleBoardPage(): React.JSX.Element {
   const overrideMutation = useOverrideShift(department, weekStart);
   const removeMutation = useRemoveShift(department, weekStart);
   const reorderEmployeesMutation = useReorderEmployees();
+  const publishMutation = usePublishWeek(department, weekStart);
+  const unpublishMutation = useUnpublishWeek(department, weekStart);
   const carryOverMutation = useCarryOverWeek(department, weekStart);
 
   const maxWeekStart = useMemo(() => shiftWeek(getWeekStart(getTodayIso()), MAX_WEEKS_AHEAD), []);
@@ -400,6 +407,20 @@ export function ScheduleBoardPage(): React.JSX.Element {
     }
   };
 
+  const handlePublish = (): void => {
+    publishMutation.mutate();
+  };
+
+  const handleUnpublish = async (): Promise<void> => {
+    await unpublishMutation.mutateAsync();
+    setConfirmUnpublish(false);
+  };
+
+  const publishedByName = publication
+    ? ((employees ?? []).find((employee) => employee.id === publication.publishedByEmployeeId)
+        ?.name ?? 'a manager')
+    : null;
+
   const assignTargetEmployee = assignTarget
     ? departmentEmployees.find((employee) => employee.id === assignTarget.employeeId)
     : undefined;
@@ -426,15 +447,54 @@ export function ScheduleBoardPage(): React.JSX.Element {
     <div className="page">
       <div className="page-header">
         <h1>Schedule Board</h1>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => window.print()}
-          data-testid="print-schedule-button"
-          title="For best results, choose Landscape orientation in the print dialog"
-        >
-          <IconPrinter /> Print Schedule
-        </button>
+        <div className="schedule-publish-header">
+          <div className="schedule-publish-status">
+            {publication ? (
+              <>
+                <span className="tag tag-success" data-testid="publish-status-tag">
+                  Published
+                </span>
+                <span className="schedule-publish-meta">
+                  by {publishedByName} on {new Date(publication.publishedAt).toLocaleString()}
+                </span>
+              </>
+            ) : (
+              <span className="tag tag-warning" data-testid="publish-status-tag">
+                Not published
+              </span>
+            )}
+          </div>
+          {publication ? (
+            <button
+              type="button"
+              className="btn"
+              data-testid="unpublish-schedule-button"
+              disabled={unpublishMutation.isPending}
+              onClick={() => setConfirmUnpublish(true)}
+            >
+              Unpublish
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="btn btn-primary"
+              data-testid="publish-schedule-button"
+              disabled={publishMutation.isPending}
+              onClick={handlePublish}
+            >
+              <IconCheckCircle /> Publish Schedule
+            </button>
+          )}
+          <button
+            type="button"
+            className="btn"
+            onClick={() => window.print()}
+            data-testid="print-schedule-button"
+            title="For best results, choose Landscape orientation in the print dialog"
+          >
+            <IconPrinter /> Print Schedule
+          </button>
+        </div>
       </div>
 
       <OverlapBanner warnings={overlaps} />
@@ -546,6 +606,16 @@ export function ScheduleBoardPage(): React.JSX.Element {
         shifts={shifts ?? []}
         templatesById={templatesById}
       />
+
+      {confirmUnpublish && (
+        <ConfirmDialog
+          title="Unpublish this week's schedule?"
+          message={`Employees will no longer see ${DEPARTMENT_LABELS[department]}'s schedule for ${formatWeekLabel(weekStart)} on "My Schedule" until you publish it again.`}
+          confirmLabel="Unpublish"
+          onConfirm={handleUnpublish}
+          onCancel={() => setConfirmUnpublish(false)}
+        />
+      )}
 
       {timeOffOverrideTarget && timeOffOverrideEmployee && (
         <ConfirmDialog

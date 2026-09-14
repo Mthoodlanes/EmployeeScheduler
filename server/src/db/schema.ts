@@ -146,6 +146,36 @@ export const scheduledShifts = pgTable(
   ],
 );
 
+// --- schedule_publications -----------------------------------------------
+// A department's week is invisible on employees' "My Schedule" until a
+// manager explicitly publishes it here; the Schedule Board itself always
+// shows everything to a manager regardless of publication state (see
+// `scheduledShiftService.listWeek`'s actor-based gating). One row per
+// (department, week_start) pair — publishing again (e.g. after editing an
+// already-published week) just re-stamps who/when via upsert rather than
+// growing a history of rows, since only the current publication state
+// matters to the gate.
+export const schedulePublications = pgTable(
+  'schedule_publications',
+  {
+    id: integer('id').generatedAlwaysAsIdentity().primaryKey(),
+    department: departmentEnum('department').notNull(),
+    // Monday of the published week, YYYY-MM-DD — same string shape as
+    // `scheduled_shifts.shift_date` and every week-scoped query in this app.
+    weekStart: text('week_start').notNull(),
+    publishedByEmployeeId: integer('published_by_employee_id')
+      .notNull()
+      .references(() => employees.id),
+    publishedAt: timestamp('published_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique('schedule_publications_department_week_start_key').on(
+      table.department,
+      table.weekStart,
+    ),
+  ],
+);
+
 // --- time_off_requests --------------------------------------------------
 // Migration 001, extended by 003 (decision_note).
 export const timeOffRequests = pgTable(

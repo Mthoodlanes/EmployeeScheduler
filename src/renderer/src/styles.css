@@ -339,6 +339,25 @@
   margin-bottom: 0;
 }
 
+.schedule-publish-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.schedule-publish-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.schedule-publish-meta {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
 .section {
   margin-bottom: var(--space-5);
 }

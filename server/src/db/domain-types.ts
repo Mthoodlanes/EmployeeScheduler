@@ -90,6 +90,15 @@ export interface ScheduledShift {
   updatedAt: string;
 }
 
+/** A department's week becomes visible on "My Schedule" once this exists for it. */
+export interface SchedulePublication {
+  id: number;
+  department: Department;
+  weekStart: string;
+  publishedByEmployeeId: number;
+  publishedAt: string;
+}
+
 export type ApprovalStatus = 'pending' | 'approved' | 'denied';
 export type TimeOffStatus = ApprovalStatus;
 export type UnavailabilityStatus = ApprovalStatus;

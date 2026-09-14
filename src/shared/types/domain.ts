@@ -100,6 +100,20 @@ export interface ScheduledShift {
 }
 
 /**
+ * A department's `weekStart` week only shows up on an employee's "My
+ * Schedule" once a manager has published it — see `ScheduleBoardPage`'s
+ * Publish Schedule button. The Schedule Board itself always shows a
+ * manager the full working draft regardless of this.
+ */
+export interface SchedulePublication {
+  id: number;
+  department: Department;
+  weekStart: string; // YYYY-MM-DD, Monday
+  publishedByEmployeeId: number;
+  publishedAt: string;
+}
+
+/**
  * Shared by every manager-approved employee request in the app (time off,
  * unavailability) — see `approvalStateMachine.ts` for the transition rules.
  */

@@ -74,6 +74,15 @@ test('employee sees their own assigned shift, an off day, and approved time off 
   await page.getByTestId('assign-shift-dialog').getByText(templateName, { exact: true }).click();
   await expect(page.getByTestId('assign-shift-dialog')).toBeHidden();
 
+  // A shift only shows up on "My Schedule" once its department/week is
+  // published — publish Front Desk's current week so the assertions below
+  // (made as the employee) can actually see it.
+  const publishTag = page.getByTestId('publish-status-tag');
+  if ((await publishTag.textContent()) !== 'Published') {
+    await page.getByTestId('publish-schedule-button').click();
+    await expect(publishTag).toHaveText('Published');
+  }
+
   // Submit-on-behalf approved time off for the employee on this week's Sunday.
   await page.getByRole('link', { name: 'Request Time Off' }).click();
   await page.locator('#timeoff-on-behalf-of').selectOption({ label: employeeName });

@@ -26,6 +26,35 @@ export function useScheduleWeek(department: Department, weekStart: string) {
   });
 }
 
+function publicationKey(department: Department, weekStart: string) {
+  return ['schedulePublication', department, weekStart] as const;
+}
+
+export function useWeekPublication(department: Department, weekStart: string) {
+  return useQuery({
+    queryKey: publicationKey(department, weekStart),
+    queryFn: () => api.scheduledShifts.getPublication({ department, weekStart }),
+  });
+}
+
+export function usePublishWeek(department: Department, weekStart: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.scheduledShifts.publish({ department, weekStart }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: publicationKey(department, weekStart) }),
+  });
+}
+
+export function useUnpublishWeek(department: Department, weekStart: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => api.scheduledShifts.unpublish({ department, weekStart }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: publicationKey(department, weekStart) }),
+  });
+}
+
 export function useAssignShiftTemplate(department: Department, weekStart: string) {
   const queryClient = useQueryClient();
   return useMutation({

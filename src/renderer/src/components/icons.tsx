@@ -221,6 +221,26 @@ export function IconInbox(): React.JSX.Element {
   );
 }
 
+/** "Publish Schedule" action on the Schedule Board. */
+export function IconCheckCircle(): React.JSX.Element {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="18"
+      height="18"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M8.5 12.3l2.4 2.4 4.6-5.4" />
+    </svg>
+  );
+}
+
 /** "Print Schedule" action on the Schedule Board (Milestone 10). */
 export function IconPrinter(): React.JSX.Element {
   return (

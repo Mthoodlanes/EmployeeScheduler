@@ -26,6 +26,7 @@ import type {
   Notice,
   Role,
   ScheduledShift,
+  SchedulePublication,
   ShiftTemplate,
   SpecialEventOverride,
   StartAnchor,
@@ -189,6 +190,28 @@ export interface ScheduledShiftsListWeekRequest {
   weekStart: string;
 }
 export type ScheduledShiftsListWeekResponse = ScheduledShift[];
+
+// ---- scheduledShifts:getPublication ----
+export interface ScheduledShiftsGetPublicationRequest {
+  department: Department;
+  /** Monday of the target week, YYYY-MM-DD. */
+  weekStart: string;
+}
+export type ScheduledShiftsGetPublicationResponse = SchedulePublication | null;
+
+// ---- scheduledShifts:publish ----
+export interface ScheduledShiftsPublishRequest {
+  department: Department;
+  weekStart: string;
+}
+export type ScheduledShiftsPublishResponse = SchedulePublication;
+
+// ---- scheduledShifts:unpublish ----
+export interface ScheduledShiftsUnpublishRequest {
+  department: Department;
+  weekStart: string;
+}
+export type ScheduledShiftsUnpublishResponse = { success: true };
 
 // ---- scheduledShifts:assignTemplate ----
 export interface ScheduledShiftsAssignTemplateRequest {

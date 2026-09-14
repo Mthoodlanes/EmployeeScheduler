@@ -65,12 +65,18 @@ import type {
   ScheduledShiftsAssignTemplateResponse,
   ScheduledShiftsCarryOverWeekRequest,
   ScheduledShiftsCarryOverWeekResponse,
+  ScheduledShiftsGetPublicationRequest,
+  ScheduledShiftsGetPublicationResponse,
   ScheduledShiftsListWeekRequest,
   ScheduledShiftsListWeekResponse,
   ScheduledShiftsOverrideRequest,
   ScheduledShiftsOverrideResponse,
+  ScheduledShiftsPublishRequest,
+  ScheduledShiftsPublishResponse,
   ScheduledShiftsRemoveRequest,
   ScheduledShiftsRemoveResponse,
+  ScheduledShiftsUnpublishRequest,
+  ScheduledShiftsUnpublishResponse,
   ShiftTemplatesCreateRequest,
   ShiftTemplatesCreateResponse,
   ShiftTemplatesDeactivateRequest,
@@ -170,6 +176,13 @@ export interface Api {
   };
   scheduledShifts: {
     listWeek: (request: ScheduledShiftsListWeekRequest) => Promise<ScheduledShiftsListWeekResponse>;
+    getPublication: (
+      request: ScheduledShiftsGetPublicationRequest,
+    ) => Promise<ScheduledShiftsGetPublicationResponse>;
+    publish: (request: ScheduledShiftsPublishRequest) => Promise<ScheduledShiftsPublishResponse>;
+    unpublish: (
+      request: ScheduledShiftsUnpublishRequest,
+    ) => Promise<ScheduledShiftsUnpublishResponse>;
     assignTemplate: (
       request: ScheduledShiftsAssignTemplateRequest,
     ) => Promise<ScheduledShiftsAssignTemplateResponse>;
@@ -406,6 +419,22 @@ const scheduledShifts: Api['scheduledShifts'] = {
       `/scheduled-shifts${toQuery({
         department: listWeekRequest.department,
         weekStart: listWeekRequest.weekStart,
+      })}`,
+    ),
+  getPublication: (getPublicationRequest: ScheduledShiftsGetPublicationRequest) =>
+    get<ScheduledShiftsGetPublicationResponse>(
+      `/scheduled-shifts/publication${toQuery({
+        department: getPublicationRequest.department,
+        weekStart: getPublicationRequest.weekStart,
+      })}`,
+    ),
+  publish: (publishRequest: ScheduledShiftsPublishRequest) =>
+    post<ScheduledShiftsPublishResponse>('/scheduled-shifts/publication', publishRequest),
+  unpublish: (unpublishRequest: ScheduledShiftsUnpublishRequest) =>
+    del<ScheduledShiftsUnpublishResponse>(
+      `/scheduled-shifts/publication${toQuery({
+        department: unpublishRequest.department,
+        weekStart: unpublishRequest.weekStart,
       })}`,
     ),
   assignTemplate: (assignRequest: ScheduledShiftsAssignTemplateRequest) =>

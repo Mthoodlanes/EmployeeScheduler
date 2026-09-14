@@ -19,6 +19,7 @@
  * (see that file's header for why it had to be duplicated rather than
  * imported from `src/shared`).
  */
+import * as schedulePublicationRepo from '../db/repositories/schedulePublicationRepo.js';
 import * as scheduledShiftRepo from '../db/repositories/scheduledShiftRepo.js';
 import * as shiftTemplateRepo from '../db/repositories/shiftTemplateRepo.js';
 import { getTodayIso, getWeekDates, getWeekStart, shiftWeek } from '../logic/weekRange.js';
@@ -28,6 +29,7 @@ import type {
   EndAnchor,
   RequestingActor,
   ScheduledShift,
+  SchedulePublication,
   StartAnchor,
 } from '../db/domain-types.js';
 
@@ -94,21 +96,58 @@ function normalizeEnd(anchor: EndAnchor, time: string | null): string | null {
 
 /**
  * Lists every scheduled shift for a department across the Monday-Sunday week
- * starting `weekStart`. Any logged-in user may read the schedule — `actor`
- * is still required (rather than dropped) to keep this function's
- * authorization signature uniform with the other 8 services.
+ * starting `weekStart`. A manager sees the full working draft regardless of
+ * publication state (the Schedule Board is manager-only). Any other role
+ * only sees it once a manager has published that department's `weekStart`
+ * week — until then this returns an empty list, which is what keeps an
+ * in-progress schedule off "My Schedule".
  */
 export async function listWeek(
-  _actor: RequestingActor,
+  actor: RequestingActor,
   department: Department,
   weekStart: string,
 ): Promise<ScheduledShift[]> {
   const weekDates = getWeekDates(weekStart);
-  return scheduledShiftRepo.listByDepartmentAndDateRange(
+  const shifts = await scheduledShiftRepo.listByDepartmentAndDateRange(
     department,
     weekDates[0],
     weekDates[weekDates.length - 1],
   );
+  if (actor.role === 'manager') {
+    return shifts;
+  }
+  const published = await schedulePublicationRepo.isPublished(department, weekStart);
+  return published ? shifts : [];
+}
+
+/** Any logged-in user may check whether a department's week has been published. */
+export async function getWeekPublication(
+  _actor: RequestingActor,
+  department: Department,
+  weekStart: string,
+): Promise<SchedulePublication | null> {
+  const publication = await schedulePublicationRepo.getPublication(department, weekStart);
+  return publication ?? null;
+}
+
+/** Manager-only: makes a department's week visible on every affected employee's "My Schedule". */
+export async function publishWeek(
+  actor: RequestingActor,
+  department: Department,
+  weekStart: string,
+): Promise<SchedulePublication> {
+  assertManager(actor);
+  return schedulePublicationRepo.publish(department, weekStart, actor.id);
+}
+
+/** Manager-only: reverts a department's week back to draft, hiding it from "My Schedule" again. */
+export async function unpublishWeek(
+  actor: RequestingActor,
+  department: Department,
+  weekStart: string,
+): Promise<void> {
+  assertManager(actor);
+  await schedulePublicationRepo.unpublish(department, weekStart);
 }
 
 /**

@@ -8,11 +8,24 @@ import { getTodayIso, getWeekStart, shiftWeek } from '../../../../server/src/log
 import type { RequestingActor } from '../../../../server/src/db/domain-types.js';
 
 let employeeId: number;
-const managerActor: RequestingActor = { id: 999999, role: 'manager' };
+// A real employee row rather than a fake id, since `publishWeek` persists
+// `actor.id` as `schedule_publications.published_by_employee_id`, which is
+// FK-constrained against `employees`.
+let managerActor: RequestingActor;
 const employeeActor: RequestingActor = { id: 999998, role: 'employee' };
 
 beforeEach(async () => {
   await truncateAllTables();
+
+  const manager = await employeeRepo.create({
+    name: 'Jesse Manager',
+    username: `jesse-${Date.now()}-${Math.random()}`,
+    passwordHash: 'hash',
+    role: 'manager',
+    isSalaried: true,
+    departments: [],
+  });
+  managerActor = { id: manager.id, role: 'manager' };
 
   const employee = await employeeRepo.create({
     name: 'Riley Front',
@@ -114,13 +127,132 @@ describe('scheduledShiftService', () => {
       templateId: template.id,
     });
 
+    // A manager sees the full working draft regardless of publication state.
     const weekShifts = await scheduledShiftService.listWeek(
-      employeeActor,
+      managerActor,
       'front_desk',
       '2026-09-07',
     );
     expect(weekShifts).toHaveLength(1);
     expect(weekShifts[0].shiftDate).toBe('2026-09-08');
+  });
+
+  describe('publish gating', () => {
+    it('hides an unpublished week from a non-manager but not from a manager', async () => {
+      await scheduledShiftService.assignCustomShift(managerActor, {
+        employeeId,
+        department: 'front_desk',
+        shiftDate: '2026-09-08',
+        startAnchor: 'fixed',
+        startTime: '08:00',
+        endAnchor: 'fixed',
+        endTime: '14:00',
+      });
+
+      expect(
+        await scheduledShiftService.listWeek(employeeActor, 'front_desk', '2026-09-07'),
+      ).toHaveLength(0);
+      expect(
+        await scheduledShiftService.listWeek(managerActor, 'front_desk', '2026-09-07'),
+      ).toHaveLength(1);
+    });
+
+    it('reveals the week to a non-manager once a manager publishes it', async () => {
+      await scheduledShiftService.assignCustomShift(managerActor, {
+        employeeId,
+        department: 'front_desk',
+        shiftDate: '2026-09-08',
+        startAnchor: 'fixed',
+        startTime: '08:00',
+        endAnchor: 'fixed',
+        endTime: '14:00',
+      });
+
+      await scheduledShiftService.publishWeek(managerActor, 'front_desk', '2026-09-07');
+
+      const shifts = await scheduledShiftService.listWeek(
+        employeeActor,
+        'front_desk',
+        '2026-09-07',
+      );
+      expect(shifts).toHaveLength(1);
+    });
+
+    it('only publishes the requested department/week, leaving others hidden', async () => {
+      await scheduledShiftService.assignCustomShift(managerActor, {
+        employeeId,
+        department: 'front_desk',
+        shiftDate: '2026-09-08',
+        startAnchor: 'fixed',
+        startTime: '08:00',
+        endAnchor: 'fixed',
+        endTime: '14:00',
+      });
+      await scheduledShiftService.assignCustomShift(managerActor, {
+        employeeId,
+        department: 'bar',
+        shiftDate: '2026-09-08',
+        startAnchor: 'fixed',
+        startTime: '16:00',
+        endAnchor: 'fixed',
+        endTime: '22:00',
+      });
+
+      await scheduledShiftService.publishWeek(managerActor, 'front_desk', '2026-09-07');
+
+      expect(
+        await scheduledShiftService.listWeek(employeeActor, 'front_desk', '2026-09-07'),
+      ).toHaveLength(1);
+      expect(
+        await scheduledShiftService.listWeek(employeeActor, 'bar', '2026-09-07'),
+      ).toHaveLength(0);
+    });
+
+    it('re-hides the week from a non-manager after a manager unpublishes it', async () => {
+      await scheduledShiftService.assignCustomShift(managerActor, {
+        employeeId,
+        department: 'front_desk',
+        shiftDate: '2026-09-08',
+        startAnchor: 'fixed',
+        startTime: '08:00',
+        endAnchor: 'fixed',
+        endTime: '14:00',
+      });
+      await scheduledShiftService.publishWeek(managerActor, 'front_desk', '2026-09-07');
+
+      await scheduledShiftService.unpublishWeek(managerActor, 'front_desk', '2026-09-07');
+
+      expect(
+        await scheduledShiftService.listWeek(employeeActor, 'front_desk', '2026-09-07'),
+      ).toHaveLength(0);
+    });
+
+    it('refuses a non-manager from publishing or unpublishing a week', async () => {
+      await expect(
+        scheduledShiftService.publishWeek(employeeActor, 'front_desk', '2026-09-07'),
+      ).rejects.toThrow(scheduledShiftService.UnauthorizedScheduledShiftActionError);
+
+      await expect(
+        scheduledShiftService.unpublishWeek(employeeActor, 'front_desk', '2026-09-07'),
+      ).rejects.toThrow(scheduledShiftService.UnauthorizedScheduledShiftActionError);
+    });
+
+    it('reports publication status via getWeekPublication', async () => {
+      expect(
+        await scheduledShiftService.getWeekPublication(employeeActor, 'front_desk', '2026-09-07'),
+      ).toBeNull();
+
+      await scheduledShiftService.publishWeek(managerActor, 'front_desk', '2026-09-07');
+
+      const publication = await scheduledShiftService.getWeekPublication(
+        employeeActor,
+        'front_desk',
+        '2026-09-07',
+      );
+      expect(publication?.department).toBe('front_desk');
+      expect(publication?.weekStart).toBe('2026-09-07');
+      expect(publication?.publishedByEmployeeId).toBe(managerActor.id);
+    });
   });
 
   it('overrides a shift and removes a shift', async () => {

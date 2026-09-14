@@ -6,12 +6,15 @@
  * inside `scheduledShiftService`).
  *
  * Channel -> route mapping:
- *   scheduledShifts:listWeek       -> GET    /api/scheduled-shifts?department=&weekStart=
- *   scheduledShifts:assignTemplate -> POST   /api/scheduled-shifts/assign-template
- *   scheduledShifts:assignCustom   -> POST   /api/scheduled-shifts/assign-custom
- *   scheduledShifts:override       -> PUT    /api/scheduled-shifts/:id
- *   scheduledShifts:remove         -> DELETE /api/scheduled-shifts/:id
- *   scheduledShifts:carryOverWeek  -> POST   /api/scheduled-shifts/carry-over
+ *   scheduledShifts:listWeek        -> GET    /api/scheduled-shifts?department=&weekStart=
+ *   scheduledShifts:getPublication  -> GET    /api/scheduled-shifts/publication?department=&weekStart=
+ *   scheduledShifts:publish         -> POST   /api/scheduled-shifts/publication
+ *   scheduledShifts:unpublish       -> DELETE /api/scheduled-shifts/publication?department=&weekStart=
+ *   scheduledShifts:assignTemplate  -> POST   /api/scheduled-shifts/assign-template
+ *   scheduledShifts:assignCustom    -> POST   /api/scheduled-shifts/assign-custom
+ *   scheduledShifts:override        -> PUT    /api/scheduled-shifts/:id
+ *   scheduledShifts:remove          -> DELETE /api/scheduled-shifts/:id
+ *   scheduledShifts:carryOverWeek   -> POST   /api/scheduled-shifts/carry-over
  */
 import { Router } from 'express';
 import * as scheduledShiftService from '../services/scheduledShiftService.js';
@@ -49,6 +52,44 @@ router.get(
       requireQueryDateString(req, 'weekStart'),
     ),
   ),
+);
+
+// Registered before the `/:id` routes below so a `DELETE /publication`
+// request can't be shadowed by `DELETE /:id` (Express would otherwise try to
+// parse "publication" as the numeric id param and 400 before this ever runs).
+router.get(
+  '/publication',
+  handleRoute((req) =>
+    scheduledShiftService.getWeekPublication(
+      req.actor as RequestingActor,
+      requireQueryOneOf(req, 'department', DEPARTMENTS),
+      requireQueryDateString(req, 'weekStart'),
+    ),
+  ),
+);
+
+router.post(
+  '/publication',
+  handleRoute((req) => {
+    const body = bodyOf(req);
+    return scheduledShiftService.publishWeek(
+      req.actor as RequestingActor,
+      requireOneOf(body.department, 'department', DEPARTMENTS),
+      requireDateString(body.weekStart, 'weekStart'),
+    );
+  }, 201),
+);
+
+router.delete(
+  '/publication',
+  handleRoute(async (req) => {
+    await scheduledShiftService.unpublishWeek(
+      req.actor as RequestingActor,
+      requireQueryOneOf(req, 'department', DEPARTMENTS),
+      requireQueryDateString(req, 'weekStart'),
+    );
+    return { success: true };
+  }),
 );
 
 router.post(
