@@ -28,11 +28,26 @@ function detectIsStandalone(): boolean {
   return Boolean(navigatorStandalone) || window.matchMedia('(display-mode: standalone)').matches;
 }
 
+/**
+ * `beforeinstallprompt` fires identically on Android Chrome and desktop
+ * Chrome/Edge — same event, same `canInstall` state — but "install to your
+ * home screen" only makes sense on a touch device; a desktop has no home
+ * screen. `(pointer: coarse)` is true for a touch-primary device (phone/
+ * tablet) and false for a mouse/trackpad-primary one (desktop/laptop,
+ * including touchscreen laptops used with a trackpad), which is a better
+ * signal here than user-agent sniffing for "is this actually a phone."
+ */
+function detectIsTouchPrimary(): boolean {
+  return window.matchMedia('(pointer: coarse)').matches;
+}
+
 export interface InstallPromptState {
   /** True once a real Android/desktop-Chrome install prompt is ready to fire. */
   canInstall: boolean;
   /** True on iOS Safari, which never fires `beforeinstallprompt` — needs manual instructions instead. */
   isIos: boolean;
+  /** True on a touch-primary device (phone/tablet) — steers "Install App" copy toward "home screen" vs. desktop wording. */
+  isTouchPrimary: boolean;
   /** True if already running installed (standalone display mode) — nothing to prompt for. */
   isStandalone: boolean;
   /** Shows the native install prompt. Only meaningful when `canInstall` is true. */
@@ -73,6 +88,7 @@ export function useInstallPrompt(): InstallPromptState {
   return {
     canInstall: deferredEvent !== null,
     isIos: detectIsIos(),
+    isTouchPrimary: detectIsTouchPrimary(),
     isStandalone,
     promptInstall,
   };

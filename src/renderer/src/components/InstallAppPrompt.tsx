@@ -2,16 +2,19 @@ import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { IconDownload, IconShare } from './icons';
 
 /**
- * Milestone 25: prompts a visitor to install the PWA to their phone's home
- * screen. Android/desktop Chrome support a real native install prompt via
- * `beforeinstallprompt` (see `useInstallPrompt`); iOS Safari never fires that
- * event at all, so it gets static manual instructions instead — there is no
- * programmatic install API on iOS. Renders nothing inside the Electron shell
- * (`window.api` truthy — that's already a native-ish install, "add to home
- * screen" doesn't apply) or once the PWA is already installed.
+ * Milestone 25: prompts a visitor to install the PWA — to a phone's home
+ * screen, or to a desktop as its own app window. Android AND desktop
+ * Chrome/Edge fire the exact same `beforeinstallprompt` event (see
+ * `useInstallPrompt`) for this one button; only the copy below adapts to
+ * `isTouchPrimary` so a desktop visitor isn't told about a "home screen"
+ * they don't have. iOS Safari never fires that event at all, so it gets
+ * static manual instructions instead — there is no programmatic install API
+ * on iOS. Renders nothing inside the Electron shell (`window.api` truthy —
+ * that's already a native-ish install) or once the PWA is already
+ * installed.
  */
 export function InstallAppPrompt(): React.JSX.Element | null {
-  const { canInstall, isIos, isStandalone, promptInstall } = useInstallPrompt();
+  const { canInstall, isIos, isTouchPrimary, isStandalone, promptInstall } = useInstallPrompt();
 
   if (window.api || isStandalone) {
     return null;
@@ -33,8 +36,12 @@ export function InstallAppPrompt(): React.JSX.Element | null {
 
   if (canInstall) {
     return (
-      <div className="install-app-prompt" data-testid="install-app-prompt-android">
-        <p>Install this app for quick access from your home screen.</p>
+      <div className="install-app-prompt" data-testid="install-app-prompt-installable">
+        <p>
+          {isTouchPrimary
+            ? 'Install this app for quick access from your home screen.'
+            : 'Install this app for quick access from your desktop.'}
+        </p>
         <button
           type="button"
           className="btn"
