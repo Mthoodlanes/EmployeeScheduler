@@ -32,6 +32,7 @@ export default [
       'build/**',
       '**/*.d.ts',
       'eslint.config.js',
+      'scripts/*.mjs',
     ],
   },
   js.configs.recommended,

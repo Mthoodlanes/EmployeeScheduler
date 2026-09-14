@@ -22,7 +22,7 @@
     "server:build": "tsc -p tsconfig.server.json",
     "server:start": "node dist-server/index.js",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "node scripts/migrate.mjs",
     "db:studio": "drizzle-kit studio"
   },
   "engines": {
