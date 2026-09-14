@@ -12,6 +12,13 @@ services:
     # `out/renderer` (the static files Express now serves) before
     # `server:build` compiles the server itself.
     buildCommand: npm ci --include=dev && npm run build && npm run server:build
+    # Runs against this service's own DATABASE_URL after the build above but
+    # before traffic switches to the new instance, so any pending
+    # `server/drizzle/*.sql` migration is applied automatically on every
+    # deploy — this was previously a manual, easy-to-forget step (see the
+    # "schedule_publications" table missing in production despite its
+    # migration being generated and committed).
+    preDeployCommand: npm run db:migrate
     startCommand: npm run server:start
     envVars:
       - key: DATABASE_URL
