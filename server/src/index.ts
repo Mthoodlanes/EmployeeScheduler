@@ -2,6 +2,7 @@ import 'dotenv/config';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import express from 'express';
+import type { ErrorRequestHandler } from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import { sql } from 'drizzle-orm';
@@ -119,6 +120,52 @@ app.use((req, res) => {
     return;
   }
   res.sendFile(rendererIndexHtml);
+});
+
+// Milestone 25: last-resort catch-all for anything that throws outside a
+// `handleRoute`-wrapped handler (malformed-JSON body-parser errors,
+// middleware bugs, etc.) — every route-level error is already logged and
+// mapped to a status by `handleRoute` (see httpResult.ts), so this only
+// ever fires for the genuinely unexpected case, and always logs it so it
+// shows up in Render's log dashboard instead of vanishing silently.
+const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
+  // eslint-disable-next-line no-console -- basic error monitoring: this must be visible in Render's logs
+  console.error(`Unhandled error on ${req.method} ${req.originalUrl}:`, err);
+  if (res.headersSent) {
+    next(err);
+    return;
+  }
+  // body-parser's malformed-JSON error (and similar library errors) carry
+  // their own `statusCode` — a genuine 400 (bad request), not a server bug —
+  // so this respects that instead of always reporting 500.
+  const status =
+    typeof (err as { statusCode?: unknown })?.statusCode === 'number'
+      ? (err as { statusCode: number }).statusCode
+      : 500;
+  const message = status === 500 ? 'Internal server error' : 'Invalid request';
+  if (req.path.startsWith('/api')) {
+    res.status(status).json({ ok: false, error: message });
+    return;
+  }
+  res.status(status).send(message);
+};
+app.use(errorHandler);
+
+// Milestone 25: a Node process that dies on an unhandled rejection/exception
+// with no trace is the hardest kind of outage to diagnose on a free-tier
+// host with no dedicated error-tracking service — logging first (Render
+// restarts the process automatically either way) at least leaves a reason
+// in the log stream. Deliberately does not call `process.exit()`: for this
+// app's low-traffic, mostly-stateless request handling, letting the process
+// keep serving is a better trade than force-killing it over what's usually
+// a caught-and-logged bug in one request.
+process.on('unhandledRejection', (reason) => {
+  // eslint-disable-next-line no-console -- basic error monitoring: this must be visible in Render's logs
+  console.error('Unhandled promise rejection:', reason);
+});
+process.on('uncaughtException', (error) => {
+  // eslint-disable-next-line no-console -- basic error monitoring: this must be visible in Render's logs
+  console.error('Uncaught exception:', error);
 });
 
 // Drop schedule data more than two weeks old so the table doesn't grow

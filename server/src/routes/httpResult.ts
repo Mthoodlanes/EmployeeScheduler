@@ -61,6 +61,7 @@ import {
   UnauthorizedSpecialEventActionError,
 } from '../services/specialEventService.js';
 import { FirstRunAlreadyCompleteError, InvalidCredentialsError } from '../services/authService.js';
+import { NoticeNotFoundError, UnauthorizedNoticeActionError } from '../services/noticeService.js';
 
 interface ErrorMapping {
   ctor: new (...args: never[]) => Error;
@@ -74,6 +75,7 @@ const ERROR_STATUS_MAP: ErrorMapping[] = [
   { ctor: UnavailabilityRequestNotFoundError, status: 404 },
   { ctor: PreferenceNotFoundError, status: 404 },
   { ctor: SpecialEventNotFoundError, status: 404 },
+  { ctor: NoticeNotFoundError, status: 404 },
   // 409 – conflict
   { ctor: DuplicateUsernameError, status: 409 },
   { ctor: InvalidApprovalTransitionError, status: 409 },
@@ -87,6 +89,7 @@ const ERROR_STATUS_MAP: ErrorMapping[] = [
   { ctor: UnauthorizedPreferenceActionError, status: 403 },
   { ctor: UnauthorizedStoreHoursActionError, status: 403 },
   { ctor: UnauthorizedSpecialEventActionError, status: 403 },
+  { ctor: UnauthorizedNoticeActionError, status: 403 },
   // 401 – not authenticated at all (login only; unused by this milestone's
   // routes, kept here so the mapping table documents every known error).
   { ctor: InvalidCredentialsError, status: 401 },
@@ -120,6 +123,15 @@ export function handleRoute(
     } catch (error) {
       const status = statusForError(error);
       const message = error instanceof Error ? error.message : 'Unknown error';
+      if (status === 500) {
+        // Milestone 25: every other status here is an expected, hand-thrown
+        // outcome (validation failure, not-found, wrong role) that doesn't
+        // need log noise — a bare non-Error throw reaching this branch is
+        // the one case genuinely worth surfacing for basic error monitoring
+        // (visible in Render's log dashboard).
+        // eslint-disable-next-line no-console -- see comment above
+        console.error(`Unexpected error on ${req.method} ${req.originalUrl}:`, error);
+      }
       res.status(status).json({ ok: false, error: message });
     }
   };
