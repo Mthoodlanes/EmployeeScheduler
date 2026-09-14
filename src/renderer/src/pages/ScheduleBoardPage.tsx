@@ -497,6 +497,14 @@ export function ScheduleBoardPage(): React.JSX.Element {
         </div>
       </div>
 
+      {(publishMutation.isError || unpublishMutation.isError) && (
+        <div role="alert" className="form-error" data-testid="publish-error">
+          {(publishMutation.error instanceof Error && publishMutation.error.message) ||
+            (unpublishMutation.error instanceof Error && unpublishMutation.error.message) ||
+            'Could not update the publish status for this schedule'}
+        </div>
+      )}
+
       <OverlapBanner warnings={overlaps} />
 
       <DepartmentTabs
