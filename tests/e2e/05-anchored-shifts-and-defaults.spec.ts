@@ -96,8 +96,16 @@ test('a shared anchored shift template is usable across departments, supports cu
   const cellDates = await datesFromAssignButtons(page, employeeName);
   const today = todayIso();
   const anchoredShiftDate = cellDates.find((date) => date >= today) ?? cellDates[0];
+  // Just needs to be a DIFFERENT day than `anchoredShiftDate` within the same
+  // visible week — unlike `anchoredShiftDate`, nothing later in this test
+  // requires it to be today-or-later, so an earlier-in-the-week date is a
+  // fine fallback. Previously fell back to `cellDates[cellDates.length - 1]`
+  // unconditionally, which collided with `anchoredShiftDate` whenever today
+  // landed on the week's last visible day (e.g. a Sunday-ending week).
   const customShiftDate =
-    cellDates.find((date) => date > anchoredShiftDate) ?? cellDates[cellDates.length - 1];
+    cellDates.find((date) => date > anchoredShiftDate) ??
+    [...cellDates].reverse().find((date) => date < anchoredShiftDate) ??
+    cellDates[0];
 
   await assignButtonFor(page, employeeName, anchoredShiftDate).click();
   await expect(page.getByTestId('assign-shift-dialog')).toBeVisible();
@@ -139,7 +147,7 @@ test('a shared anchored shift template is usable across departments, supports cu
   await expect(page.getByTestId('assign-shift-dialog')).toBeHidden();
 
   const customCell = dayCellFor(page, employeeName, customShiftDate);
-  const customShiftCard = customCell.locator('[data-testid^="shift-card-"]');
+  const customShiftCard = customCell.locator('button[data-testid^="shift-card-"]');
   await expect(customShiftCard).toHaveCount(1);
   await expect(customShiftCard).toContainText('10:00–15:00');
   // A one-off custom-time shift has no saved template, so it must not show

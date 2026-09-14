@@ -146,7 +146,7 @@ test('manager-submit-on-behalf unavailability, its coexistence with approved tim
   await expect(page.getByTestId('confirm-dialog')).toBeHidden();
   await expect(page.getByTestId('assign-shift-dialog')).toBeHidden();
   await expect(
-    dayCellFor(page, jamieName, targetDate).locator('[data-testid^="shift-card-"]'),
+    dayCellFor(page, jamieName, targetDate).locator('button[data-testid^="shift-card-"]'),
   ).toHaveCount(1);
 
   // --- Deactivate Jamie: they should disappear from the schedule grid ---

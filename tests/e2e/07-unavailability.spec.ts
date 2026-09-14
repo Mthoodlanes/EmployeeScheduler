@@ -125,6 +125,6 @@ test('employee submits unavailability, manager approves it and sees the panel/wa
   await expect(page.getByTestId('confirm-dialog')).toBeHidden();
   await expect(page.getByTestId('assign-shift-dialog')).toBeHidden();
   await expect(
-    dayCellFor(page, employeeName, sundayDate).locator('[data-testid^="shift-card-"]'),
+    dayCellFor(page, employeeName, sundayDate).locator('button[data-testid^="shift-card-"]'),
   ).toHaveCount(1);
 });

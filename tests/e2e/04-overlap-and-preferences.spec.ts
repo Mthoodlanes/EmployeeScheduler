@@ -93,7 +93,7 @@ test('cross-department overlap banner appears, updates live, and clears when no 
 
   // Edit the Bar shift so it no longer overlaps -> banner clears live.
   await page.getByRole('tab', { name: 'Bar' }).click();
-  const barShiftCard = dayCellFor(page, employeeName, targetDate).locator('[data-testid^="shift-card-"]');
+  const barShiftCard = dayCellFor(page, employeeName, targetDate).locator('button[data-testid^="shift-card-"]');
   await barShiftCard.click();
   await expect(page.getByTestId('edit-shift-dialog')).toBeVisible();
   await page.locator('#edit-shift-start').fill('14:00');

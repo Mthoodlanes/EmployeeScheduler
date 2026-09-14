@@ -324,3 +324,26 @@ export async function markNoticesRead(employeeId: number): Promise<void> {
     .set({ lastReadNoticesAt: sql`now()` })
     .where(eq(employees.id, employeeId));
 }
+
+/**
+ * Session revocation (see `session_version` in schema.ts). Raw column
+ * access, same reasoning as `getLastReadNoticesAt` above — kept off the
+ * public `Employee` type on purpose.
+ */
+export async function getSessionVersion(employeeId: number): Promise<number | null> {
+  const db = getDb();
+  const [row] = await db
+    .select({ sessionVersion: employees.sessionVersion })
+    .from(employees)
+    .where(eq(employees.id, employeeId));
+  return row?.sessionVersion ?? null;
+}
+
+/** Invalidates every existing session token for this employee — see `resolveActor.ts`. */
+export async function incrementSessionVersion(employeeId: number): Promise<void> {
+  const db = getDb();
+  await db
+    .update(employees)
+    .set({ sessionVersion: sql`${employees.sessionVersion} + 1` })
+    .where(eq(employees.id, employeeId));
+}

@@ -36,8 +36,16 @@ test('first-run setup creates a manager, then logout/login and invalid login are
   await login(page, MANAGER_USERNAME, MANAGER_PASSWORD);
   await expect(page.getByRole('heading', { name: 'My Schedule' })).toBeVisible();
 
-  // Log out once more and try an invalid password.
+  // Log out once more and try an invalid password. Wait for the login screen
+  // the same way the first logout above does: `login()`'s first move is a
+  // hard `page.goto('/')`, which — fired immediately after `.click()`, before
+  // React's async `handleLogout` (a fetch + state update) has actually
+  // finished — can cancel the in-flight logout request mid-flight, since a
+  // navigation aborts any pending fetch on the page. The explicit wait here
+  // lets that fetch complete on its own first, exactly like line 44 above.
   await page.getByRole('button', { name: 'Log out' }).click();
+  await expect(page.getByTestId('login-username')).toBeVisible();
+
   await login(page, MANAGER_USERNAME, 'totally-wrong');
 
   await expect(page.getByTestId('login-error')).toBeVisible();

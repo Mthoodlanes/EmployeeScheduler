@@ -30,7 +30,7 @@ test('employee self-service: rename their own account and change their own passw
   await logout(page);
   await login(page, username, 'password123');
   await expect(page.getByRole('heading', { name: 'My Schedule' })).toBeVisible();
-  await expect(page.locator('.app-nav-user')).toHaveText(`${originalName} (employee)`);
+  await expect(page.locator('.app-nav-user')).toHaveText(`${originalName} (Employee)`);
 
   // --- Change display name -------------------------------------------------
   await page.getByRole('link', { name: 'My Account' }).click();
@@ -41,7 +41,7 @@ test('employee self-service: rename their own account and change their own passw
   await page.getByTestId('my-account-submit').click();
   await expect(page.getByTestId('my-account-success')).toBeVisible();
   // Reflected immediately in the nav's "name (role)" display, with no reload.
-  await expect(page.locator('.app-nav-user')).toHaveText(`${renamedName} (employee)`);
+  await expect(page.locator('.app-nav-user')).toHaveText(`${renamedName} (Employee)`);
 
   // --- Wrong current password: rejected, credential unchanged -------------
   await page.getByTestId('my-account-current-password').fill('totally-wrong-password');
@@ -71,5 +71,5 @@ test('employee self-service: rename their own account and change their own passw
 
   await login(page, username, 'new-password-456');
   await expect(page.getByRole('heading', { name: 'My Schedule' })).toBeVisible();
-  await expect(page.locator('.app-nav-user')).toHaveText(`${renamedName} (employee)`);
+  await expect(page.locator('.app-nav-user')).toHaveText(`${renamedName} (Employee)`);
 });

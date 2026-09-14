@@ -55,8 +55,22 @@ export async function loginAsManager(page: Page): Promise<void> {
   await expect(page.getByRole('heading', { name: 'My Schedule' })).toBeVisible();
 }
 
+/**
+ * Waits for the login screen to actually appear rather than just firing the
+ * click — `handleLogout` (`AppLayout.tsx`) is async (a `fetch` to
+ * `/api/auth/logout`, awaited, then a client-side redirect), but a click's
+ * `onClick` handler returning a promise doesn't make Playwright's `.click()`
+ * wait for it: the click itself resolves as soon as the DOM event fires. A
+ * caller that immediately navigates afterward (most do, via `login()`'s own
+ * `page.goto('/')`) can therefore race ahead of that fetch and cancel it
+ * mid-flight, since a navigation aborts any pending request on the page —
+ * caught live via `01-login.spec.ts` flaking once `logout` started doing a
+ * DB round-trip (Milestone 26 session revocation) instead of a synchronous
+ * cookie clear, which widened this window enough to actually miss it.
+ */
 export async function logout(page: Page): Promise<void> {
   await page.getByRole('button', { name: 'Log out' }).click();
+  await expect(page.getByTestId('login-username')).toBeVisible();
 }
 
 function escapeRegExp(value: string): string {
@@ -124,12 +138,23 @@ export async function dragEmployeeRow(
 
   await page.mouse.move(sourceCenter.x, sourceCenter.y);
   await page.mouse.down();
+  // A brief pause right after mousedown, before the first move: found live
+  // that without it, @dnd-kit's `PointerSensor` occasionally misses drag
+  // activation entirely (the whole sequence completes with no reorder at
+  // all, not even the optimistic one) — this gives its listeners a moment
+  // to actually attach before movement starts crossing the activation
+  // distance.
+  await page.waitForTimeout(100);
   await page.mouse.move(
     sourceCenter.x + (targetCenter.x - sourceCenter.x) / 2,
     sourceCenter.y + (targetCenter.y - sourceCenter.y) / 2,
     { steps: 8 },
   );
   await page.mouse.move(targetCenter.x, targetCenter.y, { steps: 8 });
+  // Similarly, a brief pause before mouseup lets dnd-kit's collision
+  // detection (rAF-driven) actually register the swap before the drop is
+  // committed, rather than dropping mid-frame.
+  await page.waitForTimeout(100);
   await page.mouse.up();
 }
 

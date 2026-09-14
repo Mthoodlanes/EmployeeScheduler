@@ -125,16 +125,37 @@ export default defineConfig({
           navigateFallbackDenylist: [/^\/api\//],
           runtimeCaching: [
             {
-              // Network-first with a short timeout for all API reads: this
-              // data (schedules, time-off, etc.) must never be served stale
-              // by default — only fall back to a cached response if the
-              // network request doesn't even complete within the timeout
-              // (e.g. offline / dead connection), not merely if it's slow.
-              // `method: 'GET'` is explicit (it's also workbox-build's
-              // default) — every mutating route in server/src/routes/*.ts
-              // uses POST/PUT/DELETE, so this deliberately never intercepts
-              // a write; those always go straight to the network untouched
-              // by the service worker.
+              // `/api/auth/*` is deliberately EXCLUDED from the general
+              // NetworkFirst rule below and instead always goes straight to
+              // the network with no cache fallback at all. Found live: on a
+              // Render free-tier cold start (routinely 30-60s+, per the
+              // hosting-headroom notes), a GET to `/api/auth/me` right after
+              // logging out on a shared computer can exceed the 4s
+              // `networkTimeoutSeconds` below, and NetworkFirst's fallback
+              // would then serve the PREVIOUS successful `/auth/me` response
+              // it had cached — i.e. the prior user's identity — even though
+              // the server had already correctly cleared their session
+              // cookie. Confirmed server-side logout/cookie-clearing itself
+              // has no bug (verified directly against the API); this is
+              // purely about never letting an identity check answer from a
+              // stale cache. A slow/failed auth check should surface as a
+              // loading state or an error, never a wrong identity.
+              urlPattern: ({ url, sameOrigin }) =>
+                sameOrigin && url.pathname.startsWith('/api/auth/'),
+              method: 'GET',
+              handler: 'NetworkOnly',
+            },
+            {
+              // Network-first with a short timeout for every OTHER API read:
+              // this data (schedules, time-off, etc.) must never be served
+              // stale by default — only fall back to a cached response if
+              // the network request doesn't even complete within the
+              // timeout (e.g. offline / dead connection), not merely if
+              // it's slow. `method: 'GET'` is explicit (it's also
+              // workbox-build's default) — every mutating route in
+              // server/src/routes/*.ts uses POST/PUT/DELETE, so this
+              // deliberately never intercepts a write; those always go
+              // straight to the network untouched by the service worker.
               urlPattern: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith('/api/'),
               method: 'GET',
               handler: 'NetworkFirst',

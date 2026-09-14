@@ -159,13 +159,20 @@ export async function updateEmployee(
   });
 }
 
-/** Only a manager may deactivate an employee. */
+/**
+ * Only a manager may deactivate an employee. Also revokes any session the
+ * deactivated employee is currently holding (see `session_version` in
+ * schema.ts) — otherwise a deactivated employee who's still logged in on a
+ * shared computer would keep their access until that token's 7-day expiry.
+ */
 export async function deactivateEmployee(
   actor: RequestingActor,
   id: number,
 ): Promise<EmployeeWithDepartmentsRow> {
   assertManager(actor);
-  return employeeRepo.deactivate(id);
+  const result = await employeeRepo.deactivate(id);
+  await employeeRepo.incrementSessionVersion(id);
+  return result;
 }
 
 /** Only a manager may change which departments an employee can work. */

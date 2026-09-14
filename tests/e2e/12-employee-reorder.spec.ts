@@ -53,7 +53,16 @@ test('manager drag-reorders employees on the Schedule Board and the order surviv
     carolName,
   ]);
 
-  // Drag Carol's row up to Alice's position.
+  // Drag Carol's row up to Alice's position. Wait for the reorder PUT's
+  // actual response (not a fixed timeout) before doing anything else —
+  // found live: a `page.reload()` fired while this request was still
+  // in-flight aborts it outright (a navigation cancels pending requests on
+  // the page), so the drop would look right optimistically but never
+  // actually persist, and a fixed short timeout doesn't reliably outlast a
+  // real network round-trip to the Neon test branch.
+  const reorderPersisted = page.waitForResponse(
+    (res) => res.url().includes('/api/employees/reorder') && res.request().method() === 'PUT',
+  );
   await dragHandleFor(page, carolName).scrollIntoViewIfNeeded();
   await dragHandleFor(page, aliceName).scrollIntoViewIfNeeded();
   await dragEmployeeRow(page, carolName, aliceName);
@@ -65,20 +74,23 @@ test('manager drag-reorders employees on the Schedule Board and the order surviv
     bobName,
   ]);
 
-  // … and persists after the mutation round-trips to the database. Give the
-  // request a moment, then reload the page outright (a harder guarantee than
-  // just re-rendering from cache) to confirm it was actually written through.
-  await page.waitForTimeout(500);
+  // … and persists after the mutation round-trips to the database. Reload
+  // the page outright (a harder guarantee than just re-rendering from
+  // cache) to confirm it was actually written through.
+  await reorderPersisted;
   await page.reload();
   // The hash route (#/schedule) persists across reload, so the app resumes
   // directly on the Schedule Board rather than redirecting through
   // "My Schedule" first.
   await expect(page.getByRole('heading', { name: 'Schedule Board' })).toBeVisible();
-  await expect(relativeOrder(await employeeRowOrder(page), employeeNames)).toEqual([
-    carolName,
-    aliceName,
-    bobName,
-  ]);
+  // A one-shot `.allTextContents()` snapshot right after reload can fire
+  // before the freshly-mounted app has finished its own employees fetch —
+  // caught live returning an empty array. `expect.poll()` retries the whole
+  // read (not just a single locator's assertion) until the roster has
+  // actually loaded.
+  await expect
+    .poll(async () => relativeOrder(await employeeRowOrder(page), employeeNames))
+    .toEqual([carolName, aliceName, bobName]);
 
   // And survives a full logout/login cycle too, not just a reload.
   await page.getByRole('button', { name: 'Log out' }).click();
@@ -86,11 +98,9 @@ test('manager drag-reorders employees on the Schedule Board and the order surviv
   await loginAsManager(page);
 
   await page.getByRole('link', { name: 'Schedule Board' }).click();
-  await expect(relativeOrder(await employeeRowOrder(page), employeeNames)).toEqual([
-    carolName,
-    aliceName,
-    bobName,
-  ]);
+  await expect
+    .poll(async () => relativeOrder(await employeeRowOrder(page), employeeNames))
+    .toEqual([carolName, aliceName, bobName]);
 
   // The Employees admin page, meanwhile, must still be alphabetical —
   // unaffected by the Schedule Board's manual order.

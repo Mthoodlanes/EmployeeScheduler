@@ -62,7 +62,7 @@ test('manager builds a schedule across two departments and overrides a shift', a
   await page.getByTestId('assign-shift-dialog').getByText(frontDeskTemplateName, { exact: true }).click();
   await expect(page.getByTestId('assign-shift-dialog')).toBeHidden();
   await expect(
-    dayCellFor(page, employeeName, targetDate).locator('[data-testid^="shift-card-"]'),
+    dayCellFor(page, employeeName, targetDate).locator('button[data-testid^="shift-card-"]'),
   ).toHaveCount(1);
 
   // Switch to the Bar tab and assign the Bar template to the same employee, same day.
@@ -73,7 +73,7 @@ test('manager builds a schedule across two departments and overrides a shift', a
   await page.getByTestId('assign-shift-dialog').getByText(barTemplateName, { exact: true }).click();
   await expect(page.getByTestId('assign-shift-dialog')).toBeHidden();
 
-  const barShiftCard = dayCellFor(page, employeeName, targetDate).locator('[data-testid^="shift-card-"]');
+  const barShiftCard = dayCellFor(page, employeeName, targetDate).locator('button[data-testid^="shift-card-"]');
   await expect(barShiftCard).toBeVisible();
 
   // Override that Bar shift's time and confirm the "edited" indicator appears.

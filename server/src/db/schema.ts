@@ -66,6 +66,14 @@ export const employees = pgTable('employees', {
   // per-notice-per-employee read-tracking table. Null means "never opened
   // it," so any existing notice counts as unread.
   lastReadNoticesAt: timestamp('last_read_notices_at', { withTimezone: true }),
+  // Session revocation: bumped on logout/deactivation. Every session JWT
+  // embeds the value it was issued with; `resolveActor` rejects any token
+  // whose embedded value doesn't match this current one, so a logged-out or
+  // deactivated employee's existing token stops working immediately,
+  // regardless of the cookie's own (still-valid-looking) expiry. See
+  // `server/src/middleware/resolveActor.ts` and `auth.routes.ts`'s logout
+  // handler for where this is actually enforced/bumped.
+  sessionVersion: integer('session_version').notNull().default(0),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

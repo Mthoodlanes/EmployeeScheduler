@@ -24,8 +24,16 @@ function actorFor(employee: Pick<Employee, 'id' | 'role'>): RequestingActor {
   return { id: employee.id, role: employee.role };
 }
 
-function setSessionCookie(res: Response, employee: Pick<Employee, 'id' | 'role'>): void {
-  res.cookie(SESSION_COOKIE_NAME, signActorToken(actorFor(employee)), sessionCookieOptions);
+async function setSessionCookie(
+  res: Response,
+  employee: Pick<Employee, 'id' | 'role'>,
+): Promise<void> {
+  const sessionVersion = await employeeRepo.getSessionVersion(employee.id);
+  res.cookie(
+    SESSION_COOKIE_NAME,
+    signActorToken(actorFor(employee), sessionVersion ?? 0),
+    sessionCookieOptions,
+  );
 }
 
 router.post('/login', async (req: Request, res: Response) => {
@@ -37,7 +45,7 @@ router.post('/login', async (req: Request, res: Response) => {
 
   try {
     const employee = await authService.login(username, password);
-    setSessionCookie(res, employee);
+    await setSessionCookie(res, employee);
     res.status(200).json(employee);
   } catch (error) {
     if (error instanceof authService.InvalidCredentialsError) {
@@ -50,7 +58,15 @@ router.post('/login', async (req: Request, res: Response) => {
   }
 });
 
-router.post('/logout', (_req: Request, res: Response) => {
+router.post('/logout', async (req: Request, res: Response) => {
+  // Bump `session_version` FIRST (if a valid session is present) so the old
+  // token is permanently invalid the instant this handler runs, closing the
+  // in-flight-request race described in `resolveActor.ts`'s file header —
+  // clearing the cookie alone can't do that on its own.
+  const actor = req.actor as RequestingActor | undefined;
+  if (actor) {
+    await employeeRepo.incrementSessionVersion(actor.id);
+  }
   // `clearCookie` regardless of whether a cookie was actually present.
   res.clearCookie(SESSION_COOKIE_NAME, sessionCookieOptions);
   res.status(200).json({ ok: true });
@@ -98,7 +114,7 @@ router.post('/first-run', async (req: Request, res: Response) => {
     const employee = await authService.createFirstManager(name, username, password);
     // Matches the original Electron app's behavior: creating the first
     // manager auto-logs them in.
-    setSessionCookie(res, employee);
+    await setSessionCookie(res, employee);
     res.status(201).json(employee);
   } catch (error) {
     if (error instanceof authService.FirstRunAlreadyCompleteError) {
