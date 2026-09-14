@@ -101,7 +101,31 @@ app.get('/api/health', async (_req, res) => {
 // `index.html` handling so the fallback below is the single place
 // `index.html` is served, keeping the "unmatched /api/* gets JSON" behavior
 // correct too.
-app.use(express.static(rendererDistPath, { index: false }));
+//
+// `sw.js` gets an explicit `Cache-Control: no-cache` here — separate from,
+// and in addition to, the `skipWaiting`/`clientsClaim` Workbox flags in
+// electron.vite.config.ts. Those two flags fix what happens ONCE the browser
+// has fetched a new `sw.js`; this fixes whether it ever actually asks the
+// server for one. Without this, the browser's own plain HTTP cache can keep
+// answering `registration.update()`'s periodic checks (see pwaUpdate.ts)
+// with a stale cached copy of `sw.js` itself, so the update machinery never
+// even learns a new version exists — a distinct bug from the "waiting
+// forever for tabs to close" one those two flags solve, and the more likely
+// explanation for reports of a phone's browser tab never picking up a
+// deploy no matter how long it's left open. Every OTHER static file here is
+// safe to let `express.static`'s own defaults (ETag-based revalidation)
+// handle, since Vite content-hashes their filenames — a changed file is a
+// new URL, not a cache-invalidation problem.
+app.use(
+  express.static(rendererDistPath, {
+    index: false,
+    setHeaders: (res, filePath) => {
+      if (path.basename(filePath) === 'sw.js') {
+        res.setHeader('Cache-Control', 'no-cache');
+      }
+    },
+  }),
+);
 
 // Plain `app.use` (rather than an `app.get('*', ...)` wildcard route) avoids
 // Express 5's path-to-regexp v8 requirement that wildcards be named
@@ -119,6 +143,11 @@ app.use((req, res) => {
     res.status(404).json({ ok: false, error: 'Not found' });
     return;
   }
+  // Same reasoning as `sw.js` above: this file names the CURRENT build's
+  // hashed asset filenames, so a stale cached copy of it defeats content
+  // hashing entirely — the browser would keep loading last deploy's JS/CSS
+  // forever, no matter how the service worker itself behaves.
+  res.set('Cache-Control', 'no-cache');
   res.sendFile(rendererIndexHtml);
 });
 
