@@ -58,6 +58,21 @@ function detectIsChromiumBased(): boolean {
   return /chrome|chromium|edg\//i.test(ua) && !/firefox|fxios/i.test(ua);
 }
 
+/**
+ * Firefox never implemented `beforeinstallprompt` (Mozilla's own PWA-install
+ * story has been inconsistent over the years), so `canInstall` never
+ * becomes true here no matter how engaged the visitor is. Detected
+ * separately from `isChromiumBased` above rather than folded into an "else"
+ * of it, since the two platforms genuinely differ (see `isTouchPrimary`'s
+ * use in `InstallAppPrompt`): Firefox for Android has a real, working
+ * manual "Add to Home screen"/"Install" menu item worth pointing at, while
+ * desktop Firefox has no install feature in its standard release at all —
+ * there's nothing accurate to tell a desktop Firefox visitor to click.
+ */
+function detectIsFirefox(): boolean {
+  return /firefox|fxios/i.test(window.navigator.userAgent);
+}
+
 export interface InstallPromptState {
   /** True once a real Android/desktop-Chrome install prompt is ready to fire. */
   canInstall: boolean;
@@ -67,6 +82,8 @@ export interface InstallPromptState {
   isTouchPrimary: boolean;
   /** True on Chrome/Edge — browsers that always have a manual install affordance even before `canInstall` turns true. */
   isChromiumBased: boolean;
+  /** True on Firefox (desktop or mobile) — never fires `beforeinstallprompt`; only Android Firefox has a real manual install path to point at. */
+  isFirefox: boolean;
   /** True if already running installed (standalone display mode) — nothing to prompt for. */
   isStandalone: boolean;
   /** Shows the native install prompt. Only meaningful when `canInstall` is true. */
@@ -109,6 +126,7 @@ export function useInstallPrompt(): InstallPromptState {
     isIos: detectIsIos(),
     isTouchPrimary: detectIsTouchPrimary(),
     isChromiumBased: detectIsChromiumBased(),
+    isFirefox: detectIsFirefox(),
     isStandalone,
     promptInstall,
   };

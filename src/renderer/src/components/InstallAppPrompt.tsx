@@ -6,14 +6,20 @@ import { IconDownload, IconShare } from './icons';
  * Milestone 25: prompts a visitor to install the PWA — to a phone's home
  * screen, or to a desktop as its own app window.
  *
- * Four cases, in priority order:
+ * Five cases, in priority order:
  *  1. iOS Safari never fires `beforeinstallprompt` at all, so it gets
  *     static manual instructions — there is no programmatic install API
- *     on iOS.
+ *     on iOS. Also catches Firefox/Chrome-on-iOS, which are Safari
+ *     underneath (Apple mandates WebKit for every iOS browser) and share
+ *     the exact same Share-sheet install path.
  *  2. `canInstall` (a captured `beforeinstallprompt`) — a real, working
  *     "Install App" button on Android AND desktop Chrome/Edge alike (same
  *     event, same state); only the copy adapts via `isTouchPrimary`.
- *  3 & 4. Chrome/Edge (desktop or Android) with no captured prompt yet —
+ *  3. Android Firefox — never fires `beforeinstallprompt` (Firefox never
+ *     implemented it), but has a real, working "Install"/"Add to Home
+ *     screen" item in its own menu, worth a dedicated instruction rather
+ *     than lumping it in with Chromium's differently-worded menu.
+ *  4 & 5. Chrome/Edge (desktop or Android) with no captured prompt yet —
  *     Chrome only fires `beforeinstallprompt` once its own engagement
  *     heuristic is satisfied (return visits, time on site), which can take
  *     several visits on EITHER platform. Rather than show nothing until
@@ -25,12 +31,20 @@ import { IconDownload, IconShare } from './icons';
  *     desktop.
  *
  * Renders nothing inside the Electron shell (`window.api` truthy — that's
- * already a native-ish install), once the PWA is already installed, or in a
- * browser with no install mechanism at all (Firefox, desktop Safari).
+ * already a native-ish install), once the PWA is already installed, or on
+ * desktop Firefox, which has no install feature at all in its standard
+ * release — there's nothing accurate to tell that visitor to click.
  */
 export function InstallAppPrompt(): React.JSX.Element | null {
-  const { canInstall, isIos, isTouchPrimary, isChromiumBased, isStandalone, promptInstall } =
-    useInstallPrompt();
+  const {
+    canInstall,
+    isIos,
+    isTouchPrimary,
+    isChromiumBased,
+    isFirefox,
+    isStandalone,
+    promptInstall,
+  } = useInstallPrompt();
   const [showManualHelp, setShowManualHelp] = useState(false);
 
   if (window.api || isStandalone) {
@@ -69,6 +83,29 @@ export function InstallAppPrompt(): React.JSX.Element | null {
         >
           <IconDownload /> Install App
         </button>
+      </div>
+    );
+  }
+
+  if (isFirefox && isTouchPrimary) {
+    return (
+      <div className="install-app-prompt" data-testid="install-app-prompt-firefox-manual">
+        <p>Install this app for quick access from your home screen.</p>
+        <button
+          type="button"
+          className="btn"
+          data-testid="install-app-button"
+          onClick={() => setShowManualHelp((prev) => !prev)}
+        >
+          <IconDownload /> Install App
+        </button>
+        {showManualHelp && (
+          <p className="install-app-prompt-help" data-testid="install-app-manual-help">
+            Tap the menu button (&#8942;) at the top right, then choose{' '}
+            <strong>Install</strong> (or <strong>Add to Home screen</strong> on older versions of
+            Firefox).
+          </p>
+        )}
       </div>
     );
   }
