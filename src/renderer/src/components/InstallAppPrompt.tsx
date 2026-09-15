@@ -6,20 +6,23 @@ import { IconDownload, IconShare } from './icons';
  * Milestone 25: prompts a visitor to install the PWA — to a phone's home
  * screen, or to a desktop as its own app window.
  *
- * Three cases, in priority order:
+ * Four cases, in priority order:
  *  1. iOS Safari never fires `beforeinstallprompt` at all, so it gets
  *     static manual instructions — there is no programmatic install API
  *     on iOS.
  *  2. `canInstall` (a captured `beforeinstallprompt`) — a real, working
  *     "Install App" button on Android AND desktop Chrome/Edge alike (same
  *     event, same state); only the copy adapts via `isTouchPrimary`.
- *  3. Desktop Chrome/Edge with no captured prompt yet — Chrome only fires
- *     `beforeinstallprompt` once its own engagement heuristic is satisfied,
- *     which can take several visits. Rather than show nothing until then
- *     (unlike iOS, which always shows something), this keeps a persistent
- *     card visible and falls back to pointing at the browser's own manual
- *     install affordance. Scoped to touch-primary being false — mobile
- *     Chrome has no equivalent reliable manual path to describe.
+ *  3 & 4. Chrome/Edge (desktop or Android) with no captured prompt yet —
+ *     Chrome only fires `beforeinstallprompt` once its own engagement
+ *     heuristic is satisfied (return visits, time on site), which can take
+ *     several visits on EITHER platform. Rather than show nothing until
+ *     then (unlike iOS, which always shows something), this keeps a
+ *     persistent card visible and falls back to pointing at the browser's
+ *     own manual install affordance — confirmed live: an employee on
+ *     Android Chrome saw no install option at all in this gap, since an
+ *     earlier version of this component only had a manual fallback for
+ *     desktop.
  *
  * Renders nothing inside the Electron shell (`window.api` truthy — that's
  * already a native-ish install), once the PWA is already installed, or in a
@@ -70,10 +73,14 @@ export function InstallAppPrompt(): React.JSX.Element | null {
     );
   }
 
-  if (!isTouchPrimary && isChromiumBased) {
+  if (isChromiumBased) {
     return (
-      <div className="install-app-prompt" data-testid="install-app-prompt-desktop-manual">
-        <p>Install this app for quick access from your desktop.</p>
+      <div className="install-app-prompt" data-testid="install-app-prompt-manual">
+        <p>
+          {isTouchPrimary
+            ? 'Install this app for quick access from your home screen.'
+            : 'Install this app for quick access from your desktop.'}
+        </p>
         <button
           type="button"
           className="btn"
@@ -84,9 +91,18 @@ export function InstallAppPrompt(): React.JSX.Element | null {
         </button>
         {showManualHelp && (
           <p className="install-app-prompt-help" data-testid="install-app-manual-help">
-            Look for an install icon at the right edge of the address bar, or open the browser
-            menu and choose <strong>Install Mt Hood Lanes Scheduler&hellip;</strong> (Chrome) or{' '}
-            <strong>Apps &rarr; Install this site as an app</strong> (Edge).
+            {isTouchPrimary ? (
+              <>
+                Tap the menu button (&#8942;) at the top right, then choose{' '}
+                <strong>Add to Home screen</strong> or <strong>Install app</strong>.
+              </>
+            ) : (
+              <>
+                Look for an install icon at the right edge of the address bar, or open the browser
+                menu and choose <strong>Install Mt Hood Lanes Scheduler&hellip;</strong> (Chrome) or{' '}
+                <strong>Apps &rarr; Install this site as an app</strong> (Edge).
+              </>
+            )}
           </p>
         )}
       </div>
