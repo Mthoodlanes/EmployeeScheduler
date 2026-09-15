@@ -130,7 +130,7 @@ export function MySchedulePage(): React.JSX.Element {
             >
               <div className="my-schedule-day-header">
                 <span className="my-schedule-day-label">{day.label}</span>
-                <SpecialEventBadge hours={day.hours} />
+                <SpecialEventBadge hours={day.hours} showLabel />
               </div>
 
               {day.isApprovedTimeOff && (

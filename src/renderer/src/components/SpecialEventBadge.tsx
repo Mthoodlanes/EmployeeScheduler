@@ -5,6 +5,17 @@ import { useTimeFormat } from '../settings/TimeFormatProvider';
 
 interface SpecialEventBadgeProps {
   hours: ResolvedHours;
+  /**
+   * Prefixes the plain-hours and closed/unknown cases with "Store Hours: "
+   * — off by default so the Schedule Board's day-column headers (tight on
+   * space, one per day across the whole grid) stay exactly as they were.
+   * `MySchedulePage` turns this on, since it has room for the clearer
+   * label and isn't showing seven of these side by side. Left off the
+   * special-event-override case regardless, since that already carries its
+   * own label (e.g. "League Night: 8:00 AM–10:00 PM") and stacking a
+   * second one in front reads as redundant.
+   */
+  showLabel?: boolean;
 }
 
 function formatRange(openTime: string | null, closeTime: string | null, format: TimeFormat): string {
@@ -20,11 +31,17 @@ function formatRange(openTime: string | null, closeTime: string | null, format: 
  * from an override or the weekly default) gets an even more distinct
  * "Closed" treatment; a normal day just shows its open-close range.
  */
-export function SpecialEventBadge({ hours }: SpecialEventBadgeProps): React.JSX.Element {
+export function SpecialEventBadge({
+  hours,
+  showLabel = false,
+}: SpecialEventBadgeProps): React.JSX.Element {
   const { timeFormat } = useTimeFormat();
+  const prefix = showLabel ? 'Store Hours: ' : '';
+
   if (hours.isClosed) {
     return (
       <span className="hours-badge hours-badge-closed" data-testid="hours-badge-closed">
+        {prefix}
         {hours.label ? `Closed — ${hours.label}` : 'Closed'}
       </span>
     );
@@ -41,13 +58,14 @@ export function SpecialEventBadge({ hours }: SpecialEventBadgeProps): React.JSX.
   if (!hours.openTime || !hours.closeTime) {
     return (
       <span className="hours-badge hours-badge-unknown" data-testid="hours-badge-unknown">
-        Hours not set
+        {prefix}Hours not set
       </span>
     );
   }
 
   return (
     <span className="hours-badge" data-testid="hours-badge-default">
+      {prefix}
       {formatRange(hours.openTime, hours.closeTime, timeFormat)}
     </span>
   );
