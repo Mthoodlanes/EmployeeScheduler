@@ -6,6 +6,7 @@ import {
   boolean,
   timestamp,
   unique,
+  uniqueIndex,
   index,
   check,
 } from 'drizzle-orm/pg-core';
@@ -48,35 +49,50 @@ export const endAnchorEnum = pgEnum('end_anchor', ['fixed', 'close']);
 // --- employees ---------------------------------------------------------
 // Migration 001. Single `name` column (not split first/last) — confirmed
 // against the actual `CREATE TABLE employees` statement.
-export const employees = pgTable('employees', {
-  id: integer('id').generatedAlwaysAsIdentity().primaryKey(),
-  name: text('name').notNull(),
-  username: text('username').notNull().unique(),
-  passwordHash: text('password_hash').notNull(),
-  role: roleEnum('role').notNull(),
-  isSalaried: boolean('is_salaried').notNull().default(false),
-  isActive: boolean('is_active').notNull().default(true),
-  // Milestone 24 (SQLite migration 009 equivalent): global Schedule Board
-  // row ordering, independent of department. See `domain-types.ts`'s
-  // `Employee.sortOrder` doc comment.
-  sortOrder: integer('sort_order').notNull().default(0),
-  // Milestone 26: last time this employee opened the Notice Board — compared
-  // against the newest active notice's `createdAt` to compute "unread"
-  // status (nav badge + one-time login toast), rather than a separate
-  // per-notice-per-employee read-tracking table. Null means "never opened
-  // it," so any existing notice counts as unread.
-  lastReadNoticesAt: timestamp('last_read_notices_at', { withTimezone: true }),
-  // Session revocation: bumped on logout/deactivation. Every session JWT
-  // embeds the value it was issued with; `resolveActor` rejects any token
-  // whose embedded value doesn't match this current one, so a logged-out or
-  // deactivated employee's existing token stops working immediately,
-  // regardless of the cookie's own (still-valid-looking) expiry. See
-  // `server/src/middleware/resolveActor.ts` and `auth.routes.ts`'s logout
-  // handler for where this is actually enforced/bumped.
-  sessionVersion: integer('session_version').notNull().default(0),
-  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
-});
+export const employees = pgTable(
+  'employees',
+  {
+    id: integer('id').generatedAlwaysAsIdentity().primaryKey(),
+    name: text('name').notNull(),
+    // Milestone 27: no plain `.unique()` here on purpose — that would only
+    // reject an EXACT byte-for-byte duplicate, letting "Doug" and "doug"
+    // coexist as two different accounts at the database level even though
+    // `employeeRepo.findByUsername`'s login lookup already treats them as the
+    // same username (case-insensitively). `employeeService.createEmployee`
+    // already checks for a case-insensitive duplicate before insert, so this
+    // was never reachable through the app's own UI — but the functional
+    // unique index below (see the table's second argument) makes the
+    // database itself the actual source of truth for "usernames are
+    // case-insensitive," closing the gap for good rather than relying on
+    // every future write path remembering to check case-insensitively first.
+    username: text('username').notNull(),
+    passwordHash: text('password_hash').notNull(),
+    role: roleEnum('role').notNull(),
+    isSalaried: boolean('is_salaried').notNull().default(false),
+    isActive: boolean('is_active').notNull().default(true),
+    // Milestone 24 (SQLite migration 009 equivalent): global Schedule Board
+    // row ordering, independent of department. See `domain-types.ts`'s
+    // `Employee.sortOrder` doc comment.
+    sortOrder: integer('sort_order').notNull().default(0),
+    // Milestone 26: last time this employee opened the Notice Board — compared
+    // against the newest active notice's `createdAt` to compute "unread"
+    // status (nav badge + one-time login toast), rather than a separate
+    // per-notice-per-employee read-tracking table. Null means "never opened
+    // it," so any existing notice counts as unread.
+    lastReadNoticesAt: timestamp('last_read_notices_at', { withTimezone: true }),
+    // Session revocation: bumped on logout/deactivation. Every session JWT
+    // embeds the value it was issued with; `resolveActor` rejects any token
+    // whose embedded value doesn't match this current one, so a logged-out or
+    // deactivated employee's existing token stops working immediately,
+    // regardless of the cookie's own (still-valid-looking) expiry. See
+    // `server/src/middleware/resolveActor.ts` and `auth.routes.ts`'s logout
+    // handler for where this is actually enforced/bumped.
+    sessionVersion: integer('session_version').notNull().default(0),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex('employees_username_lower_key').on(sql`lower(${table.username})`)],
+);
 
 // --- employee_departments -----------------------------------------------
 // Migration 001. Many-to-many employee <-> department.
@@ -169,10 +185,7 @@ export const schedulePublications = pgTable(
     publishedAt: timestamp('published_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    unique('schedule_publications_department_week_start_key').on(
-      table.department,
-      table.weekStart,
-    ),
+    unique('schedule_publications_department_week_start_key').on(table.department, table.weekStart),
   ],
 );
 
@@ -254,10 +267,7 @@ export const employeeUnavailability = pgTable(
   (table) => [
     index('idx_employee_unavailability_employee_id').on(table.employeeId),
     index('idx_employee_unavailability_status').on(table.status),
-    check(
-      'employee_unavailability_day_of_week_check',
-      sql`${table.dayOfWeek} BETWEEN 0 AND 6`,
-    ),
+    check('employee_unavailability_day_of_week_check', sql`${table.dayOfWeek} BETWEEN 0 AND 6`),
   ],
 );
 
