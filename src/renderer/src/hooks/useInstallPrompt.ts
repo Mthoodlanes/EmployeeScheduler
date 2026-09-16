@@ -73,6 +73,40 @@ function detectIsFirefox(): boolean {
   return /firefox|fxios/i.test(window.navigator.userAgent);
 }
 
+/**
+ * True for Samsung Internet — a real, working `beforeinstallprompt`
+ * implementation (it's one of only two Android browsers, alongside Chrome,
+ * that installs a PWA as a proper WebAPK), so it's already covered by
+ * `canInstall`/`isChromiumBased` above; this only exists to steer the
+ * MANUAL fallback's copy, since Samsung Internet's own menu wording
+ * ("Add page to" -> "Home screen", or a `+`/download icon in the address
+ * bar) doesn't match Chrome/Edge's.
+ */
+function detectIsSamsungInternet(): boolean {
+  return /samsungbrowser/i.test(window.navigator.userAgent);
+}
+
+/**
+ * True on any iOS browser that is NOT actually Safari and identifies
+ * itself as such in its user agent — Chrome, Firefox, Edge, and Opera on
+ * iOS are all required by Apple to use Safari's WebKit engine underneath,
+ * but each ships its own separate UI/menu on top, and none of them
+ * reproduce Safari's Share-sheet "Add to Home Screen" flow reliably (they
+ * mostly just create a plain bookmark that reopens in themselves, not a
+ * real standalone-mode PWA). Brave is a NOTABLE EXCEPTION not covered
+ * here — see `isBrave` below, checked separately in the hook itself, since
+ * Brave deliberately does not add any marker to its user agent (part of
+ * its own anti-fingerprinting design) and so is indistinguishable from
+ * Safari by this check alone.
+ */
+function detectIsNonSafariIos(): boolean {
+  return /crios|fxios|edgios|opios/i.test(window.navigator.userAgent);
+}
+
+interface BraveNavigator extends Navigator {
+  brave?: { isBrave: () => Promise<boolean> };
+}
+
 export interface InstallPromptState {
   /** True once a real Android/desktop-Chrome install prompt is ready to fire. */
   canInstall: boolean;
@@ -84,6 +118,12 @@ export interface InstallPromptState {
   isChromiumBased: boolean;
   /** True on Firefox (desktop or mobile) — never fires `beforeinstallprompt`; only Android Firefox has a real manual install path to point at. */
   isFirefox: boolean;
+  /** True on Samsung Internet — steers the manual-fallback copy toward its own menu wording. */
+  isSamsungInternet: boolean;
+  /** True on Brave, on any platform — checked via `navigator.brave.isBrave()` since Brave's user agent gives no indication otherwise. */
+  isBrave: boolean;
+  /** True on iOS in any browser other than Safari itself (including Brave) — none of them reliably support "Add to Home Screen" the way Safari does. */
+  isNonSafariIos: boolean;
   /** True if already running installed (standalone display mode) — nothing to prompt for. */
   isStandalone: boolean;
   /** Shows the native install prompt. Only meaningful when `canInstall` is true. */
@@ -94,6 +134,21 @@ export interface InstallPromptState {
 export function useInstallPrompt(): InstallPromptState {
   const [deferredEvent, setDeferredEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [isStandalone, setIsStandalone] = useState(detectIsStandalone);
+  const [isBrave, setIsBrave] = useState(false);
+
+  useEffect(() => {
+    // `navigator.brave.isBrave()` is Brave's own (non-standard, Chromium-
+    // API-shaped) self-identification hook — necessarily async since it's
+    // designed to resist trivial synchronous fingerprinting.
+    const nav = window.navigator as BraveNavigator;
+    nav.brave
+      ?.isBrave()
+      .then(setIsBrave)
+      .catch(() => {
+        // Absent or throws -> not Brave (or an old/atypical build of it);
+        // either way, fall through to the other UA-based detection.
+      });
+  }, []);
 
   useEffect(() => {
     const handleBeforeInstallPrompt = (event: Event): void => {
@@ -127,6 +182,9 @@ export function useInstallPrompt(): InstallPromptState {
     isTouchPrimary: detectIsTouchPrimary(),
     isChromiumBased: detectIsChromiumBased(),
     isFirefox: detectIsFirefox(),
+    isSamsungInternet: detectIsSamsungInternet(),
+    isBrave,
+    isNonSafariIos: detectIsNonSafariIos() || isBrave,
     isStandalone,
     promptInstall,
   };
