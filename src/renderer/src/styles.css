@@ -642,6 +642,12 @@ textarea.text-input {
   cursor: pointer;
   background: var(--color-surface-muted);
   color: var(--color-text);
+  /* `.btn`-family classes were written for `<button>` elements (never
+     underlined by default) but are also applied to `<Link>`/`<NavLink>`
+     anchors in several places (e.g. SecretaryLeagueTabs, "All Leagues"
+     back-links) — an explicit reset keeps those from showing the browser's
+     default anchor underline. */
+  text-decoration: none;
   transition:
     background-color var(--transition-fast) var(--ease-standard),
     border-color var(--transition-fast) var(--ease-standard),

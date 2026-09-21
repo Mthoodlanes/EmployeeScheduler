@@ -6,6 +6,7 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { EmptyState, LoadingState } from '../components/EmptyState';
 import { IconUsers } from '../components/icons';
 import { SecretaryLeagueTabs } from '../components/SecretaryLeagueTabs';
+import { formatCurrency } from '../utils/formatCurrency';
 import { useSecretaryLeague } from '../hooks/useSecretaryLeagues';
 import {
   useCreateSecretaryTeam,
@@ -221,30 +222,39 @@ export function SecretaryRosterPage(): React.JSX.Element {
           identity and dues history even if someone else subs in some week — if someone leaves
           mid-season, mark them Left instead of removing them, so their history stays intact.
         </p>
-        <div className="secretary-league-tabs">
-          {(teams ?? []).map((team) => (
+        <div className="secretary-toolbar-row">
+          <div className="secretary-chip-group">
+            {(teams ?? []).map((team) => (
+              <button
+                key={team.id}
+                type="button"
+                className={team.id === activeTeamId ? 'btn btn-toggle active' : 'btn btn-toggle'}
+                onClick={() => setActiveTeamId(team.id)}
+              >
+                {team.name}
+                {team.folded ? ' (Folded)' : ''}
+              </button>
+            ))}
+          </div>
+          <div className="secretary-chip-group secretary-chip-actions">
             <button
-              key={team.id}
               type="button"
-              className={team.id === activeTeamId ? 'btn btn-toggle active' : 'btn btn-toggle'}
-              onClick={() => setActiveTeamId(team.id)}
+              className="btn"
+              onClick={handleAddTeam}
+              disabled={createTeam.isPending}
             >
-              {team.name}
-              {team.folded ? ' (Folded)' : ''}
+              + Add Team
             </button>
-          ))}
-          <button type="button" className="btn" onClick={handleAddTeam} disabled={createTeam.isPending}>
-            + Add Team
-          </button>
-          {emptyTeamCount > 0 && (
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={() => setConfirmRemoveEmpty(true)}
-            >
-              Remove Empty Teams ({emptyTeamCount})
-            </button>
-          )}
+            {emptyTeamCount > 0 && (
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={() => setConfirmRemoveEmpty(true)}
+              >
+                Remove Empty Teams ({emptyTeamCount})
+              </button>
+            )}
+          </div>
         </div>
 
         {teams && teams.length === 0 && (
@@ -318,7 +328,9 @@ export function SecretaryRosterPage(): React.JSX.Element {
                       <td>{bowler.lineageDiscount ? 'Yes' : 'No'}</td>
                       <td>{bowler.prizeFundDiscount ? 'Yes' : 'No'}</td>
                       <td>{bowler.dropNoticeWeek}</td>
-                      {league?.depositFeeActive && <td>{bowler.depositPaid.toFixed(2)}</td>}
+                      {league?.depositFeeActive && (
+                        <td>{formatCurrency(bowler.depositPaid)}</td>
+                      )}
                       {league?.depositFeeActive && <td>{bowler.depositOptOut ? 'Yes' : 'No'}</td>}
                       <td>
                         <button
