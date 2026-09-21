@@ -183,7 +183,10 @@ export function SecretaryLeagueSetupPage(): React.JSX.Element {
                   required
                 />
               </label>
-              <label className="checkbox-row" htmlFor="league-sanctioned">
+              <label className="secretary-form-row" htmlFor="league-sanctioned">
+                <span className="secretary-form-row-label">
+                  USBC sanctioned league (tracks the USBC card fee on the roster)
+                </span>
                 <input
                   id="league-sanctioned"
                   type="checkbox"
@@ -192,7 +195,6 @@ export function SecretaryLeagueSetupPage(): React.JSX.Element {
                     setForm({ ...form, sanctionedLeague: event.target.checked })
                   }
                 />
-                USBC sanctioned league (tracks the USBC card fee on the roster)
               </label>
             </div>
           </div>
@@ -224,14 +226,14 @@ export function SecretaryLeagueSetupPage(): React.JSX.Element {
                   onChange={(event) => setForm({ ...form, lineage: Number(event.target.value) })}
                 />
               </label>
-              <label className="checkbox-row" htmlFor="league-sweeper-active">
+              <label className="secretary-form-row" htmlFor="league-sweeper-active">
+                <span className="secretary-form-row-label">Sweeper fee active</span>
                 <input
                   id="league-sweeper-active"
                   type="checkbox"
                   checked={form.sweeperActive}
                   onChange={(event) => setForm({ ...form, sweeperActive: event.target.checked })}
                 />
-                Sweeper fee active
               </label>
               {form.sweeperActive && (
                 <label className="secretary-form-row" htmlFor="league-sweeper-amount">
@@ -299,7 +301,8 @@ export function SecretaryLeagueSetupPage(): React.JSX.Element {
           <div className="card section">
             <h2>Fees &amp; due weeks</h2>
             <div className="secretary-form-rows">
-              <label className="checkbox-row" htmlFor="league-sponsor-fee-active">
+              <label className="secretary-form-row" htmlFor="league-sponsor-fee-active">
+                <span className="secretary-form-row-label">Sponsor fee active</span>
                 <input
                   id="league-sponsor-fee-active"
                   type="checkbox"
@@ -308,7 +311,6 @@ export function SecretaryLeagueSetupPage(): React.JSX.Element {
                     setForm({ ...form, sponsorFeeActive: event.target.checked })
                   }
                 />
-                Sponsor fee active
               </label>
               {form.sponsorFeeActive && (
                 <>
@@ -341,7 +343,10 @@ export function SecretaryLeagueSetupPage(): React.JSX.Element {
                   </label>
                 </>
               )}
-              <label className="checkbox-row" htmlFor="league-deposit-fee-active">
+              <label className="secretary-form-row" htmlFor="league-deposit-fee-active">
+                <span className="secretary-form-row-label">
+                  Deposit / prize fund cover charge active
+                </span>
                 <input
                   id="league-deposit-fee-active"
                   type="checkbox"
@@ -350,7 +355,6 @@ export function SecretaryLeagueSetupPage(): React.JSX.Element {
                     setForm({ ...form, depositFeeActive: event.target.checked })
                   }
                 />
-                Deposit / prize fund cover charge active
               </label>
               {form.depositFeeActive && (
                 <>

@@ -385,7 +385,8 @@ export function SecretaryRosterPage(): React.JSX.Element {
                   />
                 </label>
                 {isBowlerFormEditing && (
-                  <label className="checkbox-row" htmlFor="bowler-left">
+                  <label className="secretary-form-row" htmlFor="bowler-left">
+                    <span className="secretary-form-row-label">Left the league</span>
                     <input
                       id="bowler-left"
                       type="checkbox"
@@ -397,11 +398,11 @@ export function SecretaryRosterPage(): React.JSX.Element {
                         })
                       }
                     />
-                    Left the league
                   </label>
                 )}
                 {league?.sanctionedLeague && (
-                  <label className="checkbox-row" htmlFor="bowler-usbc">
+                  <label className="secretary-form-row" htmlFor="bowler-usbc">
+                    <span className="secretary-form-row-label">USBC card paid</span>
                     <input
                       id="bowler-usbc"
                       type="checkbox"
@@ -410,10 +411,10 @@ export function SecretaryRosterPage(): React.JSX.Element {
                         setBowlerForm({ ...bowlerForm, usbcCardPaid: event.target.checked })
                       }
                     />
-                    USBC card paid
                   </label>
                 )}
-                <label className="checkbox-row" htmlFor="bowler-lineage-discount">
+                <label className="secretary-form-row" htmlFor="bowler-lineage-discount">
+                  <span className="secretary-form-row-label">Lineage discount</span>
                   <input
                     id="bowler-lineage-discount"
                     type="checkbox"
@@ -422,9 +423,9 @@ export function SecretaryRosterPage(): React.JSX.Element {
                       setBowlerForm({ ...bowlerForm, lineageDiscount: event.target.checked })
                     }
                   />
-                  Lineage discount
                 </label>
-                <label className="checkbox-row" htmlFor="bowler-prize-fund-discount">
+                <label className="secretary-form-row" htmlFor="bowler-prize-fund-discount">
+                  <span className="secretary-form-row-label">Prize fund discount</span>
                   <input
                     id="bowler-prize-fund-discount"
                     type="checkbox"
@@ -433,7 +434,6 @@ export function SecretaryRosterPage(): React.JSX.Element {
                       setBowlerForm({ ...bowlerForm, prizeFundDiscount: event.target.checked })
                     }
                   />
-                  Prize fund discount
                 </label>
                 {isBowlerFormEditing && (
                   <label className="secretary-form-row" htmlFor="bowler-drop-notice-week">
@@ -478,7 +478,8 @@ export function SecretaryRosterPage(): React.JSX.Element {
                         }
                       />
                     </label>
-                    <label className="checkbox-row" htmlFor="bowler-deposit-opt-out">
+                    <label className="secretary-form-row" htmlFor="bowler-deposit-opt-out">
+                      <span className="secretary-form-row-label">Opted out of deposit</span>
                       <input
                         id="bowler-deposit-opt-out"
                         type="checkbox"
@@ -487,7 +488,6 @@ export function SecretaryRosterPage(): React.JSX.Element {
                           setBowlerForm({ ...bowlerForm, depositOptOut: event.target.checked })
                         }
                       />
-                      Opted out of deposit
                     </label>
                   </>
                 )}
