@@ -1,5 +1,42 @@
+import type { Page } from '@playwright/test';
 import { expect, test } from '@playwright/test';
 import { loginAsManager, uniqueName } from './helpers.js';
+
+/**
+ * Checking "Playing" and blurring the amount field each fire their own
+ * `PUT .../weekly-entries/:week` mutation — `toHaveValue('15')` right after
+ * only confirms the OPTIMISTIC client-side cache update (TanStack Query's
+ * `onMutate`), not that the write actually reached the server. Caught live:
+ * without waiting for the real response, the test's own assertions on
+ * later pages (Weekly Banking, Bowler/Season Summary) still passed reading
+ * that same optimistic state, while the underlying request got silently
+ * aborted by the browser once the test ended and closed the page — leaving
+ * the database with ZERO weekly entries despite a fully green test run.
+ */
+async function recordWeeklyAmount(
+  page: Page,
+  bowlerName: string,
+  week: number,
+  amount: string,
+): Promise<void> {
+  const isPut = (url: string, method: string): boolean =>
+    url.includes('weekly-entries') && method === 'PUT';
+
+  const playing = page.getByLabel(`${bowlerName} playing in week ${week}`);
+  if (!(await playing.isChecked())) {
+    const checkResponse = page.waitForResponse((r) => isPut(r.url(), r.request().method()));
+    await playing.click();
+    await checkResponse;
+  }
+  await expect(playing).toBeChecked();
+
+  const amountField = page.getByLabel(`${bowlerName} amount paid week ${week}`);
+  const amountResponse = page.waitForResponse((r) => isPut(r.url(), r.request().method()));
+  await amountField.fill(amount);
+  await amountField.blur();
+  await amountResponse;
+  await expect(amountField).toHaveValue(amount);
+}
 
 /**
  * Milestone 10 of the Secretary Apps (Bowling Dues Tracker) rebuild — the
@@ -55,24 +92,10 @@ test('a full league lifecycle: setup, roster, weekly entries, banking, and summa
   // --- Weekly Entries: pay the full $15 due in both weeks ---
   await page.getByRole('link', { name: 'Weekly Entries' }).click();
   await page.locator('#weekly-entries-week-select').selectOption('1');
-  const week1Playing = page.getByLabel(`${bowlerName} playing in week 1`);
-  if (!(await week1Playing.isChecked())) {
-    await week1Playing.click();
-  }
-  await expect(week1Playing).toBeChecked();
-  await page.getByLabel(`${bowlerName} amount paid week 1`).fill('15');
-  await page.getByLabel(`${bowlerName} amount paid week 1`).blur();
-  await expect(page.getByLabel(`${bowlerName} amount paid week 1`)).toHaveValue('15');
+  await recordWeeklyAmount(page, bowlerName, 1, '15');
 
   await page.locator('#weekly-entries-week-select').selectOption('2');
-  const week2Playing = page.getByLabel(`${bowlerName} playing in week 2`);
-  if (!(await week2Playing.isChecked())) {
-    await week2Playing.click();
-  }
-  await expect(week2Playing).toBeChecked();
-  await page.getByLabel(`${bowlerName} amount paid week 2`).fill('15');
-  await page.getByLabel(`${bowlerName} amount paid week 2`).blur();
-  await expect(page.getByLabel(`${bowlerName} amount paid week 2`)).toHaveValue('15');
+  await recordWeeklyAmount(page, bowlerName, 2, '15');
 
   // --- Weekly Banking: confirm this week's (week 2) cash breakdown ---
   await page.getByRole('link', { name: 'Weekly Banking' }).click();
