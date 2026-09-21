@@ -9,9 +9,9 @@
  * enforcement is `requireAuth`'s job (see `./requireAuth.ts`).
  *
  * Sliding expiry: whenever a valid cookie is found, a fresh token/cookie is
- * re-issued with a renewed 7-day window, so an actively-used session never
- * expires mid-session — only a session left untouched for a full 7 days
- * expires.
+ * re-issued with a renewed 2-hour window, so an actively-used session never
+ * expires mid-session — only a session left untouched for a full 2 hours
+ * expires (e.g. an unattended shared computer, or coming back the next day).
  *
  * Session revocation (found via E2E testing): a token's own signature/expiry
  * being valid isn't enough — it must also carry the employee's CURRENT

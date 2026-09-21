@@ -20,7 +20,7 @@ export const SESSION_COOKIE_NAME = 'mhl_session';
 const isProduction = process.env.NODE_ENV === 'production';
 
 /**
- * `maxAge` (milliseconds) intentionally mirrors the JWT's own 7-day expiry
+ * `maxAge` (milliseconds) intentionally mirrors the JWT's own 2-hour expiry
  * (`SESSION_TOKEN_TTL_SECONDS`) — the cookie should never outlive the token
  * it carries, and vice versa.
  */

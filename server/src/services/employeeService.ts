@@ -166,7 +166,7 @@ export async function updateEmployee(
  * Only a manager may deactivate an employee. Also revokes any session the
  * deactivated employee is currently holding (see `session_version` in
  * schema.ts) — otherwise a deactivated employee who's still logged in on a
- * shared computer would keep their access until that token's 7-day expiry.
+ * shared computer would keep their access until that token's 2-hour expiry.
  */
 export async function deactivateEmployee(
   actor: RequestingActor,

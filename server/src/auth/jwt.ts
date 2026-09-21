@@ -1,7 +1,7 @@
 /**
  * Milestone 17: JWT issuance/verification for the httpOnly-cookie auth
  * scheme described in the Phase 2 plan's "Auth Strategy" bullet — a signed
- * `{ employeeId, role, sessionVersion }` token with a 7-day expiry, replacing
+ * `{ employeeId, role, sessionVersion }` token with a 2-hour sliding expiry, replacing
  * `src/main/session.ts`'s module-level singleton with a stateless,
  * request-scoped identity that the `resolveActor` middleware turns into
  * `req.actor: RequestingActor`.
@@ -13,11 +13,14 @@ import jwt from 'jsonwebtoken';
 import type { RequestingActor, Role } from '../db/domain-types.js';
 
 /**
- * 7 days, in seconds — both the JWT's own expiry and (via `./cookie.ts`,
+ * 2 hours, in seconds — both the JWT's own expiry and (via `./cookie.ts`,
  * which imports this) the session cookie's `maxAge`, so the two always stay
- * in lockstep.
+ * in lockstep. `resolveActor` re-signs a fresh token on every request, so in
+ * practice this is a SLIDING window (active use never expires) rather than
+ * a hard cutoff from login — an account left untouched for 2 hours (closed
+ * tab, walked away from a shared computer) is what actually expires.
  */
-export const SESSION_TOKEN_TTL_SECONDS = 7 * 24 * 60 * 60;
+export const SESSION_TOKEN_TTL_SECONDS = 2 * 60 * 60;
 
 interface ActorTokenPayload {
   employeeId: number;
