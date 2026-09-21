@@ -63,7 +63,7 @@ export function SecretaryLayout(): React.JSX.Element {
         </div>
         <div id="secretary-nav-links" className={isMenuOpen ? 'app-nav-links open' : 'app-nav-links'}>
           <NavLink to="/secretary" end className={navLinkClassName} onClick={closeMenu}>
-            Leagues
+            Dues Tracker
           </NavLink>
           <NavLink to="/secretary/banking" className={navLinkClassName} onClick={closeMenu}>
             Banking
