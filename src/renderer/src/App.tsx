@@ -12,6 +12,7 @@ import { LoginPage } from './pages/LoginPage';
 import { MyAccountPage } from './pages/MyAccountPage';
 import { MySchedulePage } from './pages/MySchedulePage';
 import { ScheduleBoardPage } from './pages/ScheduleBoardPage';
+import { SecretaryBankingPage } from './pages/SecretaryBankingPage';
 import { SecretaryLeaguesPage } from './pages/SecretaryLeaguesPage';
 import { SecretaryLeagueSetupPage } from './pages/SecretaryLeagueSetupPage';
 import { SecretaryLoginPage } from './pages/SecretaryLoginPage';
@@ -115,6 +116,7 @@ export function App(): React.JSX.Element {
           <Route element={<RequireSecretaryAuth />}>
             <Route element={<SecretaryLayout />}>
               <Route path="/secretary" element={<SecretaryLeaguesPage />} />
+              <Route path="/secretary/banking" element={<SecretaryBankingPage />} />
               <Route path="/secretary/leagues/:leagueId" element={<SecretaryLeagueSetupPage />} />
               <Route path="/secretary/leagues/:leagueId/roster" element={<SecretaryRosterPage />} />
               <Route
