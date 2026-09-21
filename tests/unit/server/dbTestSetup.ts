@@ -78,6 +78,10 @@ const TABLES_IN_ANY_ORDER = [
   'special_event_overrides',
   'notices',
   'schedule_publications',
+  'leagues',
+  'teams',
+  'bowlers',
+  'weekly_entries',
 ];
 
 /**

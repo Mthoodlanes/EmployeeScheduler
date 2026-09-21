@@ -4,6 +4,7 @@ import {
   integer,
   text,
   boolean,
+  numeric,
   timestamp,
   unique,
   uniqueIndex,
@@ -49,6 +50,11 @@ export const departmentEnum = pgEnum('department', ['front_desk', 'cafe', 'bar',
 export const requestStatusEnum = pgEnum('request_status', ['pending', 'approved', 'denied']);
 export const startAnchorEnum = pgEnum('start_anchor', ['fixed', 'open']);
 export const endAnchorEnum = pgEnum('end_anchor', ['fixed', 'close']);
+// Secretary Apps Milestone 2 (bowling dues tracker): a bowler who has left
+// mid-season stays in the roster (their history matters for the season's
+// balances) rather than being deleted — this just flags them so Roster/
+// Weekly Entries can visually distinguish them from an active bowler.
+export const bowlerStatusEnum = pgEnum('bowler_status', ['active', 'left']);
 
 // --- employees ---------------------------------------------------------
 // Migration 001. Single `name` column (not split first/last) — confirmed
@@ -333,4 +339,110 @@ export const notices = pgTable(
     expiresAt: timestamp('expires_at', { withTimezone: true }),
   },
   (table) => [index('idx_notices_created_at').on(table.createdAt)],
+);
+
+// --- Secretary Apps: bowling dues tracker ------------------------------
+// Secretary Apps Milestone 2 — see the plan's "Secretary Apps: Bowling
+// Dues Tracker" section for the full design. Ported from the existing
+// Electron app's `Setup`/`Team`/`Bowler`/`Entry` types
+// (Desktop\Jesse\BowlingDuesTracker-ElectronApp\BowlingDuesTracker.tsx),
+// which stored all of this as one JSON blob in a single browser's
+// localStorage — this is the same data reshaped into real relational
+// tables, shared across every Secretary-area user rather than living on
+// one computer. Money fields use `numeric` (exact decimal), never
+// `integer`/floating point, so cents are never lost to rounding.
+//
+// `createdByEmployeeId` is tracked for an audit trail only — every
+// Secretary-area user sees every league; nothing is scoped per-creator.
+
+export const leagues = pgTable('leagues', {
+  id: integer('id').generatedAlwaysAsIdentity().primaryKey(),
+  name: text('name').notNull(),
+  spotsPerTeam: integer('spots_per_team').notNull().default(4),
+  numWeeks: integer('num_weeks').notNull().default(33),
+  currentWeek: integer('current_week').notNull().default(1),
+  prizeFund: numeric('prize_fund', { precision: 10, scale: 2 }).notNull().default('0'),
+  lineage: numeric('lineage', { precision: 10, scale: 2 }).notNull().default('0'),
+  sweeperActive: boolean('sweeper_active').notNull().default(false),
+  sweeperAmount: numeric('sweeper_amount', { precision: 10, scale: 2 }).notNull().default('0'),
+  vacancyFee: numeric('vacancy_fee', { precision: 10, scale: 2 }).notNull().default('0'),
+  lineageDiscountAmount: numeric('lineage_discount_amount', { precision: 10, scale: 2 })
+    .notNull()
+    .default('0'),
+  prizeFundDiscountAmount: numeric('prize_fund_discount_amount', { precision: 10, scale: 2 })
+    .notNull()
+    .default('0'),
+  sponsorFeePerTeam: numeric('sponsor_fee_per_team', { precision: 10, scale: 2 })
+    .notNull()
+    .default('0'),
+  sponsorFeeActive: boolean('sponsor_fee_active').notNull().default(false),
+  depositFeeActive: boolean('deposit_fee_active').notNull().default(false),
+  depositFeeAmount: numeric('deposit_fee_amount', { precision: 10, scale: 2 })
+    .notNull()
+    .default('0'),
+  // 0 means "no due-by-week tracking" (matches the source app: the field
+  // only ever mattered once the corresponding fee was switched on).
+  sponsorFeeDueWeek: integer('sponsor_fee_due_week').notNull().default(0),
+  prizeFundCoverChargeDueWeek: integer('prize_fund_cover_charge_due_week').notNull().default(0),
+  lastTwoWeeksDueWeek: integer('last_two_weeks_due_week').notNull().default(0),
+  sanctionedLeague: boolean('sanctioned_league').notNull().default(true),
+  createdByEmployeeId: integer('created_by_employee_id')
+    .notNull()
+    .references(() => employees.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const teams = pgTable('teams', {
+  id: integer('id').generatedAlwaysAsIdentity().primaryKey(),
+  leagueId: integer('league_id')
+    .notNull()
+    .references(() => leagues.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  folded: boolean('folded').notNull().default(false),
+  sponsorPaid: numeric('sponsor_paid', { precision: 10, scale: 2 }).notNull().default('0'),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+export const bowlers = pgTable('bowlers', {
+  id: integer('id').generatedAlwaysAsIdentity().primaryKey(),
+  teamId: integer('team_id')
+    .notNull()
+    .references(() => teams.id, { onDelete: 'cascade' }),
+  name: text('name').notNull(),
+  status: bowlerStatusEnum('status').notNull().default('active'),
+  phone: text('phone').notNull().default(''),
+  lineageDiscount: boolean('lineage_discount').notNull().default(false),
+  prizeFundDiscount: boolean('prize_fund_discount').notNull().default(false),
+  // Free text in the source app (a note like "left after week 12"), not a
+  // strict week number — kept exactly that loose here too.
+  dropNoticeWeek: text('drop_notice_week').notNull().default(''),
+  notes: text('notes').notNull().default(''),
+  depositPaid: numeric('deposit_paid', { precision: 10, scale: 2 }).notNull().default('0'),
+  depositOptOut: boolean('deposit_opt_out').notNull().default(false),
+  usbcCardPaid: boolean('usbc_card_paid').notNull().default(false),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Replaces the source app's flat `"${week}::${bowlerId}"`-keyed map with a
+// real table — `unique(bowlerId, week)` is the database now enforcing
+// "one entry per bowler per week" instead of an app-constructed string key.
+export const weeklyEntries = pgTable(
+  'weekly_entries',
+  {
+    id: integer('id').generatedAlwaysAsIdentity().primaryKey(),
+    bowlerId: integer('bowler_id')
+      .notNull()
+      .references(() => bowlers.id, { onDelete: 'cascade' }),
+    week: integer('week').notNull(),
+    amountPaid: numeric('amount_paid', { precision: 10, scale: 2 }).notNull().default('0'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    unique('weekly_entries_bowler_id_week_key').on(table.bowlerId, table.week),
+    index('idx_weekly_entries_bowler_id').on(table.bowlerId),
+  ],
 );
