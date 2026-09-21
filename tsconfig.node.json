@@ -21,7 +21,17 @@
   // trying to resolve server/src imports that tsconfig.node.json's own
   // `include` list intentionally never lists (they belong to
   // tsconfig.server.json's rootDir instead).
-  "exclude": ["tests/unit/server/**"],
+  //
+  // Same reasoning for the two dues-tracker backup/restore scripts — they
+  // import server/src/db/schema.ts directly (no repo/service layer sits
+  // between a raw table backup and the database), run via `tsx` (which
+  // transpiles per-file, no project-wide resolution needed), and were
+  // never meant to be resolvable from this project either.
+  "exclude": [
+    "tests/unit/server/**",
+    "scripts/backup-dues-tracker.ts",
+    "scripts/restore-dues-tracker.ts"
+  ],
   "compilerOptions": {
     "composite": true,
     "strict": true,

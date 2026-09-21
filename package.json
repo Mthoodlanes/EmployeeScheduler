@@ -23,7 +23,9 @@
     "server:start": "node dist-server/index.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "node scripts/migrate.mjs",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:backup-dues": "tsx scripts/backup-dues-tracker.ts",
+    "db:restore-dues": "tsx scripts/restore-dues-tracker.ts"
   },
   "engines": {
     "node": ">=18.18"

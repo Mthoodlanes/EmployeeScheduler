@@ -25,5 +25,14 @@
   // build. tsconfig.node.json deliberately EXCLUDES `tests/unit/server/**`
   // (see the comment there) because IT has no way to resolve `server/src`
   // imports; this file is what fills that gap for the linter only.
-  "include": ["server/src/**/*.ts", "tests/unit/server/**/*.ts"]
+  //
+  // Same gap, same fix, for the dues-tracker backup/restore scripts —
+  // tsconfig.node.json excludes them too (they import server/src/db/schema.ts
+  // directly), so they need to be resolvable from somewhere for the linter.
+  "include": [
+    "server/src/**/*.ts",
+    "tests/unit/server/**/*.ts",
+    "scripts/backup-dues-tracker.ts",
+    "scripts/restore-dues-tracker.ts"
+  ]
 }
