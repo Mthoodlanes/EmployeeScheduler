@@ -52,6 +52,28 @@ if (!isElectronShell) {
   initPwaUpdate();
 }
 
+// Chrome/Edge/Electron change a focused number input's value on scroll —
+// a well-known footgun where scrolling the page while the cursor happens
+// to be over a dollar-amount field silently edits it. Blurring the input
+// the moment a wheel event reaches it (before the browser's own scroll
+// handling applies) makes the scroll just scroll the page instead, with no
+// per-input code needed (see the matching spinner-arrow removal in
+// styles.css's `.text-input[type='number']` rules).
+document.addEventListener(
+  'wheel',
+  (event) => {
+    const { target } = event;
+    if (
+      target instanceof HTMLInputElement &&
+      target.type === 'number' &&
+      document.activeElement === target
+    ) {
+      target.blur();
+    }
+  },
+  { passive: true },
+);
+
 ReactDOM.createRoot(container).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>

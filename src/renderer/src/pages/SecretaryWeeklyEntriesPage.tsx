@@ -6,11 +6,13 @@ import {
   computeStandardWeeklyDue,
   computeWeeklyDueForBowler,
 } from '@shared/logic/duesLedger';
+import type { League } from '@shared/types/domain';
+import type { LeagueInput } from '@shared/types/ipc';
 import { EmptyState, LoadingState } from '../components/EmptyState';
 import { IconCalendar } from '../components/icons';
 import { SecretaryLeagueTabs } from '../components/SecretaryLeagueTabs';
 import { formatCurrency } from '../utils/formatCurrency';
-import { useSecretaryLeague } from '../hooks/useSecretaryLeagues';
+import { useSecretaryLeague, useUpdateSecretaryLeague } from '../hooks/useSecretaryLeagues';
 import { useSecretaryTeams } from '../hooks/useSecretaryTeams';
 import { useSecretaryBowlersForLeague } from '../hooks/useSecretaryBowlers';
 import {
@@ -18,6 +20,31 @@ import {
   useRemoveSecretaryWeeklyEntry,
   useSecretaryWeeklyEntriesForLeague,
 } from '../hooks/useSecretaryWeeklyEntries';
+
+/** Strips a `League` down to the plain `LeagueInput` shape a PUT expects, for the "Set as Current Week" button below — every other field is carried over unchanged, only `currentWeek` is meant to differ. */
+function toLeagueInput(league: League): LeagueInput {
+  return {
+    name: league.name,
+    spotsPerTeam: league.spotsPerTeam,
+    numWeeks: league.numWeeks,
+    currentWeek: league.currentWeek,
+    prizeFund: league.prizeFund,
+    lineage: league.lineage,
+    sweeperActive: league.sweeperActive,
+    sweeperAmount: league.sweeperAmount,
+    vacancyFee: league.vacancyFee,
+    lineageDiscountAmount: league.lineageDiscountAmount,
+    prizeFundDiscountAmount: league.prizeFundDiscountAmount,
+    sponsorFeePerTeam: league.sponsorFeePerTeam,
+    sponsorFeeActive: league.sponsorFeeActive,
+    depositFeeActive: league.depositFeeActive,
+    depositFeeAmount: league.depositFeeAmount,
+    sponsorFeeDueWeek: league.sponsorFeeDueWeek,
+    prizeFundCoverChargeDueWeek: league.prizeFundCoverChargeDueWeek,
+    lastTwoWeeksDueWeek: league.lastTwoWeeksDueWeek,
+    sanctionedLeague: league.sanctionedLeague,
+  };
+}
 
 /**
  * Milestone 7: the original app's "Weekly Entries" tab. Auto-carry-forward
@@ -37,6 +64,7 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
 
   const recordEntry = useRecordSecretaryWeeklyEntry(leagueId);
   const removeEntry = useRemoveSecretaryWeeklyEntry(leagueId);
+  const updateLeague = useUpdateSecretaryLeague();
 
   const [week, setWeek] = useState<number | null>(null);
   const [amountDrafts, setAmountDrafts] = useState<Record<number, string>>({});
@@ -113,6 +141,12 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
     recordEntry.mutate({ bowlerId, week: currentWeek, amountPaid });
   };
 
+  /** Advances the league's actual current week to whatever's being viewed here — shares the same league record (and query cache) the Setup page reads/writes, so it updates there too. */
+  const handleSetAsCurrentWeek = (): void => {
+    if (!league) return;
+    updateLeague.mutate({ id: leagueId, ...toLeagueInput(league), currentWeek });
+  };
+
   return (
     <div className="page">
       <div className="page-header">
@@ -164,6 +198,16 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
               </option>
             ))}
           </select>
+          {league && currentWeek !== league.currentWeek && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleSetAsCurrentWeek}
+              disabled={updateLeague.isPending}
+            >
+              Set as Current Week
+            </button>
+          )}
         </div>
         <p className="help-text">
           A blank week starts pre-checked with whoever played the previous time — dues follow the

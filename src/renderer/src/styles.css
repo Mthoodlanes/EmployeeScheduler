@@ -553,6 +553,19 @@ textarea.text-input {
   cursor: not-allowed;
 }
 
+/* No spinner arrows on any number input, anywhere — too easy to
+   accidentally nudge a typed value up/down with a stray click or scroll
+   (scrolling itself is separately blocked in main.tsx). */
+.text-input[type='number']::-webkit-outer-spin-button,
+.text-input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.text-input[type='number'] {
+  -moz-appearance: textfield;
+}
+
 .checkbox-row {
   display: flex;
   align-items: center;
