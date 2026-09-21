@@ -50,6 +50,13 @@
       "when": 1789430822164,
       "tag": "0006_colorful_dormammu",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789952245772,
+      "tag": "0007_naive_red_wolf",
+      "breakpoints": true
     }
   ]
 }

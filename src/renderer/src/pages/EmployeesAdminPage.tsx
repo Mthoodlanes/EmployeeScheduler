@@ -457,6 +457,7 @@ export function EmployeesAdminPage(): React.JSX.Element {
               <option value="employee">Employee</option>
               <option value="coordinator">Event Coordinator</option>
               <option value="manager">Manager</option>
+              <option value="secretary">Secretary</option>
             </select>
           </label>
 

@@ -3,6 +3,8 @@ import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppLayout } from './components/AppLayout';
 import { RequireAuth } from './components/RequireAuth';
 import { RequireManager } from './components/RequireManager';
+import { RequireSecretaryAuth } from './components/RequireSecretaryAuth';
+import { SecretaryLayout } from './components/SecretaryLayout';
 import { TitleBar } from './components/TitleBar';
 import { UpdateAvailableToast } from './components/UpdateAvailableToast';
 import { FirstRunSetupPage } from './pages/FirstRunSetupPage';
@@ -10,6 +12,8 @@ import { LoginPage } from './pages/LoginPage';
 import { MyAccountPage } from './pages/MyAccountPage';
 import { MySchedulePage } from './pages/MySchedulePage';
 import { ScheduleBoardPage } from './pages/ScheduleBoardPage';
+import { SecretaryHomePage } from './pages/SecretaryHomePage';
+import { SecretaryLoginPage } from './pages/SecretaryLoginPage';
 import { TimeOffQueuePage } from './pages/TimeOffQueuePage';
 import { RequestTimeOffPage } from './pages/RequestTimeOffPage';
 import { EmployeesAdminPage } from './pages/EmployeesAdminPage';
@@ -36,6 +40,22 @@ function LoginRoute(): React.JSX.Element {
 function FirstRunRoute(): React.JSX.Element {
   const isFirstRun = useSessionStore((state) => state.isFirstRun);
   return isFirstRun ? <FirstRunSetupPage /> : <Navigate to="/" replace />;
+}
+
+function SecretaryLoginRoute(): React.JSX.Element {
+  const currentEmployee = useSessionStore((state) => state.currentEmployee);
+
+  if (currentEmployee) {
+    // Mirrors RequireSecretaryAuth's manager-inclusive check — without it,
+    // this redirect (re-evaluated the instant setSession fires, racing
+    // SecretaryLoginPage's own explicit navigate('/secretary') call) sends
+    // a manager to '/' instead, since a bare `role === 'secretary'` check
+    // doesn't recognize a manager as belonging here too.
+    const belongsInSecretaryArea =
+      currentEmployee.role === 'secretary' || currentEmployee.role === 'manager';
+    return <Navigate to={belongsInSecretaryArea ? '/secretary' : '/'} replace />;
+  }
+  return <SecretaryLoginPage />;
 }
 
 export function App(): React.JSX.Element {
@@ -85,6 +105,12 @@ export function App(): React.JSX.Element {
         <Routes>
           <Route path="/first-run" element={<FirstRunRoute />} />
           <Route path="/login" element={<LoginRoute />} />
+          <Route path="/secretary/login" element={<SecretaryLoginRoute />} />
+          <Route element={<RequireSecretaryAuth />}>
+            <Route element={<SecretaryLayout />}>
+              <Route path="/secretary" element={<SecretaryHomePage />} />
+            </Route>
+          </Route>
           <Route element={<RequireAuth />}>
             <Route element={<AppLayout />}>
               <Route path="/" element={<Navigate to="/my-schedule" replace />} />

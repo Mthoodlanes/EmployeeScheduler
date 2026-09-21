@@ -11,5 +11,12 @@ export function RequireAuth(): React.JSX.Element {
   if (!currentEmployee) {
     return <Navigate to="/login" replace />;
   }
+  // A Secretary account has no access to the normal scheduling app at all —
+  // it's reached only through its own door (see RequireSecretaryAuth.tsx) —
+  // so bounce it straight to its own area rather than letting it land on
+  // whatever page it happened to request.
+  if (currentEmployee.role === 'secretary') {
+    return <Navigate to="/secretary" replace />;
+  }
   return <Outlet />;
 }

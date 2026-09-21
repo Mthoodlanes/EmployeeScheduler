@@ -19,7 +19,7 @@
 
 export type Department = 'front_desk' | 'cafe' | 'bar' | 'mechanic';
 
-export type Role = 'manager' | 'employee' | 'coordinator';
+export type Role = 'manager' | 'employee' | 'coordinator' | 'secretary';
 
 /**
  * Milestone 16: the employee performing an action, as will be established by

@@ -15,12 +15,13 @@ export const DEPARTMENT_LABELS: Record<Department, string> = {
   mechanic: 'Mechanic',
 };
 
-export type Role = 'manager' | 'employee' | 'coordinator';
+export type Role = 'manager' | 'employee' | 'coordinator' | 'secretary';
 
 export const ROLE_LABELS: Record<Role, string> = {
   manager: 'Manager',
   employee: 'Employee',
   coordinator: 'Event Coordinator',
+  secretary: 'Secretary',
 };
 
 export interface Employee {

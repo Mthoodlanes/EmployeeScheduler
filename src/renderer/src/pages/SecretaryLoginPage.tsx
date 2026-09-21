@@ -5,7 +5,20 @@ import { api } from '../api/client';
 import { InstallAppPrompt } from '../components/InstallAppPrompt';
 import { useSessionStore } from '../store/useSessionStore';
 
-export function LoginPage(): React.JSX.Element {
+/**
+ * A dedicated front door for Secretary accounts, deliberately separate from
+ * `LoginPage` — a Secretary may not be a scheduled bowling-alley employee
+ * at all (e.g. a league volunteer bookkeeper), so this doesn't lead into
+ * the scheduling app's own login experience at all. Posts to the exact
+ * same `/api/auth/login` as the normal login (same credentials, same
+ * `employees` table), but REJECTS a successful login from any role other
+ * than `secretary` or `manager` — logging that session back out
+ * immediately — rather than letting it through and redirecting elsewhere,
+ * so this door only ever leads to the Secretary area. A manager is let in
+ * too since they already have authority over everything else in the app
+ * (see `RequireSecretaryAuth.tsx`); a plain employee or coordinator is not.
+ */
+export function SecretaryLoginPage(): React.JSX.Element {
   const navigate = useNavigate();
   const setSession = useSessionStore((state) => state.setSession);
   const [username, setUsername] = useState('');
@@ -19,13 +32,13 @@ export function LoginPage(): React.JSX.Element {
     setIsSubmitting(true);
     try {
       const employee = await api.auth.login({ username, password });
+      if (employee.role !== 'secretary' && employee.role !== 'manager') {
+        await api.auth.logout();
+        setError('This sign-in is for Secretary accounts only.');
+        return;
+      }
       setSession(employee);
-      // A Secretary account can sign in here fine (same credentials, same
-      // `employees` table) — it just lands in its own area instead of the
-      // scheduling app, rather than being rejected outright. The reverse
-      // (a non-Secretary using the Secretary door) IS rejected — see
-      // SecretaryLoginPage.tsx.
-      navigate(employee.role === 'secretary' ? '/secretary' : '/', { replace: true });
+      navigate('/secretary', { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
     } finally {
@@ -43,35 +56,35 @@ export function LoginPage(): React.JSX.Element {
           }}
         >
           <img className="auth-logo" src="./mt-hood-lanes-logo.png" alt="Mt Hood Lanes" />
-          <h1>Employee Portal</h1>
-          <p className="auth-subtitle">Sign in to view or manage the schedule</p>
+          <h1>Secretary Sign In</h1>
+          <p className="auth-subtitle">Sign in to manage league dues</p>
           {error && (
-            <div role="alert" className="form-error" data-testid="login-error">
+            <div role="alert" className="form-error" data-testid="secretary-login-error">
               {error}
             </div>
           )}
-          <label className="field-label" htmlFor="login-username">
+          <label className="field-label" htmlFor="secretary-login-username">
             Username
             <input
-              id="login-username"
+              id="secretary-login-username"
               className="text-input"
               name="username"
               autoComplete="username"
-              data-testid="login-username"
+              data-testid="secretary-login-username"
               value={username}
               onChange={(event) => setUsername(event.target.value)}
               required
             />
           </label>
-          <label className="field-label" htmlFor="login-password">
+          <label className="field-label" htmlFor="secretary-login-password">
             Password
             <input
-              id="login-password"
+              id="secretary-login-password"
               className="text-input"
               name="password"
               type="password"
               autoComplete="current-password"
-              data-testid="login-password"
+              data-testid="secretary-login-password"
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
@@ -81,17 +94,17 @@ export function LoginPage(): React.JSX.Element {
             type="submit"
             className="btn btn-primary"
             disabled={isSubmitting}
-            data-testid="login-submit"
+            data-testid="secretary-login-submit"
           >
             {isSubmitting ? 'Signing in…' : 'Sign in'}
           </button>
           <button
             type="button"
-            className="btn btn-link"
-            data-testid="secretary-apps-link"
-            onClick={() => navigate('/secretary/login')}
+            className="btn btn-link auth-back-link"
+            data-testid="secretary-login-back"
+            onClick={() => navigate('/login')}
           >
-            Secretary Apps
+            ← Back to Employee Portal
           </button>
         </form>
         <InstallAppPrompt />

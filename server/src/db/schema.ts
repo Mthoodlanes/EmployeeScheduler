@@ -40,7 +40,11 @@ import { sql } from 'drizzle-orm';
 // Milestone 26: 'coordinator' added via a dedicated additive migration
 // (`ALTER TYPE "role" ADD VALUE 'coordinator'`), mirroring the precedent set
 // by 0001_many_eddie_brock.sql adding 'mechanic' to the department enum.
-export const roleEnum = pgEnum('role', ['manager', 'employee', 'coordinator']);
+// Milestone 27 (Secretary Apps): 'secretary' added the same way — a role
+// deliberately not granted any access to the normal scheduling app at all
+// (see RequireAuth.tsx/RequireSecretaryAuth.tsx), reached only through its
+// own login door at /secretary/login rather than the normal /login.
+export const roleEnum = pgEnum('role', ['manager', 'employee', 'coordinator', 'secretary']);
 export const departmentEnum = pgEnum('department', ['front_desk', 'cafe', 'bar', 'mechanic']);
 export const requestStatusEnum = pgEnum('request_status', ['pending', 'approved', 'denied']);
 export const startAnchorEnum = pgEnum('start_anchor', ['fixed', 'open']);

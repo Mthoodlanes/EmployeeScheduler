@@ -79,6 +79,9 @@ export function AppLayout(): React.JSX.Element {
               <NavLink to="/store-hours" className={navLinkClassName} onClick={closeMenu}>
                 Store Hours
               </NavLink>
+              <NavLink to="/secretary" className={navLinkClassName} onClick={closeMenu}>
+                Secretary Apps
+              </NavLink>
             </>
           )}
           <NavLink to="/notices" className={navLinkClassName} onClick={closeMenu}>
