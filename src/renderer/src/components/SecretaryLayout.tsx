@@ -62,6 +62,9 @@ export function SecretaryLayout(): React.JSX.Element {
           </button>
         </div>
         <div id="secretary-nav-links" className={isMenuOpen ? 'app-nav-links open' : 'app-nav-links'}>
+          <NavLink to="/secretary" end className={navLinkClassName} onClick={closeMenu}>
+            Leagues
+          </NavLink>
           {currentEmployee?.role !== 'secretary' && (
             <NavLink to="/" className={navLinkClassName} onClick={closeMenu}>
               ← Back to Scheduling

@@ -18,11 +18,15 @@
  * Surface" section).
  */
 import type {
+  Bowler,
+  BowlerStatus,
   Department,
+  DuesTeam,
   Employee,
   EmployeePreference,
   EmployeeUnavailability,
   EndAnchor,
+  League,
   Notice,
   Role,
   ScheduledShift,
@@ -32,6 +36,7 @@ import type {
   StartAnchor,
   StoreHours,
   TimeOffRequest,
+  WeeklyEntry,
 } from './domain';
 
 export const IpcChannels = {
@@ -453,6 +458,150 @@ export type NoticesUnreadStatusResponse = { hasUnread: boolean };
 // ---- notices:markRead ----
 export type NoticesMarkReadRequest = undefined;
 export type NoticesMarkReadResponse = { success: true };
+
+// ---------------------------------------------------------------------
+// Secretary Apps: bowling dues tracker (`/api/secretary/*`,
+// `server/src/routes/secretary.routes.ts`). Never had an Electron-IPC
+// era — these request/response shapes exist only for `httpClient.ts`.
+// ---------------------------------------------------------------------
+
+export interface LeagueInput {
+  name: string;
+  spotsPerTeam: number;
+  numWeeks: number;
+  currentWeek: number;
+  prizeFund: number;
+  lineage: number;
+  sweeperActive: boolean;
+  sweeperAmount: number;
+  vacancyFee: number;
+  lineageDiscountAmount: number;
+  prizeFundDiscountAmount: number;
+  sponsorFeePerTeam: number;
+  sponsorFeeActive: boolean;
+  depositFeeActive: boolean;
+  depositFeeAmount: number;
+  sponsorFeeDueWeek: number;
+  prizeFundCoverChargeDueWeek: number;
+  lastTwoWeeksDueWeek: number;
+  sanctionedLeague: boolean;
+}
+
+// ---- secretaryLeagues:list ----
+export type SecretaryLeaguesListResponse = League[];
+
+// ---- secretaryLeagues:get ----
+export type SecretaryLeaguesGetResponse = League;
+
+// ---- secretaryLeagues:create ----
+export type SecretaryLeaguesCreateRequest = LeagueInput;
+export type SecretaryLeaguesCreateResponse = League;
+
+// ---- secretaryLeagues:update ----
+export interface SecretaryLeaguesUpdateRequest extends LeagueInput {
+  id: number;
+}
+export type SecretaryLeaguesUpdateResponse = League;
+
+// ---- secretaryLeagues:remove ----
+export interface SecretaryLeaguesRemoveRequest {
+  id: number;
+}
+export type SecretaryLeaguesRemoveResponse = { success: true };
+
+export interface DuesTeamInput {
+  name: string;
+  folded: boolean;
+  sponsorPaid: number;
+}
+
+// ---- secretaryTeams:listForLeague ----
+export interface SecretaryTeamsListForLeagueRequest {
+  leagueId: number;
+}
+export type SecretaryTeamsListForLeagueResponse = DuesTeam[];
+
+// ---- secretaryTeams:create ----
+export interface SecretaryTeamsCreateRequest extends DuesTeamInput {
+  leagueId: number;
+}
+export type SecretaryTeamsCreateResponse = DuesTeam;
+
+// ---- secretaryTeams:update ----
+export interface SecretaryTeamsUpdateRequest extends DuesTeamInput {
+  id: number;
+}
+export type SecretaryTeamsUpdateResponse = DuesTeam;
+
+// ---- secretaryTeams:remove ----
+export interface SecretaryTeamsRemoveRequest {
+  id: number;
+}
+export type SecretaryTeamsRemoveResponse = { success: true };
+
+// ---- secretaryTeams:removeEmpty ----
+export interface SecretaryTeamsRemoveEmptyRequest {
+  leagueId: number;
+}
+export type SecretaryTeamsRemoveEmptyResponse = { removedCount: number };
+
+export interface BowlerInput {
+  name: string;
+  status: BowlerStatus;
+  phone: string;
+  lineageDiscount: boolean;
+  prizeFundDiscount: boolean;
+  dropNoticeWeek: string;
+  notes: string;
+  depositPaid: number;
+  depositOptOut: boolean;
+  usbcCardPaid: boolean;
+}
+
+// ---- secretaryBowlers:listForTeam ----
+export interface SecretaryBowlersListForTeamRequest {
+  teamId: number;
+}
+export type SecretaryBowlersListForTeamResponse = Bowler[];
+
+// ---- secretaryBowlers:create ----
+export interface SecretaryBowlersCreateRequest extends BowlerInput {
+  teamId: number;
+}
+export type SecretaryBowlersCreateResponse = Bowler;
+
+// ---- secretaryBowlers:update ----
+export interface SecretaryBowlersUpdateRequest extends BowlerInput {
+  id: number;
+}
+export type SecretaryBowlersUpdateResponse = Bowler;
+
+// ---- secretaryBowlers:remove ----
+export interface SecretaryBowlersRemoveRequest {
+  id: number;
+}
+export type SecretaryBowlersRemoveResponse = { success: true };
+
+// ---- secretaryWeeklyEntries:listForLeague ----
+export interface SecretaryWeeklyEntriesListForLeagueRequest {
+  leagueId: number;
+}
+export type SecretaryWeeklyEntriesListForLeagueResponse = WeeklyEntry[];
+
+// ---- secretaryWeeklyEntries:record ----
+export interface SecretaryWeeklyEntriesRecordRequest {
+  bowlerId: number;
+  week: number;
+  amountPaid: number;
+}
+export type SecretaryWeeklyEntriesRecordResponse = WeeklyEntry;
+
+// ---- secretaryWeeklyEntries:remove ----
+export interface SecretaryWeeklyEntriesRemoveRequest {
+  bowlerId: number;
+  week: number;
+}
+export type SecretaryWeeklyEntriesRemoveResponse = { success: true };
 
 // ---- windowControls:minimize / toggleMaximize / close ----
 export type WindowControlsMinimizeResponse = { success: true };

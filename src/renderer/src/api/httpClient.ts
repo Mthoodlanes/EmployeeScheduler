@@ -100,6 +100,38 @@ import type {
   SpecialEventsRemoveResponse,
   SpecialEventsUpdateRequest,
   SpecialEventsUpdateResponse,
+  SecretaryLeaguesCreateRequest,
+  SecretaryLeaguesCreateResponse,
+  SecretaryLeaguesGetResponse,
+  SecretaryLeaguesListResponse,
+  SecretaryLeaguesRemoveRequest,
+  SecretaryLeaguesRemoveResponse,
+  SecretaryLeaguesUpdateRequest,
+  SecretaryLeaguesUpdateResponse,
+  SecretaryTeamsCreateRequest,
+  SecretaryTeamsCreateResponse,
+  SecretaryTeamsListForLeagueRequest,
+  SecretaryTeamsListForLeagueResponse,
+  SecretaryTeamsRemoveEmptyRequest,
+  SecretaryTeamsRemoveEmptyResponse,
+  SecretaryTeamsRemoveRequest,
+  SecretaryTeamsRemoveResponse,
+  SecretaryTeamsUpdateRequest,
+  SecretaryTeamsUpdateResponse,
+  SecretaryBowlersCreateRequest,
+  SecretaryBowlersCreateResponse,
+  SecretaryBowlersListForTeamRequest,
+  SecretaryBowlersListForTeamResponse,
+  SecretaryBowlersRemoveRequest,
+  SecretaryBowlersRemoveResponse,
+  SecretaryBowlersUpdateRequest,
+  SecretaryBowlersUpdateResponse,
+  SecretaryWeeklyEntriesListForLeagueRequest,
+  SecretaryWeeklyEntriesListForLeagueResponse,
+  SecretaryWeeklyEntriesRecordRequest,
+  SecretaryWeeklyEntriesRecordResponse,
+  SecretaryWeeklyEntriesRemoveRequest,
+  SecretaryWeeklyEntriesRemoveResponse,
   StoreHoursListResponse,
   StoreHoursUpsertRequest,
   StoreHoursUpsertResponse,
@@ -245,6 +277,45 @@ export interface Api {
     remove: (request: NoticesRemoveRequest) => Promise<NoticesRemoveResponse>;
     unreadStatus: () => Promise<NoticesUnreadStatusResponse>;
     markRead: () => Promise<NoticesMarkReadResponse>;
+  };
+  secretary: {
+    leagues: {
+      list: () => Promise<SecretaryLeaguesListResponse>;
+      get: (id: number) => Promise<SecretaryLeaguesGetResponse>;
+      create: (request: SecretaryLeaguesCreateRequest) => Promise<SecretaryLeaguesCreateResponse>;
+      update: (request: SecretaryLeaguesUpdateRequest) => Promise<SecretaryLeaguesUpdateResponse>;
+      remove: (request: SecretaryLeaguesRemoveRequest) => Promise<SecretaryLeaguesRemoveResponse>;
+    };
+    teams: {
+      listForLeague: (
+        request: SecretaryTeamsListForLeagueRequest,
+      ) => Promise<SecretaryTeamsListForLeagueResponse>;
+      create: (request: SecretaryTeamsCreateRequest) => Promise<SecretaryTeamsCreateResponse>;
+      update: (request: SecretaryTeamsUpdateRequest) => Promise<SecretaryTeamsUpdateResponse>;
+      remove: (request: SecretaryTeamsRemoveRequest) => Promise<SecretaryTeamsRemoveResponse>;
+      removeEmpty: (
+        request: SecretaryTeamsRemoveEmptyRequest,
+      ) => Promise<SecretaryTeamsRemoveEmptyResponse>;
+    };
+    bowlers: {
+      listForTeam: (
+        request: SecretaryBowlersListForTeamRequest,
+      ) => Promise<SecretaryBowlersListForTeamResponse>;
+      create: (request: SecretaryBowlersCreateRequest) => Promise<SecretaryBowlersCreateResponse>;
+      update: (request: SecretaryBowlersUpdateRequest) => Promise<SecretaryBowlersUpdateResponse>;
+      remove: (request: SecretaryBowlersRemoveRequest) => Promise<SecretaryBowlersRemoveResponse>;
+    };
+    weeklyEntries: {
+      listForLeague: (
+        request: SecretaryWeeklyEntriesListForLeagueRequest,
+      ) => Promise<SecretaryWeeklyEntriesListForLeagueResponse>;
+      record: (
+        request: SecretaryWeeklyEntriesRecordRequest,
+      ) => Promise<SecretaryWeeklyEntriesRecordResponse>;
+      remove: (
+        request: SecretaryWeeklyEntriesRemoveRequest,
+      ) => Promise<SecretaryWeeklyEntriesRemoveResponse>;
+    };
   };
   /**
    * The one namespace with no web equivalent (see Milestone 9/19/23). In the
@@ -519,6 +590,64 @@ const notices: Api['notices'] = {
   markRead: () => post<NoticesMarkReadResponse>('/notices/mark-read'),
 };
 
+const secretary: Api['secretary'] = {
+  leagues: {
+    list: () => get<SecretaryLeaguesListResponse>('/secretary/leagues'),
+    get: (id: number) => get<SecretaryLeaguesGetResponse>(`/secretary/leagues/${id}`),
+    create: (createRequest: SecretaryLeaguesCreateRequest) =>
+      post<SecretaryLeaguesCreateResponse>('/secretary/leagues', createRequest),
+    update: (updateRequest: SecretaryLeaguesUpdateRequest) =>
+      put<SecretaryLeaguesUpdateResponse>(`/secretary/leagues/${updateRequest.id}`, updateRequest),
+    remove: (removeRequest: SecretaryLeaguesRemoveRequest) =>
+      del<SecretaryLeaguesRemoveResponse>(`/secretary/leagues/${removeRequest.id}`),
+  },
+  teams: {
+    listForLeague: (listRequest: SecretaryTeamsListForLeagueRequest) =>
+      get<SecretaryTeamsListForLeagueResponse>(`/secretary/leagues/${listRequest.leagueId}/teams`),
+    create: (createRequest: SecretaryTeamsCreateRequest) =>
+      post<SecretaryTeamsCreateResponse>(
+        `/secretary/leagues/${createRequest.leagueId}/teams`,
+        createRequest,
+      ),
+    update: (updateRequest: SecretaryTeamsUpdateRequest) =>
+      put<SecretaryTeamsUpdateResponse>(`/secretary/teams/${updateRequest.id}`, updateRequest),
+    remove: (removeRequest: SecretaryTeamsRemoveRequest) =>
+      del<SecretaryTeamsRemoveResponse>(`/secretary/teams/${removeRequest.id}`),
+    removeEmpty: (removeEmptyRequest: SecretaryTeamsRemoveEmptyRequest) =>
+      post<SecretaryTeamsRemoveEmptyResponse>(
+        `/secretary/leagues/${removeEmptyRequest.leagueId}/teams/remove-empty`,
+      ),
+  },
+  bowlers: {
+    listForTeam: (listRequest: SecretaryBowlersListForTeamRequest) =>
+      get<SecretaryBowlersListForTeamResponse>(`/secretary/teams/${listRequest.teamId}/bowlers`),
+    create: (createRequest: SecretaryBowlersCreateRequest) =>
+      post<SecretaryBowlersCreateResponse>(
+        `/secretary/teams/${createRequest.teamId}/bowlers`,
+        createRequest,
+      ),
+    update: (updateRequest: SecretaryBowlersUpdateRequest) =>
+      put<SecretaryBowlersUpdateResponse>(`/secretary/bowlers/${updateRequest.id}`, updateRequest),
+    remove: (removeRequest: SecretaryBowlersRemoveRequest) =>
+      del<SecretaryBowlersRemoveResponse>(`/secretary/bowlers/${removeRequest.id}`),
+  },
+  weeklyEntries: {
+    listForLeague: (listRequest: SecretaryWeeklyEntriesListForLeagueRequest) =>
+      get<SecretaryWeeklyEntriesListForLeagueResponse>(
+        `/secretary/leagues/${listRequest.leagueId}/weekly-entries`,
+      ),
+    record: (recordRequest: SecretaryWeeklyEntriesRecordRequest) =>
+      put<SecretaryWeeklyEntriesRecordResponse>(
+        `/secretary/bowlers/${recordRequest.bowlerId}/weekly-entries/${recordRequest.week}`,
+        { amountPaid: recordRequest.amountPaid },
+      ),
+    remove: (removeRequest: SecretaryWeeklyEntriesRemoveRequest) =>
+      del<SecretaryWeeklyEntriesRemoveResponse>(
+        `/secretary/bowlers/${removeRequest.bowlerId}/weekly-entries/${removeRequest.week}`,
+      ),
+  },
+};
+
 /**
  * `windowControls` has no web equivalent and isn't part of the HTTP route
  * surface (Milestone 19), so it's never implemented via `fetch` here.
@@ -550,5 +679,6 @@ export const httpApi: Api = {
   storeHours,
   specialEvents,
   notices,
+  secretary,
   windowControls,
 };

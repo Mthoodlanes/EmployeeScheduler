@@ -12,7 +12,8 @@ import { LoginPage } from './pages/LoginPage';
 import { MyAccountPage } from './pages/MyAccountPage';
 import { MySchedulePage } from './pages/MySchedulePage';
 import { ScheduleBoardPage } from './pages/ScheduleBoardPage';
-import { SecretaryHomePage } from './pages/SecretaryHomePage';
+import { SecretaryLeaguesPage } from './pages/SecretaryLeaguesPage';
+import { SecretaryLeagueSetupPage } from './pages/SecretaryLeagueSetupPage';
 import { SecretaryLoginPage } from './pages/SecretaryLoginPage';
 import { TimeOffQueuePage } from './pages/TimeOffQueuePage';
 import { RequestTimeOffPage } from './pages/RequestTimeOffPage';
@@ -108,7 +109,8 @@ export function App(): React.JSX.Element {
           <Route path="/secretary/login" element={<SecretaryLoginRoute />} />
           <Route element={<RequireSecretaryAuth />}>
             <Route element={<SecretaryLayout />}>
-              <Route path="/secretary" element={<SecretaryHomePage />} />
+              <Route path="/secretary" element={<SecretaryLeaguesPage />} />
+              <Route path="/secretary/leagues/:leagueId" element={<SecretaryLeagueSetupPage />} />
             </Route>
           </Route>
           <Route element={<RequireAuth />}>
