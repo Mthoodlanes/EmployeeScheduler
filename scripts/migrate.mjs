@@ -10,10 +10,13 @@
  * drizzle-orm's own runtime `migrate()` instead (the same tracking-table
  * format, but the library's own well-tested apply path — the "run
  * migrations at boot" pattern most Drizzle+Postgres apps use), invoked here
- * as `render.yaml`'s `preDeployCommand` so every deploy applies whatever
- * migration got committed but never manually run, instead of that being an
- * easy-to-forget manual step (see the "schedule_publications" table missing
- * in production despite its migration being generated and committed).
+ * at the end of `render.yaml`'s `buildCommand` so every deploy applies
+ * whatever migration got committed but never manually run, instead of that
+ * being an easy-to-forget manual step (see the "schedule_publications" table
+ * missing in production despite its migration being generated and
+ * committed — and see render.yaml's comment for why this isn't
+ * `preDeployCommand`: that field is silently unsupported on Render's free
+ * plan, which caused this exact class of bug to recur once already).
  */
 import 'dotenv/config';
 import postgres from 'postgres';

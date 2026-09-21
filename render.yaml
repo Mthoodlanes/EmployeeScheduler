@@ -11,14 +11,19 @@ services:
     # typescript/vite/electron-vite, all devDependencies, to produce
     # `out/renderer` (the static files Express now serves) before
     # `server:build` compiles the server itself.
-    buildCommand: npm ci --include=dev && npm run build && npm run server:build
-    # Runs against this service's own DATABASE_URL after the build above but
-    # before traffic switches to the new instance, so any pending
-    # `server/drizzle/*.sql` migration is applied automatically on every
-    # deploy — this was previously a manual, easy-to-forget step (see the
-    # "schedule_publications" table missing in production despite its
-    # migration being generated and committed).
-    preDeployCommand: npm run db:migrate
+    # `&& npm run db:migrate` is deliberately tacked onto buildCommand rather
+    # than using `preDeployCommand` — Render does not support
+    # `preDeployCommand` on the free plan at all; it's silently a no-op there
+    # (confirmed the hard way: migrations 0007-0009 never actually applied to
+    # production despite being wired into `preDeployCommand`, and the login
+    # route broke in production querying a column that build-time code
+    # assumed existed). Running it here means any pending
+    # `server/drizzle/*.sql` migration is still applied automatically before
+    # the new instance starts, just as part of the build step instead of a
+    # separate pre-deploy phase — this was previously a manual,
+    # easy-to-forget step (see the "schedule_publications" table missing in
+    # production despite its migration being generated and committed).
+    buildCommand: npm ci --include=dev && npm run build && npm run server:build && npm run db:migrate
     startCommand: npm run server:start
     envVars:
       - key: DATABASE_URL
