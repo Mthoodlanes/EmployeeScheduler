@@ -564,6 +564,12 @@ export interface SecretaryBowlersListForTeamRequest {
 }
 export type SecretaryBowlersListForTeamResponse = Bowler[];
 
+// ---- secretaryBowlers:listForLeague ----
+export interface SecretaryBowlersListForLeagueRequest {
+  leagueId: number;
+}
+export type SecretaryBowlersListForLeagueResponse = Bowler[];
+
 // ---- secretaryBowlers:create ----
 export interface SecretaryBowlersCreateRequest extends BowlerInput {
   teamId: number;

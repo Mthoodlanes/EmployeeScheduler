@@ -677,6 +677,13 @@ textarea.text-input {
   margin: var(--space-4) 0;
 }
 
+.secretary-league-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--space-4);
+}
+
 /* ==========================================================================
    Tables
    ========================================================================== */
@@ -1113,6 +1120,12 @@ table.data-table tbody tr:last-child td {
 .empty-state-body {
   font-size: var(--text-sm);
   max-width: 360px;
+}
+
+.help-text {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  max-width: 640px;
 }
 
 .loading-state {

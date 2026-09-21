@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import type { League } from '@shared/types/domain';
 import { LoadingState } from '../components/EmptyState';
+import { SecretaryLeagueTabs } from '../components/SecretaryLeagueTabs';
 import { useSecretaryLeague, useUpdateSecretaryLeague } from '../hooks/useSecretaryLeagues';
 
 interface SetupFormState {
@@ -100,6 +101,8 @@ export function SecretaryLeagueSetupPage(): React.JSX.Element {
           ← All Leagues
         </Link>
       </div>
+
+      <SecretaryLeagueTabs leagueId={id} />
 
       {isLoading && <LoadingState label="Loading league…" />}
       {error && (

@@ -15,6 +15,7 @@ import { ScheduleBoardPage } from './pages/ScheduleBoardPage';
 import { SecretaryLeaguesPage } from './pages/SecretaryLeaguesPage';
 import { SecretaryLeagueSetupPage } from './pages/SecretaryLeagueSetupPage';
 import { SecretaryLoginPage } from './pages/SecretaryLoginPage';
+import { SecretaryRosterPage } from './pages/SecretaryRosterPage';
 import { TimeOffQueuePage } from './pages/TimeOffQueuePage';
 import { RequestTimeOffPage } from './pages/RequestTimeOffPage';
 import { EmployeesAdminPage } from './pages/EmployeesAdminPage';
@@ -111,6 +112,7 @@ export function App(): React.JSX.Element {
             <Route element={<SecretaryLayout />}>
               <Route path="/secretary" element={<SecretaryLeaguesPage />} />
               <Route path="/secretary/leagues/:leagueId" element={<SecretaryLeagueSetupPage />} />
+              <Route path="/secretary/leagues/:leagueId/roster" element={<SecretaryRosterPage />} />
             </Route>
           </Route>
           <Route element={<RequireAuth />}>

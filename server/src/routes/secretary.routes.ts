@@ -20,6 +20,7 @@
  *   DELETE /api/secretary/teams/:id
  *
  *   GET    /api/secretary/teams/:teamId/bowlers
+ *   GET    /api/secretary/leagues/:leagueId/bowlers
  *   POST   /api/secretary/teams/:teamId/bowlers
  *   PUT    /api/secretary/bowlers/:id
  *   DELETE /api/secretary/bowlers/:id
@@ -186,6 +187,13 @@ router.delete(
 router.get(
   '/teams/:teamId/bowlers',
   handleRoute((req) => bowlerService.listBowlersForTeam(actorOf(req), requireIdParam(req, 'teamId'))),
+);
+
+router.get(
+  '/leagues/:leagueId/bowlers',
+  handleRoute((req) =>
+    bowlerService.listBowlersForLeague(actorOf(req), requireIdParam(req, 'leagueId')),
+  ),
 );
 
 const BOWLER_STATUSES = ['active', 'left'] as const;

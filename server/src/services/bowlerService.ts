@@ -51,6 +51,21 @@ export async function listBowlersForTeams(
   return bowlerRepo.listByTeamIds(teamIds);
 }
 
+/**
+ * Every bowler across every team in a league in one call — what the Roster
+ * page needs to compute per-team bowler counts / empty-team detection
+ * without an HTTP request per team, mirroring
+ * `weeklyEntryService.listEntriesForLeague`'s identical convenience.
+ */
+export async function listBowlersForLeague(
+  actor: RequestingActor,
+  leagueId: number,
+): Promise<Bowler[]> {
+  assertSecretaryAccess(actor);
+  const teams = await duesTeamRepo.listByLeague(leagueId);
+  return bowlerRepo.listByTeamIds(teams.map((team) => team.id));
+}
+
 export async function createBowler(
   actor: RequestingActor,
   teamId: number,

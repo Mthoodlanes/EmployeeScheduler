@@ -146,6 +146,54 @@ describe('bowlerService', () => {
       const bowlers = await bowlerService.listBowlersForTeams(secretaryActor, [teamA.id, teamB.id]);
       expect(bowlers).toHaveLength(2);
     });
+
+    it('listBowlersForLeague gathers bowlers across every team in the league', async () => {
+      const teamA = await makeTeam();
+      const league = await leagueService.getLeague(secretaryActor, teamA.leagueId);
+      const teamB = await duesTeamService.createTeam(secretaryActor, league.id, {
+        ...teamInput,
+        name: 'Gutter Balls',
+      });
+      const otherLeague = await leagueService.createLeague(secretaryActor, {
+        name: 'Wednesday Trio',
+        spotsPerTeam: 3,
+        numWeeks: 20,
+        currentWeek: 1,
+        prizeFund: 0,
+        lineage: 0,
+        sweeperActive: false,
+        sweeperAmount: 0,
+        vacancyFee: 0,
+        lineageDiscountAmount: 0,
+        prizeFundDiscountAmount: 0,
+        sponsorFeePerTeam: 0,
+        sponsorFeeActive: false,
+        depositFeeActive: false,
+        depositFeeAmount: 0,
+        sponsorFeeDueWeek: 0,
+        prizeFundCoverChargeDueWeek: 0,
+        lastTwoWeeksDueWeek: 0,
+        sanctionedLeague: true,
+      });
+      const otherTeam = await duesTeamService.createTeam(secretaryActor, otherLeague.id, teamInput);
+
+      await bowlerService.createBowler(secretaryActor, teamA.id, bowlerInput);
+      await bowlerService.createBowler(secretaryActor, teamB.id, {
+        ...bowlerInput,
+        name: 'Jesus Quintana',
+      });
+      await bowlerService.createBowler(secretaryActor, otherTeam.id, {
+        ...bowlerInput,
+        name: 'Maude Lebowski',
+      });
+
+      const bowlers = await bowlerService.listBowlersForLeague(secretaryActor, league.id);
+      expect(bowlers).toHaveLength(2);
+      expect(bowlers.map((bowler) => bowler.name).sort()).toEqual([
+        'Jesus Quintana',
+        'Walter Sobchak',
+      ]);
+    });
   });
 
   describe('updateBowler / removeBowler', () => {

@@ -120,6 +120,8 @@ import type {
   SecretaryTeamsUpdateResponse,
   SecretaryBowlersCreateRequest,
   SecretaryBowlersCreateResponse,
+  SecretaryBowlersListForLeagueRequest,
+  SecretaryBowlersListForLeagueResponse,
   SecretaryBowlersListForTeamRequest,
   SecretaryBowlersListForTeamResponse,
   SecretaryBowlersRemoveRequest,
@@ -301,6 +303,9 @@ export interface Api {
       listForTeam: (
         request: SecretaryBowlersListForTeamRequest,
       ) => Promise<SecretaryBowlersListForTeamResponse>;
+      listForLeague: (
+        request: SecretaryBowlersListForLeagueRequest,
+      ) => Promise<SecretaryBowlersListForLeagueResponse>;
       create: (request: SecretaryBowlersCreateRequest) => Promise<SecretaryBowlersCreateResponse>;
       update: (request: SecretaryBowlersUpdateRequest) => Promise<SecretaryBowlersUpdateResponse>;
       remove: (request: SecretaryBowlersRemoveRequest) => Promise<SecretaryBowlersRemoveResponse>;
@@ -621,6 +626,10 @@ const secretary: Api['secretary'] = {
   bowlers: {
     listForTeam: (listRequest: SecretaryBowlersListForTeamRequest) =>
       get<SecretaryBowlersListForTeamResponse>(`/secretary/teams/${listRequest.teamId}/bowlers`),
+    listForLeague: (listRequest: SecretaryBowlersListForLeagueRequest) =>
+      get<SecretaryBowlersListForLeagueResponse>(
+        `/secretary/leagues/${listRequest.leagueId}/bowlers`,
+      ),
     create: (createRequest: SecretaryBowlersCreateRequest) =>
       post<SecretaryBowlersCreateResponse>(
         `/secretary/teams/${createRequest.teamId}/bowlers`,
