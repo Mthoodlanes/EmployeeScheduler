@@ -226,3 +226,73 @@ export interface Notice {
   /** Optional — a notice with no expiration stays visible indefinitely until removed. */
   expiresAt: string | null;
 }
+
+// ---------------------------------------------------------------------
+// Secretary Apps: bowling dues tracker (see server/src/db/schema.ts's
+// "Secretary Apps" section for the table definitions these mirror).
+// Money fields are plain `number` here — Postgres's `numeric` columns come
+// back as strings at the repo layer specifically to avoid silent precision
+// loss in transit; each repo parses that string to a `number` once, at the
+// boundary, so everything above it (these types, `duesLedger.ts`, the UI)
+// works with ordinary numbers exactly like the original Electron app did.
+// ---------------------------------------------------------------------
+
+export type BowlerStatus = 'active' | 'left';
+
+export interface League {
+  id: number;
+  name: string;
+  spotsPerTeam: number;
+  numWeeks: number;
+  currentWeek: number;
+  prizeFund: number;
+  lineage: number;
+  sweeperActive: boolean;
+  sweeperAmount: number;
+  vacancyFee: number;
+  lineageDiscountAmount: number;
+  prizeFundDiscountAmount: number;
+  sponsorFeePerTeam: number;
+  sponsorFeeActive: boolean;
+  depositFeeActive: boolean;
+  depositFeeAmount: number;
+  /** 0 means "not tracked" — only meaningful once the corresponding fee is active. */
+  sponsorFeeDueWeek: number;
+  prizeFundCoverChargeDueWeek: number;
+  lastTwoWeeksDueWeek: number;
+  sanctionedLeague: boolean;
+  createdByEmployeeId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DuesTeam {
+  id: number;
+  leagueId: number;
+  name: string;
+  folded: boolean;
+  sponsorPaid: number;
+}
+
+export interface Bowler {
+  id: number;
+  teamId: number;
+  name: string;
+  status: BowlerStatus;
+  phone: string;
+  lineageDiscount: boolean;
+  prizeFundDiscount: boolean;
+  /** Free text (e.g. "left after week 12"), not a strict week number. */
+  dropNoticeWeek: string;
+  notes: string;
+  depositPaid: number;
+  depositOptOut: boolean;
+  usbcCardPaid: boolean;
+}
+
+export interface WeeklyEntry {
+  id: number;
+  bowlerId: number;
+  week: number;
+  amountPaid: number;
+}
