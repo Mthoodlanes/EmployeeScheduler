@@ -65,6 +65,14 @@ export function requireInteger(value: unknown, field: string): number {
   return value;
 }
 
+/** For money/decimal fields (dues amounts, fees) where a whole-number restriction would be wrong. */
+export function requireNumber(value: unknown, field: string): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    throw new Error(`"${field}" is required and must be a number`);
+  }
+  return value;
+}
+
 /** Present-but-optional integer field (undefined is fine; present must be an integer). */
 export function optionalInteger(value: unknown, field: string): number | undefined {
   if (value === undefined) {

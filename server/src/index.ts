@@ -20,6 +20,7 @@ import preferencesRoutes from './routes/preferences.routes.js';
 import storeHoursRoutes from './routes/storeHours.routes.js';
 import specialEventsRoutes from './routes/specialEvents.routes.js';
 import noticesRoutes from './routes/notices.routes.js';
+import secretaryRoutes from './routes/secretary.routes.js';
 
 // Milestone 17: fail fast at startup if JWT_SECRET is missing, rather than
 // only discovering it on the first login attempt.
@@ -76,6 +77,7 @@ app.use('/api/preferences', preferencesRoutes);
 app.use('/api/store-hours', storeHoursRoutes);
 app.use('/api/special-events', specialEventsRoutes);
 app.use('/api/notices', noticesRoutes);
+app.use('/api/secretary', secretaryRoutes);
 
 app.get('/api/health', async (_req, res) => {
   try {

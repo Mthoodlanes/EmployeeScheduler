@@ -32,6 +32,8 @@ export type Role = 'manager' | 'employee' | 'coordinator' | 'secretary';
 export interface RequestingActor {
   id: number;
   role: Role;
+  /** Grants Secretary-area access independent of `role` — see schema.ts's `is_secretary_tagged` column comment. */
+  isSecretaryTagged: boolean;
 }
 
 export interface Employee {
@@ -181,4 +183,68 @@ export interface Notice {
   updatedAt: string;
   /** Optional — a notice with no expiration stays visible indefinitely until removed. */
   expiresAt: string | null;
+}
+
+// ---------------------------------------------------------------------
+// Secretary Apps: bowling dues tracker. Field-for-field identical to
+// `src/shared/types/domain.ts`'s copies — see this file's header for why
+// they're duplicated rather than imported.
+// ---------------------------------------------------------------------
+
+export type BowlerStatus = 'active' | 'left';
+
+export interface League {
+  id: number;
+  name: string;
+  spotsPerTeam: number;
+  numWeeks: number;
+  currentWeek: number;
+  prizeFund: number;
+  lineage: number;
+  sweeperActive: boolean;
+  sweeperAmount: number;
+  vacancyFee: number;
+  lineageDiscountAmount: number;
+  prizeFundDiscountAmount: number;
+  sponsorFeePerTeam: number;
+  sponsorFeeActive: boolean;
+  depositFeeActive: boolean;
+  depositFeeAmount: number;
+  sponsorFeeDueWeek: number;
+  prizeFundCoverChargeDueWeek: number;
+  lastTwoWeeksDueWeek: number;
+  sanctionedLeague: boolean;
+  createdByEmployeeId: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DuesTeam {
+  id: number;
+  leagueId: number;
+  name: string;
+  folded: boolean;
+  sponsorPaid: number;
+}
+
+export interface Bowler {
+  id: number;
+  teamId: number;
+  name: string;
+  status: BowlerStatus;
+  phone: string;
+  lineageDiscount: boolean;
+  prizeFundDiscount: boolean;
+  dropNoticeWeek: string;
+  notes: string;
+  depositPaid: number;
+  depositOptOut: boolean;
+  usbcCardPaid: boolean;
+}
+
+export interface WeeklyEntry {
+  id: number;
+  bowlerId: number;
+  week: number;
+  amountPaid: number;
 }

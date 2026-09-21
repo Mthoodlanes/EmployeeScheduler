@@ -4,9 +4,13 @@ import * as employeeService from '../../../../server/src/services/employeeServic
 import * as authService from '../../../../server/src/services/authService.js';
 import type { RequestingActor } from '../../../../server/src/db/domain-types.js';
 
-const managerActor: RequestingActor = { id: 999999, role: 'manager' };
-const employeeActor: RequestingActor = { id: 999998, role: 'employee' };
-const coordinatorActor: RequestingActor = { id: 999997, role: 'coordinator' };
+const managerActor: RequestingActor = { id: 999999, role: 'manager', isSecretaryTagged: false };
+const employeeActor: RequestingActor = { id: 999998, role: 'employee', isSecretaryTagged: false };
+const coordinatorActor: RequestingActor = {
+  id: 999997,
+  role: 'coordinator',
+  isSecretaryTagged: false,
+};
 
 beforeEach(async () => {
   await truncateAllTables();
@@ -240,7 +244,7 @@ describe('employeeService', () => {
         isSecretaryTagged: false,
         departments: [],
       });
-      const selfActor: RequestingActor = { id: created.id, role: 'employee' };
+      const selfActor: RequestingActor = { id: created.id, role: 'employee', isSecretaryTagged: false };
 
       const updated = await employeeService.updateOwnProfile(selfActor, { name: 'Updated Name' });
 
@@ -261,7 +265,7 @@ describe('employeeService', () => {
         isSecretaryTagged: false,
         departments: [],
       });
-      const selfActor: RequestingActor = { id: created.id, role: 'employee' };
+      const selfActor: RequestingActor = { id: created.id, role: 'employee', isSecretaryTagged: false };
 
       await employeeService.updateOwnProfile(selfActor, {
         currentPassword: 'old-password',
@@ -285,7 +289,7 @@ describe('employeeService', () => {
         isSecretaryTagged: false,
         departments: [],
       });
-      const selfActor: RequestingActor = { id: created.id, role: 'employee' };
+      const selfActor: RequestingActor = { id: created.id, role: 'employee', isSecretaryTagged: false };
 
       await expect(
         employeeService.updateOwnProfile(selfActor, {
@@ -309,7 +313,7 @@ describe('employeeService', () => {
         isSecretaryTagged: false,
         departments: [],
       });
-      const selfActor: RequestingActor = { id: created.id, role: 'employee' };
+      const selfActor: RequestingActor = { id: created.id, role: 'employee', isSecretaryTagged: false };
 
       await expect(
         employeeService.updateOwnProfile(selfActor, { newPassword: 'new-password' }),

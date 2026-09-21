@@ -4,8 +4,8 @@ import * as storeHoursService from '../../../../server/src/services/storeHoursSe
 import { UnauthorizedStoreHoursActionError } from '../../../../server/src/services/storeHoursService.js';
 import type { RequestingActor } from '../../../../server/src/db/domain-types.js';
 
-const employeeActor: RequestingActor = { id: 1, role: 'employee' };
-const managerActor: RequestingActor = { id: 2, role: 'manager' };
+const employeeActor: RequestingActor = { id: 1, role: 'employee', isSecretaryTagged: false };
+const managerActor: RequestingActor = { id: 2, role: 'manager', isSecretaryTagged: false };
 
 beforeEach(async () => {
   await truncateAllTables();

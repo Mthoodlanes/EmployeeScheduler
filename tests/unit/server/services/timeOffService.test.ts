@@ -26,7 +26,7 @@ beforeEach(async () => {
     isSecretaryTagged: false,
     departments: ['front_desk'],
   });
-  employeeActor = { id: employee.id, role: 'employee' };
+  employeeActor = { id: employee.id, role: 'employee', isSecretaryTagged: false };
 
   const otherEmployee = await employeeRepo.create({
     name: 'Other Employee',
@@ -37,7 +37,7 @@ beforeEach(async () => {
     isSecretaryTagged: false,
     departments: [],
   });
-  otherEmployeeActor = { id: otherEmployee.id, role: 'employee' };
+  otherEmployeeActor = { id: otherEmployee.id, role: 'employee', isSecretaryTagged: false };
 
   const manager = await employeeRepo.create({
     name: 'Dana Manager',
@@ -48,7 +48,7 @@ beforeEach(async () => {
     isSecretaryTagged: false,
     departments: [],
   });
-  managerActor = { id: manager.id, role: 'manager' };
+  managerActor = { id: manager.id, role: 'manager', isSecretaryTagged: false };
 });
 
 describe('timeOffService', () => {

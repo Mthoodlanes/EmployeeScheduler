@@ -62,6 +62,13 @@ import {
 } from '../services/specialEventService.js';
 import { FirstRunAlreadyCompleteError, InvalidCredentialsError } from '../services/authService.js';
 import { NoticeNotFoundError, UnauthorizedNoticeActionError } from '../services/noticeService.js';
+import { LeagueNotFoundError, UnauthorizedLeagueActionError } from '../services/leagueService.js';
+import {
+  DuesTeamNotFoundError,
+  UnauthorizedDuesTeamActionError,
+} from '../services/duesTeamService.js';
+import { BowlerNotFoundError, UnauthorizedBowlerActionError } from '../services/bowlerService.js';
+import { UnauthorizedWeeklyEntryActionError } from '../services/weeklyEntryService.js';
 
 interface ErrorMapping {
   ctor: new (...args: never[]) => Error;
@@ -76,6 +83,9 @@ const ERROR_STATUS_MAP: ErrorMapping[] = [
   { ctor: PreferenceNotFoundError, status: 404 },
   { ctor: SpecialEventNotFoundError, status: 404 },
   { ctor: NoticeNotFoundError, status: 404 },
+  { ctor: LeagueNotFoundError, status: 404 },
+  { ctor: DuesTeamNotFoundError, status: 404 },
+  { ctor: BowlerNotFoundError, status: 404 },
   // 409 – conflict
   { ctor: DuplicateUsernameError, status: 409 },
   { ctor: InvalidApprovalTransitionError, status: 409 },
@@ -90,6 +100,10 @@ const ERROR_STATUS_MAP: ErrorMapping[] = [
   { ctor: UnauthorizedStoreHoursActionError, status: 403 },
   { ctor: UnauthorizedSpecialEventActionError, status: 403 },
   { ctor: UnauthorizedNoticeActionError, status: 403 },
+  { ctor: UnauthorizedLeagueActionError, status: 403 },
+  { ctor: UnauthorizedDuesTeamActionError, status: 403 },
+  { ctor: UnauthorizedBowlerActionError, status: 403 },
+  { ctor: UnauthorizedWeeklyEntryActionError, status: 403 },
   // 401 – not authenticated at all (login only; unused by this milestone's
   // routes, kept here so the mapping table documents every known error).
   { ctor: InvalidCredentialsError, status: 401 },

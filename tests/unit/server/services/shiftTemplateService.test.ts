@@ -3,8 +3,8 @@ import { truncateAllTables } from '../dbTestSetup.js';
 import * as shiftTemplateService from '../../../../server/src/services/shiftTemplateService.js';
 import type { RequestingActor } from '../../../../server/src/db/domain-types.js';
 
-const managerActor: RequestingActor = { id: 999999, role: 'manager' };
-const employeeActor: RequestingActor = { id: 999998, role: 'employee' };
+const managerActor: RequestingActor = { id: 999999, role: 'manager', isSecretaryTagged: false };
+const employeeActor: RequestingActor = { id: 999998, role: 'employee', isSecretaryTagged: false };
 
 beforeEach(async () => {
   await truncateAllTables();

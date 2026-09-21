@@ -27,7 +27,7 @@ beforeEach(async () => {
     isSecretaryTagged: false,
     departments: [],
   });
-  managerActor = { id: manager.id, role: 'manager' };
+  managerActor = { id: manager.id, role: 'manager', isSecretaryTagged: false };
 
   const coordinator = await employeeRepo.create({
     name: 'Casey Coordinator',
@@ -38,7 +38,7 @@ beforeEach(async () => {
     isSecretaryTagged: false,
     departments: ['front_desk'],
   });
-  coordinatorActor = { id: coordinator.id, role: 'coordinator' };
+  coordinatorActor = { id: coordinator.id, role: 'coordinator', isSecretaryTagged: false };
 
   const employee = await employeeRepo.create({
     name: 'Riley Front',
@@ -49,7 +49,7 @@ beforeEach(async () => {
     isSecretaryTagged: false,
     departments: ['front_desk'],
   });
-  employeeActor = { id: employee.id, role: 'employee' };
+  employeeActor = { id: employee.id, role: 'employee', isSecretaryTagged: false };
 });
 
 describe('noticeService', () => {

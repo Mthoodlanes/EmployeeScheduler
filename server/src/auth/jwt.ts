@@ -33,6 +33,25 @@ interface ActorTokenPayload {
    * moments after the logout response tried to clear it.
    */
   sessionVersion: number;
+  /**
+   * Secretary Apps Milestone 4: grants Secretary-area access independent of
+   * `role` (see schema.ts's `is_secretary_tagged` column comment). Embedded
+   * here rather than looked up fresh per request, the same way `role`
+   * itself already works — a change to this flag takes effect on that
+   * employee's NEXT login/token refresh, not mid-session. `resolveActor`
+   * doesn't specially double-check this the way it does `sessionVersion`;
+   * it's authorization data, not a revocation signal.
+   *
+   * OPTIONAL on purpose: a token signed before this field existed has no
+   * way to carry it. Treating it as required here would make
+   * `isActorTokenPayload` reject every already-issued token the instant
+   * this deploys, forcing every signed-in employee (all of them entirely
+   * unrelated to Secretary Apps) to re-log-in for no real reason.
+   * `verifyActorToken` below defaults a missing value to `false`, which is
+   * exactly correct anyway — nobody could have been tagged before this
+   * field existed.
+   */
+  isSecretaryTagged?: boolean;
 }
 
 function isRole(value: unknown): value is Role {
@@ -42,12 +61,14 @@ function isRole(value: unknown): value is Role {
 }
 
 function isActorTokenPayload(value: unknown): value is ActorTokenPayload {
+  const secretaryTagged = (value as ActorTokenPayload | null)?.isSecretaryTagged;
   return (
     typeof value === 'object' &&
     value !== null &&
     typeof (value as ActorTokenPayload).employeeId === 'number' &&
     isRole((value as ActorTokenPayload).role) &&
-    typeof (value as ActorTokenPayload).sessionVersion === 'number'
+    typeof (value as ActorTokenPayload).sessionVersion === 'number' &&
+    (secretaryTagged === undefined || typeof secretaryTagged === 'boolean')
   );
 }
 
@@ -70,7 +91,12 @@ export function getJwtSecret(): string {
 }
 
 export function signActorToken(actor: RequestingActor, sessionVersion: number): string {
-  const payload: ActorTokenPayload = { employeeId: actor.id, role: actor.role, sessionVersion };
+  const payload: ActorTokenPayload = {
+    employeeId: actor.id,
+    role: actor.role,
+    sessionVersion,
+    isSecretaryTagged: actor.isSecretaryTagged,
+  };
   return jwt.sign(payload, getJwtSecret(), { expiresIn: SESSION_TOKEN_TTL_SECONDS });
 }
 
@@ -95,7 +121,12 @@ export function verifyActorToken(token: string): VerifiedActorToken | null {
     if (!isActorTokenPayload(decoded)) {
       return null;
     }
-    return { id: decoded.employeeId, role: decoded.role, sessionVersion: decoded.sessionVersion };
+    return {
+      id: decoded.employeeId,
+      role: decoded.role,
+      sessionVersion: decoded.sessionVersion,
+      isSecretaryTagged: decoded.isSecretaryTagged ?? false,
+    };
   } catch {
     return null;
   }

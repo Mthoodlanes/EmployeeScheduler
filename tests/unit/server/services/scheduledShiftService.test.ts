@@ -12,7 +12,7 @@ let employeeId: number;
 // `actor.id` as `schedule_publications.published_by_employee_id`, which is
 // FK-constrained against `employees`.
 let managerActor: RequestingActor;
-const employeeActor: RequestingActor = { id: 999998, role: 'employee' };
+const employeeActor: RequestingActor = { id: 999998, role: 'employee', isSecretaryTagged: false };
 
 beforeEach(async () => {
   await truncateAllTables();
@@ -26,7 +26,7 @@ beforeEach(async () => {
     isSecretaryTagged: false,
     departments: [],
   });
-  managerActor = { id: manager.id, role: 'manager' };
+  managerActor = { id: manager.id, role: 'manager', isSecretaryTagged: false };
 
   const employee = await employeeRepo.create({
     name: 'Riley Front',

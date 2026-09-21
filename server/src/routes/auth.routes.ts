@@ -20,13 +20,13 @@ import type { Employee, RequestingActor } from '../db/domain-types.js';
 
 const router = Router();
 
-function actorFor(employee: Pick<Employee, 'id' | 'role'>): RequestingActor {
-  return { id: employee.id, role: employee.role };
+function actorFor(employee: Pick<Employee, 'id' | 'role' | 'isSecretaryTagged'>): RequestingActor {
+  return { id: employee.id, role: employee.role, isSecretaryTagged: employee.isSecretaryTagged };
 }
 
 async function setSessionCookie(
   res: Response,
-  employee: Pick<Employee, 'id' | 'role'>,
+  employee: Pick<Employee, 'id' | 'role' | 'isSecretaryTagged'>,
 ): Promise<void> {
   const sessionVersion = await employeeRepo.getSessionVersion(employee.id);
   res.cookie(

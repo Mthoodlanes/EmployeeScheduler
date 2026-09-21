@@ -26,7 +26,7 @@ beforeEach(async () => {
     departments: ['front_desk'],
   });
   employeeId = employee.id;
-  employeeActor = { id: employee.id, role: 'employee' };
+  employeeActor = { id: employee.id, role: 'employee', isSecretaryTagged: false };
 
   const otherEmployee = await employeeRepo.create({
     name: 'Other Employee',
@@ -48,7 +48,7 @@ beforeEach(async () => {
     isSecretaryTagged: false,
     departments: [],
   });
-  managerActor = { id: manager.id, role: 'manager' };
+  managerActor = { id: manager.id, role: 'manager', isSecretaryTagged: false };
 });
 
 describe('preferenceService', () => {
