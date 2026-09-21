@@ -422,6 +422,14 @@ export const bowlers = pgTable('bowlers', {
   depositPaid: numeric('deposit_paid', { precision: 10, scale: 2 }).notNull().default('0'),
   depositOptOut: boolean('deposit_opt_out').notNull().default(false),
   usbcCardPaid: boolean('usbc_card_paid').notNull().default(false),
+  // A running amount the secretary records directly, credited toward the
+  // last-two-weeks charge on top of any automatic overpayment credit (see
+  // `duesLedger.ts`'s `buildLastTwoWeeksBalanceByBowler`) — lets a bowler
+  // pre-pay their final-two-weeks dues without needing to overpay some
+  // earlier week's entry to create that credit indirectly.
+  lastTwoWeeksPaid: numeric('last_two_weeks_paid', { precision: 10, scale: 2 })
+    .notNull()
+    .default('0'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });

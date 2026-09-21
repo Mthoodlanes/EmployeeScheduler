@@ -556,6 +556,7 @@ export interface BowlerInput {
   depositPaid: number;
   depositOptOut: boolean;
   usbcCardPaid: boolean;
+  lastTwoWeeksPaid: number;
 }
 
 // ---- secretaryBowlers:listForTeam ----

@@ -53,6 +53,7 @@ const bowlerInput: BowlerInput = {
   depositPaid: 0,
   depositOptOut: false,
   usbcCardPaid: false,
+  lastTwoWeeksPaid: 0,
 };
 
 async function makeTeam() {

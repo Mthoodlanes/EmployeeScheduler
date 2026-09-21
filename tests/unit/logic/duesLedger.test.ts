@@ -63,6 +63,7 @@ function makeBowler(overrides: Partial<Bowler> = {}): Bowler {
     depositPaid: 0,
     depositOptOut: false,
     usbcCardPaid: false,
+    lastTwoWeeksPaid: 0,
     ...overrides,
   };
 }
@@ -207,7 +208,7 @@ describe('buildLastTwoWeeksBalanceByBowler', () => {
     ];
     const flat = buildFlatEntries(league, bowlers, entries);
 
-    const result = buildLastTwoWeeksBalanceByBowler(flat, 4);
+    const result = buildLastTwoWeeksBalanceByBowler(flat, 4, {});
 
     // Owed 30, credit 15 -> 15 still owed.
     expect(result[1]).toBe(15);
@@ -225,7 +226,7 @@ describe('buildLastTwoWeeksBalanceByBowler', () => {
     ];
     const flat = buildFlatEntries(league, bowlers, entries);
 
-    const result = buildLastTwoWeeksBalanceByBowler(flat, 4);
+    const result = buildLastTwoWeeksBalanceByBowler(flat, 4, {});
 
     // Fully paid for weeks 3-4 -> 0 owed for the final two weeks specifically,
     // even though the bowler is behind overall from week 1.
@@ -242,7 +243,47 @@ describe('buildLastTwoWeeksBalanceByBowler', () => {
     ];
     const flat = buildFlatEntries(league, bowlers, entries);
 
-    expect(buildLastTwoWeeksBalanceByBowler(flat, 4)[1]).toBe(0);
+    expect(buildLastTwoWeeksBalanceByBowler(flat, 4, {})[1]).toBe(0);
+  });
+
+  it('adds a manually recorded last-two-weeks payment as its own credit, on top of any automatic credit', () => {
+    const league = makeLeague({ numWeeks: 4 });
+    const bowlers = [makeBowler({ id: 1 })];
+    // Weeks 3-4 (the final two): due 15 each = 30, nothing paid, no prior credit.
+    const entries = [
+      makeEntry({ id: 1, bowlerId: 1, week: 3, amountPaid: 0 }),
+      makeEntry({ id: 2, bowlerId: 1, week: 4, amountPaid: 0 }),
+    ];
+    const flat = buildFlatEntries(league, bowlers, entries);
+
+    const result = buildLastTwoWeeksBalanceByBowler(flat, 4, { 1: 20 });
+
+    // Owed 30, manual credit 20 -> 10 still owed.
+    expect(result[1]).toBe(10);
+  });
+
+  it('never goes negative from a manual credit larger than what is owed', () => {
+    const league = makeLeague({ numWeeks: 4 });
+    const bowlers = [makeBowler({ id: 1 })];
+    const entries = [
+      makeEntry({ id: 1, bowlerId: 1, week: 3, amountPaid: 0 }),
+      makeEntry({ id: 2, bowlerId: 1, week: 4, amountPaid: 0 }),
+    ];
+    const flat = buildFlatEntries(league, bowlers, entries);
+
+    expect(buildLastTwoWeeksBalanceByBowler(flat, 4, { 1: 500 })[1]).toBe(0);
+  });
+
+  it('includes a bowler who has a manual credit but zero recorded weekly entries at all', () => {
+    const league = makeLeague({ numWeeks: 4 });
+    const flat = buildFlatEntries(league, [], []);
+
+    const result = buildLastTwoWeeksBalanceByBowler(flat, 4, { 7: 25 });
+
+    // No entries at all -> nothing due for the final two weeks, so the
+    // manual credit doesn't even matter here, but the bowler must still
+    // show up in the result (at 0) rather than being silently dropped.
+    expect(result[7]).toBe(0);
   });
 });
 

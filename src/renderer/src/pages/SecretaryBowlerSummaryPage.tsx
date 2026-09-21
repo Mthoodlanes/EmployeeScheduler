@@ -43,7 +43,11 @@ export function SecretaryBowlerSummaryPage(): React.JSX.Element {
         teams,
         bowlers,
         buildBowlerLedger(flatEntries, league.currentWeek),
-        buildLastTwoWeeksBalanceByBowler(flatEntries, league.numWeeks),
+        buildLastTwoWeeksBalanceByBowler(
+          flatEntries,
+          league.numWeeks,
+          Object.fromEntries(bowlers.map((bowler) => [bowler.id, bowler.lastTwoWeeksPaid])),
+        ),
       )
     : [];
   const totals = aggregateBowlerSummaryTotals(rows);

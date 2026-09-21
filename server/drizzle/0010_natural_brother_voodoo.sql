@@ -1,0 +1,1 @@
+ALTER TABLE "bowlers" ADD COLUMN "last_two_weeks_paid" numeric(10, 2) DEFAULT '0' NOT NULL;

@@ -240,6 +240,7 @@ export interface Bowler {
   depositPaid: number;
   depositOptOut: boolean;
   usbcCardPaid: boolean;
+  lastTwoWeeksPaid: number;
 }
 
 export interface WeeklyEntry {

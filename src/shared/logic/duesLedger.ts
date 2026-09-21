@@ -186,25 +186,40 @@ export function buildRunningBalanceByWeek(flatEntries: EntryFlat[]): RunningBala
  * crediting any prepayment they'd already built up before those two weeks
  * began — an ordinary mid-season DEBT does not reduce this (it's already
  * reflected in their whole-season balance); only a CREDIT does, and only
- * once, against this specific number.
+ * once, against this specific number. `lastTwoWeeksPaidByBowler` is a
+ * SECOND, independent source of that same kind of credit: a running amount
+ * the secretary records directly on the bowler (see `Bowler.lastTwoWeeksPaid`)
+ * rather than needing to overpay some earlier week's entry to create the
+ * credit indirectly. Both sources are simply added together — a bowler with
+ * no weekly entries recorded at all yet can still show a $0 balance here
+ * purely from this manual credit, which is why bowler ids come from the
+ * union of both inputs, not just whoever has an entry.
  */
 export function buildLastTwoWeeksBalanceByBowler(
   flatEntries: EntryFlat[],
   numWeeks: number,
+  lastTwoWeeksPaidByBowler: Record<number, number>,
 ): Record<number, number> {
   const result: Record<number, number> = {};
   const lastTwoWeekNums = new Set([numWeeks - 1, numWeeks].filter((week) => week >= 1));
-  for (const [bowlerId, entries] of groupByBowler(flatEntries)) {
+  const entriesByBowler = groupByBowler(flatEntries);
+  const bowlerIds = new Set([
+    ...entriesByBowler.keys(),
+    ...Object.keys(lastTwoWeeksPaidByBowler).map(Number),
+  ]);
+  for (const bowlerId of bowlerIds) {
+    const entries = entriesByBowler.get(bowlerId) ?? [];
     const priorEntries = entries.filter((entry) => entry.week <= numWeeks - 2);
     const priorDue = priorEntries.reduce((sum, entry) => sum + entry.due, 0);
     const priorPaid = priorEntries.reduce((sum, entry) => sum + entry.paid, 0);
     const priorBalance = priorDue - priorPaid;
-    const creditAvailable = priorBalance < 0 ? -priorBalance : 0;
+    const automaticCredit = priorBalance < 0 ? -priorBalance : 0;
+    const manualCredit = lastTwoWeeksPaidByBowler[bowlerId] ?? 0;
 
     const relevant = entries.filter((entry) => lastTwoWeekNums.has(entry.week));
     const due = relevant.reduce((sum, entry) => sum + entry.due, 0);
     const paid = relevant.reduce((sum, entry) => sum + entry.paid, 0);
-    result[bowlerId] = Math.max(0, due - paid - creditAvailable);
+    result[bowlerId] = Math.max(0, due - paid - automaticCredit - manualCredit);
   }
   return result;
 }

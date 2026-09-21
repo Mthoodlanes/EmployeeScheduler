@@ -33,6 +33,9 @@ function assertValidBowler(input: BowlerInput): void {
   if (input.depositPaid < 0) {
     throw new Error('Deposit paid cannot be negative');
   }
+  if (input.lastTwoWeeksPaid < 0) {
+    throw new Error('Last two weeks paid cannot be negative');
+  }
 }
 
 export async function listBowlersForTeam(

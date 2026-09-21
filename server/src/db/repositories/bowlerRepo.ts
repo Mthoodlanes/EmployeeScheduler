@@ -19,6 +19,7 @@ function toBowler(row: BowlerRow): Bowler {
     depositPaid: Number(row.depositPaid),
     depositOptOut: row.depositOptOut,
     usbcCardPaid: row.usbcCardPaid,
+    lastTwoWeeksPaid: Number(row.lastTwoWeeksPaid),
   };
 }
 
@@ -33,6 +34,7 @@ export interface BowlerInput {
   depositPaid: number;
   depositOptOut: boolean;
   usbcCardPaid: boolean;
+  lastTwoWeeksPaid: number;
 }
 
 type BowlerColumnValues = Omit<
@@ -52,6 +54,7 @@ function toColumnValues(input: BowlerInput): BowlerColumnValues {
     depositPaid: input.depositPaid.toString(),
     depositOptOut: input.depositOptOut,
     usbcCardPaid: input.usbcCardPaid,
+    lastTwoWeeksPaid: input.lastTwoWeeksPaid.toString(),
   };
 }
 

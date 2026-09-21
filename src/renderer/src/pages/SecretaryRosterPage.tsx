@@ -35,6 +35,7 @@ interface BowlerFormState {
   depositPaid: number;
   depositOptOut: boolean;
   usbcCardPaid: boolean;
+  lastTwoWeeksPaid: number;
 }
 
 const EMPTY_BOWLER_FORM: BowlerFormState = {
@@ -49,6 +50,7 @@ const EMPTY_BOWLER_FORM: BowlerFormState = {
   depositPaid: 0,
   depositOptOut: false,
   usbcCardPaid: false,
+  lastTwoWeeksPaid: 0,
 };
 
 function toBowlerFormState(bowler: Bowler): BowlerFormState {
@@ -64,6 +66,7 @@ function toBowlerFormState(bowler: Bowler): BowlerFormState {
     depositPaid: bowler.depositPaid,
     depositOptOut: bowler.depositOptOut,
     usbcCardPaid: bowler.usbcCardPaid,
+    lastTwoWeeksPaid: bowler.lastTwoWeeksPaid,
   };
 }
 
@@ -181,6 +184,7 @@ export function SecretaryRosterPage(): React.JSX.Element {
       depositPaid: bowlerForm.depositPaid,
       depositOptOut: bowlerForm.depositOptOut,
       usbcCardPaid: bowlerForm.usbcCardPaid,
+      lastTwoWeeksPaid: bowlerForm.lastTwoWeeksPaid,
     };
     try {
       if (bowlerForm.id !== null) {
@@ -307,6 +311,7 @@ export function SecretaryRosterPage(): React.JSX.Element {
                     <th>Lineage Disc.</th>
                     <th>Prize Fund Disc.</th>
                     <th>Drop Notice Wk</th>
+                    <th>Last 2 Wks Paid</th>
                     {league?.depositFeeActive && <th>Deposit Paid</th>}
                     {league?.depositFeeActive && <th>Deposit Opt-Out</th>}
                     <th aria-label="Actions" />
@@ -328,6 +333,7 @@ export function SecretaryRosterPage(): React.JSX.Element {
                       <td>{bowler.lineageDiscount ? 'Yes' : 'No'}</td>
                       <td>{bowler.prizeFundDiscount ? 'Yes' : 'No'}</td>
                       <td>{bowler.dropNoticeWeek}</td>
+                      <td>{formatCurrency(bowler.lastTwoWeeksPaid)}</td>
                       {league?.depositFeeActive && (
                         <td>{formatCurrency(bowler.depositPaid)}</td>
                       )}
@@ -460,6 +466,23 @@ export function SecretaryRosterPage(): React.JSX.Element {
                     />
                   </label>
                 )}
+                <label className="secretary-form-row" htmlFor="bowler-last-two-weeks-paid">
+                  <span className="secretary-form-row-label">Last 2 weeks paid</span>
+                  <input
+                    id="bowler-last-two-weeks-paid"
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    className="text-input"
+                    value={bowlerForm.lastTwoWeeksPaid}
+                    onChange={(event) =>
+                      setBowlerForm({
+                        ...bowlerForm,
+                        lastTwoWeeksPaid: Number(event.target.value),
+                      })
+                    }
+                  />
+                </label>
                 <label className="secretary-form-row" htmlFor="bowler-notes">
                   <span className="secretary-form-row-label">Notes</span>
                   <input

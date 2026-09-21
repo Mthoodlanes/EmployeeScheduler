@@ -71,6 +71,13 @@
       "when": 1789955339905,
       "tag": "0009_chubby_tomorrow_man",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1789973030854,
+      "tag": "0010_natural_brother_voodoo",
+      "breakpoints": true
     }
   ]
 }

@@ -288,6 +288,8 @@ export interface Bowler {
   depositPaid: number;
   depositOptOut: boolean;
   usbcCardPaid: boolean;
+  /** Credited toward the last-two-weeks charge on top of any automatic overpayment credit — see `duesLedger.ts`'s `buildLastTwoWeeksBalanceByBowler`. */
+  lastTwoWeeksPaid: number;
 }
 
 export interface WeeklyEntry {
