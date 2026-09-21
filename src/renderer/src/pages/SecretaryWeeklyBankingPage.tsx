@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { buildFlatEntries, computeWeekStats } from '@shared/logic/duesLedger';
 import { LoadingState } from '../components/EmptyState';
-import { IconBowlingPin, IconPrinter } from '../components/icons';
+import { IconPrinter } from '../components/icons';
 import { PrintWeeklyBanking } from '../components/PrintWeeklyBanking/PrintWeeklyBanking';
 import { SecretaryLeagueTabs } from '../components/SecretaryLeagueTabs';
 import { formatCurrency } from '../utils/formatCurrency';
@@ -57,12 +57,7 @@ export function SecretaryWeeklyBankingPage(): React.JSX.Element {
     <div className="page">
       <div className="weekly-banking-screen">
         <div className="page-header">
-          <h1>
-            <span className="secretary-page-icon">
-              <IconBowlingPin />
-            </span>
-            {league ? league.name : 'Weekly Banking'}
-          </h1>
+          <h1>{league ? league.name : 'Weekly Banking'}</h1>
           <Link to="/secretary" className="btn btn-link">
             ← All Leagues
           </Link>

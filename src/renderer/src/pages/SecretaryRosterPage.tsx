@@ -4,7 +4,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import type { Bowler, BowlerStatus } from '@shared/types/domain';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { EmptyState, LoadingState } from '../components/EmptyState';
-import { IconBowlingPin, IconUsers } from '../components/icons';
+import { IconUsers } from '../components/icons';
 import { SecretaryLeagueTabs } from '../components/SecretaryLeagueTabs';
 import { useSecretaryLeague } from '../hooks/useSecretaryLeagues';
 import {
@@ -200,12 +200,7 @@ export function SecretaryRosterPage(): React.JSX.Element {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>
-          <span className="secretary-page-icon">
-            <IconBowlingPin />
-          </span>
-          {league ? league.name : 'Roster'}
-        </h1>
+        <h1>{league ? league.name : 'Roster'}</h1>
         <Link to="/secretary" className="btn btn-link">
           ← All Leagues
         </Link>
@@ -355,7 +350,6 @@ export function SecretaryRosterPage(): React.JSX.Element {
 
             <h2>{isBowlerFormEditing ? `Edit ${bowlerForm.name}` : 'Add bowler'}</h2>
             <form
-              className="form-grid"
               onSubmit={(event) => {
                 handleBowlerSubmit(event);
               }}
@@ -365,101 +359,45 @@ export function SecretaryRosterPage(): React.JSX.Element {
                   {bowlerFormError}
                 </div>
               )}
-              <label className="field-label" htmlFor="bowler-name">
-                Name
-                <input
-                  id="bowler-name"
-                  className="text-input"
-                  value={bowlerForm.name}
-                  onChange={(event) => setBowlerForm({ ...bowlerForm, name: event.target.value })}
-                  required
-                />
-              </label>
-              <label className="field-label" htmlFor="bowler-phone">
-                Phone
-                <input
-                  id="bowler-phone"
-                  type="tel"
-                  className="text-input"
-                  value={bowlerForm.phone}
-                  onChange={(event) => setBowlerForm({ ...bowlerForm, phone: event.target.value })}
-                />
-              </label>
-              {isBowlerFormEditing && (
-                <label className="checkbox-row" htmlFor="bowler-left">
+              <div className="secretary-field-grid">
+                <label className="field-label" htmlFor="bowler-name">
+                  Name
                   <input
-                    id="bowler-left"
-                    type="checkbox"
-                    checked={bowlerForm.status === 'left'}
-                    onChange={(event) =>
-                      setBowlerForm({
-                        ...bowlerForm,
-                        status: event.target.checked ? 'left' : 'active',
-                      })
-                    }
-                  />
-                  Left the league
-                </label>
-              )}
-              {league?.sanctionedLeague && (
-                <label className="checkbox-row" htmlFor="bowler-usbc">
-                  <input
-                    id="bowler-usbc"
-                    type="checkbox"
-                    checked={bowlerForm.usbcCardPaid}
-                    onChange={(event) =>
-                      setBowlerForm({ ...bowlerForm, usbcCardPaid: event.target.checked })
-                    }
-                  />
-                  USBC card paid
-                </label>
-              )}
-              <label className="checkbox-row" htmlFor="bowler-lineage-discount">
-                <input
-                  id="bowler-lineage-discount"
-                  type="checkbox"
-                  checked={bowlerForm.lineageDiscount}
-                  onChange={(event) =>
-                    setBowlerForm({ ...bowlerForm, lineageDiscount: event.target.checked })
-                  }
-                />
-                Lineage discount
-              </label>
-              <label className="checkbox-row" htmlFor="bowler-prize-fund-discount">
-                <input
-                  id="bowler-prize-fund-discount"
-                  type="checkbox"
-                  checked={bowlerForm.prizeFundDiscount}
-                  onChange={(event) =>
-                    setBowlerForm({ ...bowlerForm, prizeFundDiscount: event.target.checked })
-                  }
-                />
-                Prize fund discount
-              </label>
-              {isBowlerFormEditing && (
-                <label className="field-label" htmlFor="bowler-drop-notice-week">
-                  Drop notice week
-                  <input
-                    id="bowler-drop-notice-week"
+                    id="bowler-name"
                     className="text-input"
-                    value={bowlerForm.dropNoticeWeek}
+                    value={bowlerForm.name}
                     onChange={(event) =>
-                      setBowlerForm({ ...bowlerForm, dropNoticeWeek: event.target.value })
+                      setBowlerForm({ ...bowlerForm, name: event.target.value })
+                    }
+                    required
+                  />
+                </label>
+                <label className="field-label" htmlFor="bowler-phone">
+                  Phone
+                  <input
+                    id="bowler-phone"
+                    type="tel"
+                    className="text-input"
+                    value={bowlerForm.phone}
+                    onChange={(event) =>
+                      setBowlerForm({ ...bowlerForm, phone: event.target.value })
                     }
                   />
                 </label>
-              )}
-              <label className="field-label" htmlFor="bowler-notes">
-                Notes
-                <input
-                  id="bowler-notes"
-                  className="text-input"
-                  value={bowlerForm.notes}
-                  onChange={(event) => setBowlerForm({ ...bowlerForm, notes: event.target.value })}
-                />
-              </label>
-              {league?.depositFeeActive && (
-                <>
+                {isBowlerFormEditing && (
+                  <label className="field-label" htmlFor="bowler-drop-notice-week">
+                    Drop notice week
+                    <input
+                      id="bowler-drop-notice-week"
+                      className="text-input"
+                      value={bowlerForm.dropNoticeWeek}
+                      onChange={(event) =>
+                        setBowlerForm({ ...bowlerForm, dropNoticeWeek: event.target.value })
+                      }
+                    />
+                  </label>
+                )}
+                {league?.depositFeeActive && (
                   <label className="field-label" htmlFor="bowler-deposit-paid">
                     Deposit paid
                     <input
@@ -474,6 +412,73 @@ export function SecretaryRosterPage(): React.JSX.Element {
                       }
                     />
                   </label>
+                )}
+                <label className="field-label secretary-field-grow" htmlFor="bowler-notes">
+                  Notes
+                  <input
+                    id="bowler-notes"
+                    className="text-input"
+                    value={bowlerForm.notes}
+                    onChange={(event) =>
+                      setBowlerForm({ ...bowlerForm, notes: event.target.value })
+                    }
+                  />
+                </label>
+              </div>
+
+              <div className="secretary-checkbox-group">
+                {isBowlerFormEditing && (
+                  <label className="checkbox-row" htmlFor="bowler-left">
+                    <input
+                      id="bowler-left"
+                      type="checkbox"
+                      checked={bowlerForm.status === 'left'}
+                      onChange={(event) =>
+                        setBowlerForm({
+                          ...bowlerForm,
+                          status: event.target.checked ? 'left' : 'active',
+                        })
+                      }
+                    />
+                    Left the league
+                  </label>
+                )}
+                {league?.sanctionedLeague && (
+                  <label className="checkbox-row" htmlFor="bowler-usbc">
+                    <input
+                      id="bowler-usbc"
+                      type="checkbox"
+                      checked={bowlerForm.usbcCardPaid}
+                      onChange={(event) =>
+                        setBowlerForm({ ...bowlerForm, usbcCardPaid: event.target.checked })
+                      }
+                    />
+                    USBC card paid
+                  </label>
+                )}
+                <label className="checkbox-row" htmlFor="bowler-lineage-discount">
+                  <input
+                    id="bowler-lineage-discount"
+                    type="checkbox"
+                    checked={bowlerForm.lineageDiscount}
+                    onChange={(event) =>
+                      setBowlerForm({ ...bowlerForm, lineageDiscount: event.target.checked })
+                    }
+                  />
+                  Lineage discount
+                </label>
+                <label className="checkbox-row" htmlFor="bowler-prize-fund-discount">
+                  <input
+                    id="bowler-prize-fund-discount"
+                    type="checkbox"
+                    checked={bowlerForm.prizeFundDiscount}
+                    onChange={(event) =>
+                      setBowlerForm({ ...bowlerForm, prizeFundDiscount: event.target.checked })
+                    }
+                  />
+                  Prize fund discount
+                </label>
+                {league?.depositFeeActive && (
                   <label className="checkbox-row" htmlFor="bowler-deposit-opt-out">
                     <input
                       id="bowler-deposit-opt-out"
@@ -485,8 +490,9 @@ export function SecretaryRosterPage(): React.JSX.Element {
                     />
                     Opted out of deposit
                   </label>
-                </>
-              )}
+                )}
+              </div>
+
               <div className="form-actions">
                 <button type="submit" className="btn btn-primary" disabled={isSavingBowler}>
                   {isBowlerFormEditing ? 'Save changes' : 'Add bowler'}

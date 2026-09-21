@@ -63,12 +63,7 @@ export function SecretaryLeaguesPage(): React.JSX.Element {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>
-          <span className="secretary-page-icon">
-            <IconBowlingPin />
-          </span>
-          Leagues
-        </h1>
+        <h1>Leagues</h1>
       </div>
 
       <div className="card section">
@@ -132,16 +127,18 @@ export function SecretaryLeaguesPage(): React.JSX.Element {
               {formError}
             </div>
           )}
-          <label className="field-label" htmlFor="new-league-name">
-            League name
-            <input
-              id="new-league-name"
-              className="text-input"
-              value={newLeagueName}
-              onChange={(event) => setNewLeagueName(event.target.value)}
-              required
-            />
-          </label>
+          <div className="secretary-field-grid">
+            <label className="field-label" htmlFor="new-league-name">
+              League name
+              <input
+                id="new-league-name"
+                className="text-input"
+                value={newLeagueName}
+                onChange={(event) => setNewLeagueName(event.target.value)}
+                required
+              />
+            </label>
+          </div>
           <div className="form-actions">
             <button type="submit" className="btn btn-primary" disabled={createLeague.isPending}>
               Add league

@@ -7,7 +7,7 @@ import {
   computeWeeklyDueForBowler,
 } from '@shared/logic/duesLedger';
 import { EmptyState, LoadingState } from '../components/EmptyState';
-import { IconBowlingPin, IconCalendar } from '../components/icons';
+import { IconCalendar } from '../components/icons';
 import { SecretaryLeagueTabs } from '../components/SecretaryLeagueTabs';
 import { formatCurrency } from '../utils/formatCurrency';
 import { useSecretaryLeague } from '../hooks/useSecretaryLeagues';
@@ -116,12 +116,7 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>
-          <span className="secretary-page-icon">
-            <IconBowlingPin />
-          </span>
-          {league ? league.name : 'Weekly Entries'}
-        </h1>
+        <h1>{league ? league.name : 'Weekly Entries'}</h1>
         <Link to="/secretary" className="btn btn-link">
           ← All Leagues
         </Link>
@@ -137,7 +132,7 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
       )}
 
       <div className="card section">
-        <div className="form-actions">
+        <div className="secretary-toolbar">
           <button
             type="button"
             className="btn"
@@ -156,21 +151,19 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
           >
             Next →
           </button>
-          <label className="field-label" htmlFor="weekly-entries-week-select">
-            Jump to week
-            <select
-              id="weekly-entries-week-select"
-              className="text-input"
-              value={currentWeek}
-              onChange={(event) => setWeek(Number(event.target.value))}
-            >
-              {Array.from({ length: numWeeks }, (_, index) => index + 1).map((weekOption) => (
-                <option key={weekOption} value={weekOption}>
-                  Week {weekOption}
-                </option>
-              ))}
-            </select>
-          </label>
+          <select
+            id="weekly-entries-week-select"
+            aria-label="Jump to week"
+            className="text-input secretary-inline-input"
+            value={currentWeek}
+            onChange={(event) => setWeek(Number(event.target.value))}
+          >
+            {Array.from({ length: numWeeks }, (_, index) => index + 1).map((weekOption) => (
+              <option key={weekOption} value={weekOption}>
+                Week {weekOption}
+              </option>
+            ))}
+          </select>
         </div>
         <p className="help-text">
           A blank week starts pre-checked with whoever played the previous time — dues follow the
