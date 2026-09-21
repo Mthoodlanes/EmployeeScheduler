@@ -127,9 +127,9 @@ export function SecretaryLeaguesPage(): React.JSX.Element {
               {formError}
             </div>
           )}
-          <div className="secretary-field-grid">
-            <label className="field-label" htmlFor="new-league-name">
-              League name
+          <div className="secretary-form-rows">
+            <label className="secretary-form-row" htmlFor="new-league-name">
+              <span className="secretary-form-row-label">League name</span>
               <input
                 id="new-league-name"
                 className="text-input"

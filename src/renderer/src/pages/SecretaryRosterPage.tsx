@@ -359,9 +359,9 @@ export function SecretaryRosterPage(): React.JSX.Element {
                   {bowlerFormError}
                 </div>
               )}
-              <div className="secretary-field-grid">
-                <label className="field-label" htmlFor="bowler-name">
-                  Name
+              <div className="secretary-form-rows">
+                <label className="secretary-form-row" htmlFor="bowler-name">
+                  <span className="secretary-form-row-label">Name</span>
                   <input
                     id="bowler-name"
                     className="text-input"
@@ -372,8 +372,8 @@ export function SecretaryRosterPage(): React.JSX.Element {
                     required
                   />
                 </label>
-                <label className="field-label" htmlFor="bowler-phone">
-                  Phone
+                <label className="secretary-form-row" htmlFor="bowler-phone">
+                  <span className="secretary-form-row-label">Phone</span>
                   <input
                     id="bowler-phone"
                     type="tel"
@@ -384,49 +384,6 @@ export function SecretaryRosterPage(): React.JSX.Element {
                     }
                   />
                 </label>
-                {isBowlerFormEditing && (
-                  <label className="field-label" htmlFor="bowler-drop-notice-week">
-                    Drop notice week
-                    <input
-                      id="bowler-drop-notice-week"
-                      className="text-input"
-                      value={bowlerForm.dropNoticeWeek}
-                      onChange={(event) =>
-                        setBowlerForm({ ...bowlerForm, dropNoticeWeek: event.target.value })
-                      }
-                    />
-                  </label>
-                )}
-                {league?.depositFeeActive && (
-                  <label className="field-label" htmlFor="bowler-deposit-paid">
-                    Deposit paid
-                    <input
-                      id="bowler-deposit-paid"
-                      type="number"
-                      step="0.01"
-                      min={0}
-                      className="text-input"
-                      value={bowlerForm.depositPaid}
-                      onChange={(event) =>
-                        setBowlerForm({ ...bowlerForm, depositPaid: Number(event.target.value) })
-                      }
-                    />
-                  </label>
-                )}
-                <label className="field-label secretary-field-grow" htmlFor="bowler-notes">
-                  Notes
-                  <input
-                    id="bowler-notes"
-                    className="text-input"
-                    value={bowlerForm.notes}
-                    onChange={(event) =>
-                      setBowlerForm({ ...bowlerForm, notes: event.target.value })
-                    }
-                  />
-                </label>
-              </div>
-
-              <div className="secretary-checkbox-group">
                 {isBowlerFormEditing && (
                   <label className="checkbox-row" htmlFor="bowler-left">
                     <input
@@ -478,18 +435,61 @@ export function SecretaryRosterPage(): React.JSX.Element {
                   />
                   Prize fund discount
                 </label>
-                {league?.depositFeeActive && (
-                  <label className="checkbox-row" htmlFor="bowler-deposit-opt-out">
+                {isBowlerFormEditing && (
+                  <label className="secretary-form-row" htmlFor="bowler-drop-notice-week">
+                    <span className="secretary-form-row-label">Drop notice week</span>
                     <input
-                      id="bowler-deposit-opt-out"
-                      type="checkbox"
-                      checked={bowlerForm.depositOptOut}
+                      id="bowler-drop-notice-week"
+                      className="text-input"
+                      value={bowlerForm.dropNoticeWeek}
                       onChange={(event) =>
-                        setBowlerForm({ ...bowlerForm, depositOptOut: event.target.checked })
+                        setBowlerForm({ ...bowlerForm, dropNoticeWeek: event.target.value })
                       }
                     />
-                    Opted out of deposit
                   </label>
+                )}
+                <label className="secretary-form-row" htmlFor="bowler-notes">
+                  <span className="secretary-form-row-label">Notes</span>
+                  <input
+                    id="bowler-notes"
+                    className="text-input"
+                    value={bowlerForm.notes}
+                    onChange={(event) =>
+                      setBowlerForm({ ...bowlerForm, notes: event.target.value })
+                    }
+                  />
+                </label>
+                {league?.depositFeeActive && (
+                  <>
+                    <label className="secretary-form-row" htmlFor="bowler-deposit-paid">
+                      <span className="secretary-form-row-label">Deposit paid</span>
+                      <input
+                        id="bowler-deposit-paid"
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        className="text-input"
+                        value={bowlerForm.depositPaid}
+                        onChange={(event) =>
+                          setBowlerForm({
+                            ...bowlerForm,
+                            depositPaid: Number(event.target.value),
+                          })
+                        }
+                      />
+                    </label>
+                    <label className="checkbox-row" htmlFor="bowler-deposit-opt-out">
+                      <input
+                        id="bowler-deposit-opt-out"
+                        type="checkbox"
+                        checked={bowlerForm.depositOptOut}
+                        onChange={(event) =>
+                          setBowlerForm({ ...bowlerForm, depositOptOut: event.target.checked })
+                        }
+                      />
+                      Opted out of deposit
+                    </label>
+                  </>
                 )}
               </div>
 
