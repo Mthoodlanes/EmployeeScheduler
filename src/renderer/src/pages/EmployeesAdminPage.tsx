@@ -365,6 +365,9 @@ export function EmployeesAdminPage(): React.JSX.Element {
                       </span>
                     ))}
                     {employee.isSalaried && <span className="tag tag-salaried">Salaried</span>}
+                    {(employee.role === 'secretary' || employee.isSecretaryTagged) && (
+                      <span className="tag tag-accent">Secretary</span>
+                    )}
                   </td>
                   <td>
                     {employee.isActive ? (
