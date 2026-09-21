@@ -106,7 +106,7 @@ export function SecretaryLayout(): React.JSX.Element {
           </div>
         </div>
       </nav>
-      <div className="app-content">
+      <div className="app-content secretary-app-content">
         <Outlet />
       </div>
     </div>

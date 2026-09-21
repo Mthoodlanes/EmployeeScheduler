@@ -8,6 +8,7 @@ import { TimeFormatProvider } from './settings/TimeFormatProvider';
 import { queryClient } from './api/queryClient';
 import './theme/theme.css';
 import './styles.css';
+import './secretary.css';
 import './components/ScheduleGrid/ScheduleGrid.css';
 import './components/PrintSchedule/PrintSchedule.css';
 import './components/PrintWeeklyBanking/PrintWeeklyBanking.css';

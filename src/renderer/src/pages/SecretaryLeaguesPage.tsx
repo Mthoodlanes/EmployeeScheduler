@@ -63,7 +63,12 @@ export function SecretaryLeaguesPage(): React.JSX.Element {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>Leagues</h1>
+        <h1>
+          <span className="secretary-page-icon">
+            <IconBowlingPin />
+          </span>
+          Leagues
+        </h1>
       </div>
 
       <div className="card section">

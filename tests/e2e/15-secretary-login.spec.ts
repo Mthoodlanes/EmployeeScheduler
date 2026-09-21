@@ -43,7 +43,7 @@ test('the Secretary door leads to the Secretary area for Secretary and manager a
   // A manager already logged into the normal app can reach the Secretary
   // area directly via its own nav link — no separate login needed.
   await page.getByRole('link', { name: 'Secretary Apps' }).click();
-  await expect(page.getByRole('heading', { name: 'Secretary Dashboard' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Leagues' })).toBeVisible();
   await page.getByRole('button', { name: 'Log out' }).click();
   await expect(page.getByRole('heading', { name: 'Secretary Sign In' })).toBeVisible();
 
@@ -51,7 +51,7 @@ test('the Secretary door leads to the Secretary area for Secretary and manager a
   await page.getByTestId('secretary-login-username').fill('dana');
   await page.getByTestId('secretary-login-password').fill('supersecret1');
   await page.getByTestId('secretary-login-submit').click();
-  await expect(page.getByRole('heading', { name: 'Secretary Dashboard' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Leagues' })).toBeVisible();
   await page.getByRole('button', { name: 'Log out' }).click();
   await expect(page.getByRole('heading', { name: 'Secretary Sign In' })).toBeVisible();
 
@@ -70,14 +70,14 @@ test('the Secretary door leads to the Secretary area for Secretary and manager a
   await page.getByTestId('secretary-login-username').fill(secretaryUsername);
   await page.getByTestId('secretary-login-password').fill(secretaryPassword);
   await page.getByTestId('secretary-login-submit').click();
-  await expect(page.getByRole('heading', { name: 'Secretary Dashboard' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Leagues' })).toBeVisible();
   // No scheduling nav at all — a Secretary never sees My Schedule, Time Off, etc.
   await expect(page.getByRole('link', { name: 'My Schedule' })).toHaveCount(0);
 
   // A Secretary account is bounced straight back out of the normal
   // scheduling app if it tries to reach it directly.
   await page.goto('/#/my-schedule');
-  await expect(page.getByRole('heading', { name: 'Secretary Dashboard' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Leagues' })).toBeVisible();
 
   // Logging out from the Secretary area lands back on its own login door,
   // not the normal one.
@@ -92,7 +92,7 @@ test('the Secretary door leads to the Secretary area for Secretary and manager a
   await page.getByTestId('login-username').fill(secretaryUsername);
   await page.getByTestId('login-password').fill(secretaryPassword);
   await page.getByTestId('login-submit').click();
-  await expect(page.getByRole('heading', { name: 'Secretary Dashboard' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Leagues' })).toBeVisible();
   // A plain role === 'secretary' account has nowhere else to go — no
   // "Back to Scheduling" link, since RequireAuth would just bounce it
   // straight back here anyway.
@@ -131,7 +131,7 @@ test('the Secretary Tag grants access on top of a real role, without replacing i
   // The Secretary Apps link is visible even though this account's role is
   // Coordinator, not Secretary or manager.
   await page.getByRole('link', { name: 'Secretary Apps' }).click();
-  await expect(page.getByRole('heading', { name: 'Secretary Dashboard' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Leagues' })).toBeVisible();
 
   // And they can get back to their real role's area from inside the
   // Secretary layout, since they actually have one to return to.

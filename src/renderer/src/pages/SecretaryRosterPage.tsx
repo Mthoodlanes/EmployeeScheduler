@@ -4,7 +4,7 @@ import { Link, Navigate, useParams } from 'react-router-dom';
 import type { Bowler, BowlerStatus } from '@shared/types/domain';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { EmptyState, LoadingState } from '../components/EmptyState';
-import { IconUsers } from '../components/icons';
+import { IconBowlingPin, IconUsers } from '../components/icons';
 import { SecretaryLeagueTabs } from '../components/SecretaryLeagueTabs';
 import { useSecretaryLeague } from '../hooks/useSecretaryLeagues';
 import {
@@ -200,7 +200,12 @@ export function SecretaryRosterPage(): React.JSX.Element {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>{league ? league.name : 'Roster'}</h1>
+        <h1>
+          <span className="secretary-page-icon">
+            <IconBowlingPin />
+          </span>
+          {league ? league.name : 'Roster'}
+        </h1>
         <Link to="/secretary" className="btn btn-link">
           ← All Leagues
         </Link>
@@ -257,17 +262,15 @@ export function SecretaryRosterPage(): React.JSX.Element {
 
         {activeTeam && (
           <>
-            <div className="form-actions">
-              <label className="field-label" htmlFor="roster-team-name">
-                Team name
-                <input
-                  id="roster-team-name"
-                  className="text-input"
-                  value={teamNameDraft}
-                  onChange={(event) => setTeamNameDraft(event.target.value)}
-                  onBlur={handleTeamNameBlur}
-                />
-              </label>
+            <div className="secretary-toolbar">
+              <input
+                id="roster-team-name"
+                aria-label="Team name"
+                className="text-input secretary-inline-input"
+                value={teamNameDraft}
+                onChange={(event) => setTeamNameDraft(event.target.value)}
+                onBlur={handleTeamNameBlur}
+              />
               <button type="button" className="btn btn-toggle" onClick={handleToggleFolded}>
                 {activeTeam.folded ? 'Folded' : 'Active'}
               </button>
@@ -433,17 +436,19 @@ export function SecretaryRosterPage(): React.JSX.Element {
                 />
                 Prize fund discount
               </label>
-              <label className="field-label" htmlFor="bowler-drop-notice-week">
-                Drop notice week
-                <input
-                  id="bowler-drop-notice-week"
-                  className="text-input"
-                  value={bowlerForm.dropNoticeWeek}
-                  onChange={(event) =>
-                    setBowlerForm({ ...bowlerForm, dropNoticeWeek: event.target.value })
-                  }
-                />
-              </label>
+              {isBowlerFormEditing && (
+                <label className="field-label" htmlFor="bowler-drop-notice-week">
+                  Drop notice week
+                  <input
+                    id="bowler-drop-notice-week"
+                    className="text-input"
+                    value={bowlerForm.dropNoticeWeek}
+                    onChange={(event) =>
+                      setBowlerForm({ ...bowlerForm, dropNoticeWeek: event.target.value })
+                    }
+                  />
+                </label>
+              )}
               <label className="field-label" htmlFor="bowler-notes">
                 Notes
                 <input

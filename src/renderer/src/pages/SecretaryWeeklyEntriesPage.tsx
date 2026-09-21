@@ -7,7 +7,7 @@ import {
   computeWeeklyDueForBowler,
 } from '@shared/logic/duesLedger';
 import { EmptyState, LoadingState } from '../components/EmptyState';
-import { IconCalendar } from '../components/icons';
+import { IconBowlingPin, IconCalendar } from '../components/icons';
 import { SecretaryLeagueTabs } from '../components/SecretaryLeagueTabs';
 import { formatCurrency } from '../utils/formatCurrency';
 import { useSecretaryLeague } from '../hooks/useSecretaryLeagues';
@@ -116,7 +116,12 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>{league ? league.name : 'Weekly Entries'}</h1>
+        <h1>
+          <span className="secretary-page-icon">
+            <IconBowlingPin />
+          </span>
+          {league ? league.name : 'Weekly Entries'}
+        </h1>
         <Link to="/secretary" className="btn btn-link">
           ← All Leagues
         </Link>
@@ -241,7 +246,7 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
                               type="number"
                               step="0.01"
                               min={0}
-                              className="text-input"
+                              className="text-input text-input-narrow"
                               disabled={!playing}
                               value={amountValue}
                               aria-label={`${bowler.name} amount paid week ${currentWeek}`}

@@ -3,6 +3,7 @@ import type { FormEvent } from 'react';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import type { League } from '@shared/types/domain';
 import { LoadingState } from '../components/EmptyState';
+import { IconBowlingPin } from '../components/icons';
 import { SecretaryLeagueTabs } from '../components/SecretaryLeagueTabs';
 import { useSecretaryLeague, useUpdateSecretaryLeague } from '../hooks/useSecretaryLeagues';
 
@@ -96,7 +97,12 @@ export function SecretaryLeagueSetupPage(): React.JSX.Element {
   return (
     <div className="page">
       <div className="page-header">
-        <h1>{league ? league.name : 'League Setup'}</h1>
+        <h1>
+          <span className="secretary-page-icon">
+            <IconBowlingPin />
+          </span>
+          {league ? league.name : 'League Setup'}
+        </h1>
         <Link to="/secretary" className="btn btn-link">
           ← All Leagues
         </Link>
