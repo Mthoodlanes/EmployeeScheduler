@@ -413,6 +413,44 @@
   font-size: var(--text-lg);
 }
 
+/* Weekly Banking's headline cash figures — the point of that page, so a big-number tile earns its keep here (unlike the rest of this app, which favors plain tables for everything else). */
+.kpi-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.kpi-card {
+  flex: 1 1 200px;
+}
+
+.kpi-label {
+  display: block;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin-bottom: var(--space-2);
+}
+
+.kpi-value {
+  display: block;
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.weekly-banking-section-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.weekly-banking-section-header h2 {
+  margin: 0;
+}
+
 /* ==========================================================================
    Notice Board (Milestone 26)
    ========================================================================== */
@@ -1526,7 +1564,9 @@ table.data-table tbody tr:last-child td {
   .schedule-grid-wrapper,
   .modal-overlay,
   .pwa-update-toast,
-  .hours-summary {
+  .hours-summary,
+  .secretary-league-tabs,
+  .weekly-banking-screen {
     display: none !important;
   }
 

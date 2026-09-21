@@ -17,6 +17,7 @@ import { SecretaryLeagueSetupPage } from './pages/SecretaryLeagueSetupPage';
 import { SecretaryLoginPage } from './pages/SecretaryLoginPage';
 import { SecretaryRosterPage } from './pages/SecretaryRosterPage';
 import { SecretaryWeeklyEntriesPage } from './pages/SecretaryWeeklyEntriesPage';
+import { SecretaryWeeklyBankingPage } from './pages/SecretaryWeeklyBankingPage';
 import { TimeOffQueuePage } from './pages/TimeOffQueuePage';
 import { RequestTimeOffPage } from './pages/RequestTimeOffPage';
 import { EmployeesAdminPage } from './pages/EmployeesAdminPage';
@@ -117,6 +118,10 @@ export function App(): React.JSX.Element {
               <Route
                 path="/secretary/leagues/:leagueId/weekly-entries"
                 element={<SecretaryWeeklyEntriesPage />}
+              />
+              <Route
+                path="/secretary/leagues/:leagueId/weekly-banking"
+                element={<SecretaryWeeklyBankingPage />}
               />
             </Route>
           </Route>

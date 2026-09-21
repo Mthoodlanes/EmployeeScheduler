@@ -10,6 +10,7 @@ import './theme/theme.css';
 import './styles.css';
 import './components/ScheduleGrid/ScheduleGrid.css';
 import './components/PrintSchedule/PrintSchedule.css';
+import './components/PrintWeeklyBanking/PrintWeeklyBanking.css';
 
 const container = document.getElementById('root');
 if (!container) {

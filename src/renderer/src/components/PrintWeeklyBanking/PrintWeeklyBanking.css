@@ -1,0 +1,61 @@
+/* ==========================================================================
+   Print-only Weekly Banking report (Secretary Apps Milestone 8) — mirrors
+   PrintSchedule.css's approach: hidden on screen, revealed only inside
+   `@media print` (the rest of the app's chrome is hidden the other way
+   around — see the print rules at the bottom of styles.css). Colors here
+   are hardcoded black/white/gray rather than the theme's custom properties,
+   since the printed page must stay legible on a grayscale printer
+   regardless of whether the app is currently in light or dark mode.
+   ========================================================================== */
+
+.print-weekly-banking {
+  display: none;
+}
+
+@media print {
+  .print-weekly-banking {
+    display: block;
+    color: #000;
+    background: #fff;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  }
+
+  .print-weekly-banking-title {
+    margin: 0 0 4px;
+    font-size: 18pt;
+    font-weight: 700;
+    color: #000;
+  }
+
+  .print-weekly-banking-subtitle {
+    margin: 0 0 16px;
+    font-size: 10.5pt;
+    color: #333;
+  }
+
+  .print-weekly-banking-table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 11pt;
+  }
+
+  .print-weekly-banking-table td {
+    padding: 6px 4px;
+    border-bottom: 1px solid #ddd;
+    color: #000;
+  }
+
+  .print-weekly-banking-table td:last-child {
+    text-align: right;
+  }
+
+  .print-weekly-banking-total td {
+    font-weight: 700;
+  }
+
+  .print-weekly-banking-note {
+    font-size: 9.5pt;
+    color: #333;
+    margin-top: 12px;
+  }
+}
