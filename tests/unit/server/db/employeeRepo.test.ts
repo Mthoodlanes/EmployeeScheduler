@@ -14,6 +14,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: ['front_desk', 'cafe'],
     });
 
@@ -32,6 +33,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
     const amy = await employeeRepo.create({
@@ -40,6 +42,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 
@@ -56,6 +59,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
     const second = await employeeRepo.create({
@@ -64,6 +68,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
     const third = await employeeRepo.create({
@@ -72,6 +77,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 
@@ -89,6 +95,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
     expect(fourth.sortOrder).toBe(newMaxSortOrder + 1);
@@ -102,6 +109,7 @@ describe('employeeRepo', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
       const b = await employeeRepo.create({
@@ -110,6 +118,7 @@ describe('employeeRepo', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
       const c = await employeeRepo.create({
@@ -118,6 +127,7 @@ describe('employeeRepo', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
 
@@ -137,6 +147,7 @@ describe('employeeRepo', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
       const before = (await employeeRepo.getById(a.id))?.updatedAt;
@@ -153,6 +164,7 @@ describe('employeeRepo', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
       await employeeRepo.create({
@@ -161,6 +173,7 @@ describe('employeeRepo', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
 
@@ -174,6 +187,7 @@ describe('employeeRepo', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
 
@@ -187,6 +201,7 @@ describe('employeeRepo', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
 
@@ -201,6 +216,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 
@@ -209,6 +225,7 @@ describe('employeeRepo', () => {
       name: 'Updated Name',
       role: 'manager',
       isSalaried: true,
+      isSecretaryTagged: false,
       isActive: true,
     });
 
@@ -224,6 +241,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 
@@ -238,6 +256,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
     await employeeRepo.deactivate(created.id);
@@ -248,6 +267,7 @@ describe('employeeRepo', () => {
       name: created.name,
       role: created.role,
       isSalaried: created.isSalaried,
+      isSecretaryTagged: created.isSecretaryTagged,
       isActive: true,
     });
 
@@ -263,6 +283,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 
@@ -273,6 +294,7 @@ describe('employeeRepo', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       }),
     ).rejects.toThrow();
@@ -286,6 +308,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 
@@ -300,6 +323,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: ['bar'],
     });
 
@@ -314,6 +338,7 @@ describe('employeeRepo', () => {
       passwordHash: 'hash',
       role: 'coordinator',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 
@@ -328,6 +353,7 @@ describe('employeeRepo', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
 
@@ -341,6 +367,7 @@ describe('employeeRepo', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
 

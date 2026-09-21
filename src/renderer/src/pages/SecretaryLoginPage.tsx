@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { api } from '../api/client';
 import { InstallAppPrompt } from '../components/InstallAppPrompt';
 import { useSessionStore } from '../store/useSessionStore';
+import { canAccessSecretaryArea } from '../utils/secretaryAccess';
 
 /**
  * A dedicated front door for Secretary accounts, deliberately separate from
@@ -11,12 +12,10 @@ import { useSessionStore } from '../store/useSessionStore';
  * at all (e.g. a league volunteer bookkeeper), so this doesn't lead into
  * the scheduling app's own login experience at all. Posts to the exact
  * same `/api/auth/login` as the normal login (same credentials, same
- * `employees` table), but REJECTS a successful login from any role other
- * than `secretary` or `manager` — logging that session back out
- * immediately — rather than letting it through and redirecting elsewhere,
- * so this door only ever leads to the Secretary area. A manager is let in
- * too since they already have authority over everything else in the app
- * (see `RequireSecretaryAuth.tsx`); a plain employee or coordinator is not.
+ * `employees` table), but REJECTS a successful login that `canAccessSecretaryArea`
+ * doesn't recognize — logging that session back out immediately — rather
+ * than letting it through and redirecting elsewhere, so this door only
+ * ever leads to the Secretary area.
  */
 export function SecretaryLoginPage(): React.JSX.Element {
   const navigate = useNavigate();
@@ -32,7 +31,7 @@ export function SecretaryLoginPage(): React.JSX.Element {
     setIsSubmitting(true);
     try {
       const employee = await api.auth.login({ username, password });
-      if (employee.role !== 'secretary' && employee.role !== 'manager') {
+      if (!canAccessSecretaryArea(employee)) {
         await api.auth.logout();
         setError('This sign-in is for Secretary accounts only.');
         return;

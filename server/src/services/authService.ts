@@ -78,6 +78,7 @@ export async function createFirstManager(
     passwordHash: hashPassword(password),
     role: 'manager',
     isSalaried: false,
+    isSecretaryTagged: false,
     departments: [],
   });
   const { departments, ...employee } = created;

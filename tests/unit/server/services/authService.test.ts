@@ -16,6 +16,7 @@ beforeEach(async () => {
     passwordHash: hashPassword('correct-horse'),
     role: 'manager',
     isSalaried: false,
+    isSecretaryTagged: false,
     departments: [],
   });
 });
@@ -67,6 +68,7 @@ describe('authService.login', () => {
       passwordHash: hashPassword('still-the-right-password'),
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
     const created = await employeeRepo.findByUsername('formeremployee');

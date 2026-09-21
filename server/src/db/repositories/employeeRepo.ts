@@ -14,6 +14,7 @@ function toEmployee(row: EmployeeRow): Employee {
     role: row.role,
     isSalaried: row.isSalaried,
     isActive: row.isActive,
+    isSecretaryTagged: row.isSecretaryTagged,
     sortOrder: row.sortOrder,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -34,6 +35,7 @@ export interface CreateEmployeeInput {
   passwordHash: string;
   role: Role;
   isSalaried: boolean;
+  isSecretaryTagged: boolean;
   departments: Department[];
 }
 
@@ -43,6 +45,7 @@ export interface UpdateEmployeeInput {
   role: Role;
   isSalaried: boolean;
   isActive: boolean;
+  isSecretaryTagged: boolean;
   passwordHash?: string;
 }
 
@@ -143,6 +146,7 @@ export async function create(input: CreateEmployeeInput): Promise<EmployeeWithDe
         passwordHash: input.passwordHash,
         role: input.role,
         isSalaried: input.isSalaried,
+        isSecretaryTagged: input.isSecretaryTagged,
         sortOrder: (maxSortOrder ?? -1) + 1,
       })
       .returning({ id: employees.id });
@@ -174,6 +178,7 @@ export async function update(input: UpdateEmployeeInput): Promise<EmployeeWithDe
         role: input.role,
         isSalaried: input.isSalaried,
         isActive: input.isActive,
+        isSecretaryTagged: input.isSecretaryTagged,
         passwordHash: input.passwordHash,
         updatedAt: sql`now()`,
       })
@@ -186,6 +191,7 @@ export async function update(input: UpdateEmployeeInput): Promise<EmployeeWithDe
         role: input.role,
         isSalaried: input.isSalaried,
         isActive: input.isActive,
+        isSecretaryTagged: input.isSecretaryTagged,
         updatedAt: sql`now()`,
       })
       .where(eq(employees.id, input.id));

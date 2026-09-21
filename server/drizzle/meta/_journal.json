@@ -57,6 +57,13 @@
       "when": 1789952245772,
       "tag": "0007_naive_red_wolf",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789953987626,
+      "tag": "0008_noisy_deadpool",
+      "breakpoints": true
     }
   ]
 }

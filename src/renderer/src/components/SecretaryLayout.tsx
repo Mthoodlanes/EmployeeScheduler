@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { ROLE_LABELS } from '@shared/types/domain';
 import { useTheme } from '../theme/ThemeProvider';
@@ -7,15 +7,23 @@ import { useSessionStore } from '../store/useSessionStore';
 import { api } from '../api/client';
 import { IconMenu, IconMoon, IconSun } from './icons';
 
+function navLinkClassName({ isActive }: { isActive: boolean }): string {
+  return isActive ? 'app-nav-link active' : 'app-nav-link';
+}
+
 /**
  * The Secretary area's own layout — deliberately separate from `AppLayout`
- * rather than a variant of it, since a Secretary account never sees any of
- * the normal scheduling nav (My Schedule, Time Off, Notice Board, etc.).
+ * rather than a variant of it, since this never shows the normal scheduling
+ * nav (My Schedule, Time Off, Notice Board, etc.) itself. It does show a
+ * "Back to Scheduling" link for anyone who actually HAS a normal-app home
+ * to return to (a manager, or someone Secretary-tagged on top of their
+ * real role) — hidden for a plain `role === 'secretary'` account, which has
+ * no other area and would just get bounced right back by `RequireAuth`.
  * Reuses the exact same `.app-*` CSS classes as `AppLayout` for a
  * consistent look with zero new CSS, including the responsive
- * hamburger-menu breakpoint, even though there's only one real link here
- * today — later milestones (League picker, Setup, Roster, Weekly Entries,
- * Weekly Banking, Bowler/Season Summary) add more nav links into this same
+ * hamburger-menu breakpoint, even though there's only one real dues-tracker
+ * link here today — later milestones (League picker, Setup, Roster, Weekly
+ * Entries, Weekly Banking, Bowler/Season Summary) add more into this same
  * shell without needing new responsive behavior.
  */
 export function SecretaryLayout(): React.JSX.Element {
@@ -54,6 +62,11 @@ export function SecretaryLayout(): React.JSX.Element {
           </button>
         </div>
         <div id="secretary-nav-links" className={isMenuOpen ? 'app-nav-links open' : 'app-nav-links'}>
+          {currentEmployee?.role !== 'secretary' && (
+            <NavLink to="/" className={navLinkClassName} onClick={closeMenu}>
+              ← Back to Scheduling
+            </NavLink>
+          )}
           <span className="app-nav-spacer" />
           <button
             type="button"

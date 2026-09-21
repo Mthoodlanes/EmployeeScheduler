@@ -15,6 +15,7 @@ beforeEach(async () => {
     passwordHash: 'hash',
     role: 'employee',
     isSalaried: false,
+    isSecretaryTagged: false,
     departments: ['front_desk'],
   });
   employeeId = employee.id;
@@ -25,6 +26,7 @@ beforeEach(async () => {
     passwordHash: 'hash',
     role: 'manager',
     isSalaried: false,
+    isSecretaryTagged: false,
     departments: [],
   });
   managerId = manager.id;
@@ -80,6 +82,7 @@ describe('unavailabilityRepo', () => {
       passwordHash: 'hash',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 

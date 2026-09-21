@@ -23,6 +23,7 @@ import { ShiftTemplatesAdminPage } from './pages/ShiftTemplatesAdminPage';
 import { StoreHoursAdminPage } from './pages/StoreHoursAdminPage';
 import { useSessionStore } from './store/useSessionStore';
 import { api } from './api/client';
+import { canAccessSecretaryArea } from './utils/secretaryAccess';
 
 function LoginRoute(): React.JSX.Element {
   const isFirstRun = useSessionStore((state) => state.isFirstRun);
@@ -46,14 +47,13 @@ function SecretaryLoginRoute(): React.JSX.Element {
   const currentEmployee = useSessionStore((state) => state.currentEmployee);
 
   if (currentEmployee) {
-    // Mirrors RequireSecretaryAuth's manager-inclusive check — without it,
-    // this redirect (re-evaluated the instant setSession fires, racing
-    // SecretaryLoginPage's own explicit navigate('/secretary') call) sends
-    // a manager to '/' instead, since a bare `role === 'secretary'` check
-    // doesn't recognize a manager as belonging here too.
-    const belongsInSecretaryArea =
-      currentEmployee.role === 'secretary' || currentEmployee.role === 'manager';
-    return <Navigate to={belongsInSecretaryArea ? '/secretary' : '/'} replace />;
+    // Uses the same `canAccessSecretaryArea` check as RequireSecretaryAuth
+    // and SecretaryLoginPage — without it, this redirect (re-evaluated the
+    // instant setSession fires, racing SecretaryLoginPage's own explicit
+    // navigate('/secretary') call) can send someone who belongs here to
+    // '/' instead, purely because this one spot's own copy of the check
+    // fell out of sync with the other two.
+    return <Navigate to={canAccessSecretaryArea(currentEmployee) ? '/secretary' : '/'} replace />;
   }
   return <SecretaryLoginPage />;
 }

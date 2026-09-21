@@ -89,6 +89,7 @@ export interface EmployeesCreateRequest {
   password: string;
   role: Role;
   isSalaried: boolean;
+  isSecretaryTagged: boolean;
   departments: Department[];
 }
 export type EmployeesCreateResponse = EmployeeWithDepartments;
@@ -100,6 +101,7 @@ export interface EmployeesUpdateRequest {
   role: Role;
   isSalaried: boolean;
   isActive: boolean;
+  isSecretaryTagged: boolean;
   /** Optional: only set when a manager wants to reset the password. */
   password?: string;
 }

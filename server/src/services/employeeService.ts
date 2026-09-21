@@ -86,6 +86,7 @@ export interface CreateEmployeeInput {
   password: string;
   role: Role;
   isSalaried: boolean;
+  isSecretaryTagged: boolean;
   departments: Department[];
 }
 
@@ -123,6 +124,7 @@ export async function createEmployee(
       passwordHash: hashPassword(input.password),
       role: input.role,
       isSalaried: input.isSalaried,
+      isSecretaryTagged: input.isSecretaryTagged,
       departments: input.departments,
     });
   } catch (error) {
@@ -139,6 +141,7 @@ export interface UpdateEmployeeInput {
   role: Role;
   isSalaried: boolean;
   isActive: boolean;
+  isSecretaryTagged: boolean;
   password?: string;
 }
 
@@ -154,6 +157,7 @@ export async function updateEmployee(
     role: input.role,
     isSalaried: input.isSalaried,
     isActive: input.isActive,
+    isSecretaryTagged: input.isSecretaryTagged,
     passwordHash: input.password ? hashPassword(input.password) : undefined,
   });
 }

@@ -23,6 +23,7 @@ beforeEach(async () => {
     passwordHash: 'hash',
     role: 'manager',
     isSalaried: true,
+    isSecretaryTagged: false,
     departments: [],
   });
   managerActor = { id: manager.id, role: 'manager' };
@@ -33,6 +34,7 @@ beforeEach(async () => {
     passwordHash: 'hash',
     role: 'employee',
     isSalaried: false,
+    isSecretaryTagged: false,
     departments: ['front_desk', 'bar'],
   });
   employeeId = employee.id;
@@ -511,6 +513,7 @@ describe('scheduledShiftService', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: ['bar'],
       });
 
@@ -571,6 +574,7 @@ describe('scheduledShiftService', () => {
         passwordHash: 'hash',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: ['bar'],
       });
       await scheduledShiftRepo.create({

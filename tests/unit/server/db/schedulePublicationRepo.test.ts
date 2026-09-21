@@ -14,6 +14,7 @@ beforeEach(async () => {
     passwordHash: 'hash',
     role: 'manager',
     isSalaried: true,
+    isSecretaryTagged: false,
     departments: [],
   });
   managerId = manager.id;
@@ -55,6 +56,7 @@ describe('schedulePublicationRepo', () => {
       passwordHash: 'hash',
       role: 'manager',
       isSalaried: true,
+      isSecretaryTagged: false,
       departments: [],
     });
     const second = await schedulePublicationRepo.publish(

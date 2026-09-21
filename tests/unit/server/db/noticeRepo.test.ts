@@ -13,6 +13,7 @@ beforeEach(async () => {
     passwordHash: 'hash',
     role: 'manager',
     isSalaried: true,
+    isSecretaryTagged: false,
     departments: [],
   });
   posterId = poster.id;

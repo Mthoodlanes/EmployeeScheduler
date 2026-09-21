@@ -23,6 +23,7 @@ beforeEach(async () => {
     passwordHash: 'hash',
     role: 'employee',
     isSalaried: false,
+    isSecretaryTagged: false,
     departments: ['front_desk'],
   });
   employeeActor = { id: employee.id, role: 'employee' };
@@ -33,6 +34,7 @@ beforeEach(async () => {
     passwordHash: 'hash',
     role: 'employee',
     isSalaried: false,
+    isSecretaryTagged: false,
     departments: [],
   });
   otherEmployeeActor = { id: otherEmployee.id, role: 'employee' };
@@ -43,6 +45,7 @@ beforeEach(async () => {
     passwordHash: 'hash',
     role: 'manager',
     isSalaried: false,
+    isSecretaryTagged: false,
     departments: [],
   });
   managerActor = { id: manager.id, role: 'manager' };

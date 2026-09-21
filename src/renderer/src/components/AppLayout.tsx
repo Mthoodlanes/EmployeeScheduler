@@ -6,6 +6,7 @@ import { useTheme } from '../theme/ThemeProvider';
 import { useSessionStore } from '../store/useSessionStore';
 import { useNoticesUnreadStatus } from '../hooks/useNotices';
 import { api } from '../api/client';
+import { canAccessSecretaryArea } from '../utils/secretaryAccess';
 import { IconMenu, IconMoon, IconSun } from './icons';
 import { NoticeAlertToast } from './NoticeAlertToast';
 
@@ -79,10 +80,12 @@ export function AppLayout(): React.JSX.Element {
               <NavLink to="/store-hours" className={navLinkClassName} onClick={closeMenu}>
                 Store Hours
               </NavLink>
-              <NavLink to="/secretary" className={navLinkClassName} onClick={closeMenu}>
-                Secretary Apps
-              </NavLink>
             </>
+          )}
+          {currentEmployee && canAccessSecretaryArea(currentEmployee) && (
+            <NavLink to="/secretary" className={navLinkClassName} onClick={closeMenu}>
+              Secretary Apps
+            </NavLink>
           )}
           <NavLink to="/notices" className={navLinkClassName} onClick={closeMenu}>
             Notice Board

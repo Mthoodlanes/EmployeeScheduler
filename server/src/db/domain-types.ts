@@ -41,6 +41,8 @@ export interface Employee {
   role: Role;
   isSalaried: boolean;
   isActive: boolean;
+  /** Grants Secretary-area access independent of `role` — see schema.ts's column comment. */
+  isSecretaryTagged: boolean;
   /**
    * Global position on the Schedule Board (ascending), independent of
    * department — an employee working multiple departments has one

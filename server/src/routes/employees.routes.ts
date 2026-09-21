@@ -63,6 +63,7 @@ router.post(
       password: requireString(body.password, 'password'),
       role: requireOneOf(body.role, 'role', ROLES),
       isSalaried: requireBoolean(body.isSalaried, 'isSalaried'),
+      isSecretaryTagged: requireBoolean(body.isSecretaryTagged, 'isSecretaryTagged'),
       departments: requireArrayOf(body.departments, 'departments', DEPARTMENTS),
     });
   }, 201),
@@ -107,6 +108,7 @@ router.put(
       role: requireOneOf(body.role, 'role', ROLES),
       isSalaried: requireBoolean(body.isSalaried, 'isSalaried'),
       isActive: requireBoolean(body.isActive, 'isActive'),
+      isSecretaryTagged: requireBoolean(body.isSecretaryTagged, 'isSecretaryTagged'),
       password: optionalString(body.password, 'password'),
     });
   }),

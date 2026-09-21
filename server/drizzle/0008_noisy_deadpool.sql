@@ -1,0 +1,1 @@
+ALTER TABLE "employees" ADD COLUMN "is_secretary_tagged" boolean DEFAULT false NOT NULL;

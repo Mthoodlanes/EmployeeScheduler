@@ -26,6 +26,7 @@ interface EmployeeFormState {
   role: Role;
   isSalaried: boolean;
   isActive: boolean;
+  isSecretaryTagged: boolean;
   departments: Department[];
 }
 
@@ -37,6 +38,7 @@ const EMPTY_FORM: EmployeeFormState = {
   role: 'employee',
   isSalaried: false,
   isActive: true,
+  isSecretaryTagged: false,
   departments: [],
 };
 
@@ -49,6 +51,7 @@ function toFormState(employee: EmployeeWithDepartments): EmployeeFormState {
     role: employee.role,
     isSalaried: employee.isSalaried,
     isActive: employee.isActive,
+    isSecretaryTagged: employee.isSecretaryTagged,
     departments: employee.departments,
   };
 }
@@ -287,6 +290,7 @@ export function EmployeesAdminPage(): React.JSX.Element {
           role: form.role,
           isSalaried: form.isSalaried,
           isActive: form.isActive,
+          isSecretaryTagged: form.isSecretaryTagged,
           password: form.password ? form.password : undefined,
         });
         await setDepartments.mutateAsync({ id: form.id, departments: form.departments });
@@ -297,6 +301,7 @@ export function EmployeesAdminPage(): React.JSX.Element {
           password: form.password,
           role: form.role,
           isSalaried: form.isSalaried,
+          isSecretaryTagged: form.isSecretaryTagged,
           departments: form.departments,
         });
       }
@@ -484,6 +489,18 @@ export function EmployeesAdminPage(): React.JSX.Element {
               }
             />
             Salaried (flexible hours)
+          </label>
+
+          <label className="checkbox-row" htmlFor="employee-secretary-tagged">
+            <input
+              id="employee-secretary-tagged"
+              type="checkbox"
+              checked={form.isSecretaryTagged}
+              onChange={(event) =>
+                setForm((prev) => ({ ...prev, isSecretaryTagged: event.target.checked }))
+              }
+            />
+            Secretary Tag (grants access to the Secretary Apps area)
           </label>
 
           {isEditing && (

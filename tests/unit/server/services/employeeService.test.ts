@@ -20,6 +20,7 @@ describe('employeeService', () => {
       password: 'plaintext-password',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: ['front_desk'],
     });
 
@@ -38,6 +39,7 @@ describe('employeeService', () => {
         password: 'password123',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       }),
     ).rejects.toThrow(employeeService.UnauthorizedEmployeeActionError);
@@ -50,6 +52,7 @@ describe('employeeService', () => {
       password: 'password123',
       role: 'coordinator',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 
@@ -67,6 +70,7 @@ describe('employeeService', () => {
         password: 'password123',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       }),
     ).rejects.toThrow(employeeService.UnauthorizedEmployeeActionError);
@@ -82,6 +86,7 @@ describe('employeeService', () => {
       password: 'password123',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 
@@ -92,6 +97,7 @@ describe('employeeService', () => {
         password: 'a-different-password',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       }),
     ).rejects.toThrow(employeeService.DuplicateUsernameError);
@@ -104,6 +110,7 @@ describe('employeeService', () => {
       password: 'password123',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 
@@ -114,6 +121,7 @@ describe('employeeService', () => {
         password: 'a-different-password',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       }),
     ).rejects.toThrow(employeeService.DuplicateUsernameError);
@@ -126,6 +134,7 @@ describe('employeeService', () => {
       password: 'password123',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 
@@ -138,6 +147,7 @@ describe('employeeService', () => {
       role: created.role,
       isSalaried: created.isSalaried,
       isActive: true,
+      isSecretaryTagged: created.isSecretaryTagged,
     });
     expect(reactivated.isActive).toBe(true);
   });
@@ -149,6 +159,7 @@ describe('employeeService', () => {
       password: 'password123',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: [],
     });
 
@@ -164,6 +175,7 @@ describe('employeeService', () => {
       password: 'password123',
       role: 'employee',
       isSalaried: false,
+      isSecretaryTagged: false,
       departments: ['bar', 'cafe'],
     });
 
@@ -181,6 +193,7 @@ describe('employeeService', () => {
         password: 'password123',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
       const b = await employeeService.createEmployee(managerActor, {
@@ -189,6 +202,7 @@ describe('employeeService', () => {
         password: 'password123',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
 
@@ -205,6 +219,7 @@ describe('employeeService', () => {
         password: 'password123',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
 
@@ -222,6 +237,7 @@ describe('employeeService', () => {
         password: 'password123',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
       const selfActor: RequestingActor = { id: created.id, role: 'employee' };
@@ -242,6 +258,7 @@ describe('employeeService', () => {
         password: 'old-password',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
       const selfActor: RequestingActor = { id: created.id, role: 'employee' };
@@ -265,6 +282,7 @@ describe('employeeService', () => {
         password: 'correct-password',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
       const selfActor: RequestingActor = { id: created.id, role: 'employee' };
@@ -288,6 +306,7 @@ describe('employeeService', () => {
         password: 'correct-password',
         role: 'employee',
         isSalaried: false,
+        isSecretaryTagged: false,
         departments: [],
       });
       const selfActor: RequestingActor = { id: created.id, role: 'employee' };

@@ -93,4 +93,48 @@ test('the Secretary door leads to the Secretary area for Secretary and manager a
   await page.getByTestId('login-password').fill(secretaryPassword);
   await page.getByTestId('login-submit').click();
   await expect(page.getByRole('heading', { name: 'Secretary Dashboard' })).toBeVisible();
+  // A plain role === 'secretary' account has nowhere else to go — no
+  // "Back to Scheduling" link, since RequireAuth would just bounce it
+  // straight back here anyway.
+  await expect(page.getByRole('link', { name: 'Back to Scheduling' })).toHaveCount(0);
+});
+
+test('the Secretary Tag grants access on top of a real role, without replacing it', async ({
+  page,
+}) => {
+  await loginAsManager(page);
+
+  const coordinatorName = uniqueName('Casey Coordinator');
+  const coordinatorUsername = uniqueUsername('casey');
+  const coordinatorPassword = 'password123';
+
+  await page.getByRole('link', { name: 'Employees' }).click();
+  await page.locator('#employee-name').fill(coordinatorName);
+  await page.locator('#employee-username').fill(coordinatorUsername);
+  await page.locator('#employee-password').fill(coordinatorPassword);
+  await page.locator('#employee-role').selectOption('coordinator');
+  await page.locator('#employee-secretary-tagged').check();
+  await page.getByRole('button', { name: 'Add employee' }).click();
+  await expect(page.getByTestId('employees-table')).toContainText(coordinatorName);
+
+  await page.getByRole('button', { name: 'Log out' }).click();
+  await expect(page.getByTestId('login-username')).toBeVisible();
+
+  // Signs in through the NORMAL door (not /secretary/login) and lands in
+  // the normal app first — the tag adds access, it doesn't redirect their
+  // primary landing away from their real role.
+  await page.getByTestId('login-username').fill(coordinatorUsername);
+  await page.getByTestId('login-password').fill(coordinatorPassword);
+  await page.getByTestId('login-submit').click();
+  await expect(page.getByRole('heading', { name: 'My Schedule' })).toBeVisible();
+
+  // The Secretary Apps link is visible even though this account's role is
+  // Coordinator, not Secretary or manager.
+  await page.getByRole('link', { name: 'Secretary Apps' }).click();
+  await expect(page.getByRole('heading', { name: 'Secretary Dashboard' })).toBeVisible();
+
+  // And they can get back to their real role's area from inside the
+  // Secretary layout, since they actually have one to return to.
+  await page.getByRole('link', { name: 'Back to Scheduling' }).click();
+  await expect(page.getByRole('heading', { name: 'My Schedule' })).toBeVisible();
 });

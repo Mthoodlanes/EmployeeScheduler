@@ -74,6 +74,14 @@ export const employees = pgTable(
     role: roleEnum('role').notNull(),
     isSalaried: boolean('is_salaried').notNull().default(false),
     isActive: boolean('is_active').notNull().default(true),
+    // Milestone 27 (Secretary Apps): grants Secretary-area access to an
+    // employee whose PRIMARY role is something else (a Coordinator or
+    // Employee with other, ongoing responsibilities) — independent of
+    // `role` on purpose, the same way `isSalaried` is independent of it.
+    // A `role === 'secretary'` account has no other responsibilities and
+    // needs no separate flag; this is for someone who needs BOTH. See
+    // RequireSecretaryAuth.tsx for where this is actually checked.
+    isSecretaryTagged: boolean('is_secretary_tagged').notNull().default(false),
     // Milestone 24 (SQLite migration 009 equivalent): global Schedule Board
     // row ordering, independent of department. See `domain-types.ts`'s
     // `Employee.sortOrder` doc comment.
