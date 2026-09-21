@@ -137,7 +137,6 @@ export function RequestTimeOffPage(): React.JSX.Element {
       <div className="card section">
         <h2>Submit a time-off request</h2>
         <form
-          className="form-grid"
           onSubmit={(event) => {
             handleSubmit(event);
           }}
@@ -148,50 +147,54 @@ export function RequestTimeOffPage(): React.JSX.Element {
             </div>
           )}
 
-          {isManager && (
-            <EmployeeSelect
-              id="timeoff-on-behalf-of"
-              label="Submit on behalf of (optional — auto-approved)"
-              employees={employees ?? []}
-              value={onBehalfOfId}
-              onChange={setOnBehalfOfId}
-            />
-          )}
+          <div className="form-rows">
+            {isManager && (
+              <EmployeeSelect
+                id="timeoff-on-behalf-of"
+                label="Submit on behalf of (optional — auto-approved)"
+                employees={employees ?? []}
+                value={onBehalfOfId}
+                onChange={setOnBehalfOfId}
+              />
+            )}
 
-          <label className="field-label" htmlFor="timeoff-start">
-            Start date
-            <input
-              id="timeoff-start"
-              type="date"
-              className="text-input"
-              value={form.startDate}
-              onChange={(event) => setForm((prev) => ({ ...prev, startDate: event.target.value }))}
-              required
-            />
-          </label>
+            <label className="form-row" htmlFor="timeoff-start">
+              <span className="form-row-label">Start date</span>
+              <input
+                id="timeoff-start"
+                type="date"
+                className="text-input"
+                value={form.startDate}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, startDate: event.target.value }))
+                }
+                required
+              />
+            </label>
 
-          <label className="field-label" htmlFor="timeoff-end">
-            End date
-            <input
-              id="timeoff-end"
-              type="date"
-              className="text-input"
-              value={form.endDate}
-              min={form.startDate || undefined}
-              onChange={(event) => setForm((prev) => ({ ...prev, endDate: event.target.value }))}
-              required
-            />
-          </label>
+            <label className="form-row" htmlFor="timeoff-end">
+              <span className="form-row-label">End date</span>
+              <input
+                id="timeoff-end"
+                type="date"
+                className="text-input"
+                value={form.endDate}
+                min={form.startDate || undefined}
+                onChange={(event) => setForm((prev) => ({ ...prev, endDate: event.target.value }))}
+                required
+              />
+            </label>
 
-          <label className="field-label" htmlFor="timeoff-reason">
-            Reason (optional)
-            <input
-              id="timeoff-reason"
-              className="text-input"
-              value={form.reason}
-              onChange={(event) => setForm((prev) => ({ ...prev, reason: event.target.value }))}
-            />
-          </label>
+            <label className="form-row" htmlFor="timeoff-reason">
+              <span className="form-row-label">Reason (optional)</span>
+              <input
+                id="timeoff-reason"
+                className="text-input"
+                value={form.reason}
+                onChange={(event) => setForm((prev) => ({ ...prev, reason: event.target.value }))}
+              />
+            </label>
+          </div>
 
           <div className="form-actions">
             <button
@@ -266,7 +269,6 @@ export function RequestTimeOffPage(): React.JSX.Element {
           time-off request above. Goes through the same manager-approval workflow.
         </p>
         <form
-          className="form-grid"
           onSubmit={(event) => {
             handleUnavailabilitySubmit(event);
           }}
@@ -277,92 +279,97 @@ export function RequestTimeOffPage(): React.JSX.Element {
             </div>
           )}
 
-          {isManager && (
-            <EmployeeSelect
-              id="unavailability-on-behalf-of"
-              label="Submit on behalf of (optional — auto-approved)"
-              employees={employees ?? []}
-              value={unavailabilityOnBehalfOfId}
-              onChange={setUnavailabilityOnBehalfOfId}
-            />
-          )}
+          <div className="form-rows">
+            {isManager && (
+              <EmployeeSelect
+                id="unavailability-on-behalf-of"
+                label="Submit on behalf of (optional — auto-approved)"
+                employees={employees ?? []}
+                value={unavailabilityOnBehalfOfId}
+                onChange={setUnavailabilityOnBehalfOfId}
+              />
+            )}
 
-          <label className="field-label" htmlFor="unavailability-day">
-            Day of week
-            <select
-              id="unavailability-day"
-              className="text-input"
-              value={unavailabilityForm.dayOfWeek}
-              onChange={(event) =>
-                setUnavailabilityForm((prev) => ({
-                  ...prev,
-                  dayOfWeek: Number(event.target.value),
-                }))
-              }
-            >
-              {DAY_OF_WEEK_LABELS.map((label, index) => (
-                <option key={label} value={index}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </label>
+            <label className="form-row" htmlFor="unavailability-day">
+              <span className="form-row-label">Day of week</span>
+              <select
+                id="unavailability-day"
+                className="text-input"
+                value={unavailabilityForm.dayOfWeek}
+                onChange={(event) =>
+                  setUnavailabilityForm((prev) => ({
+                    ...prev,
+                    dayOfWeek: Number(event.target.value),
+                  }))
+                }
+              >
+                {DAY_OF_WEEK_LABELS.map((label, index) => (
+                  <option key={label} value={index}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-          <label className="checkbox-row" htmlFor="unavailability-full-day">
-            <input
-              id="unavailability-full-day"
-              type="checkbox"
-              checked={unavailabilityForm.fullDay}
-              onChange={(event) =>
-                setUnavailabilityForm((prev) => ({ ...prev, fullDay: event.target.checked }))
-              }
-            />
-            Unavailable all day
-          </label>
+            <label className="checkbox-row" htmlFor="unavailability-full-day">
+              <input
+                id="unavailability-full-day"
+                type="checkbox"
+                checked={unavailabilityForm.fullDay}
+                onChange={(event) =>
+                  setUnavailabilityForm((prev) => ({ ...prev, fullDay: event.target.checked }))
+                }
+              />
+              Unavailable all day
+            </label>
 
-          {!unavailabilityForm.fullDay && (
-            <>
-              <label className="field-label" htmlFor="unavailability-start">
-                Start time
-                <input
-                  id="unavailability-start"
-                  type="time"
-                  className="text-input"
-                  value={unavailabilityForm.startTime}
-                  onChange={(event) =>
-                    setUnavailabilityForm((prev) => ({ ...prev, startTime: event.target.value }))
-                  }
-                  required
-                />
-              </label>
+            {!unavailabilityForm.fullDay && (
+              <>
+                <label className="form-row" htmlFor="unavailability-start">
+                  <span className="form-row-label">Start time</span>
+                  <input
+                    id="unavailability-start"
+                    type="time"
+                    className="text-input"
+                    value={unavailabilityForm.startTime}
+                    onChange={(event) =>
+                      setUnavailabilityForm((prev) => ({
+                        ...prev,
+                        startTime: event.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </label>
 
-              <label className="field-label" htmlFor="unavailability-end">
-                End time
-                <input
-                  id="unavailability-end"
-                  type="time"
-                  className="text-input"
-                  value={unavailabilityForm.endTime}
-                  onChange={(event) =>
-                    setUnavailabilityForm((prev) => ({ ...prev, endTime: event.target.value }))
-                  }
-                  required
-                />
-              </label>
-            </>
-          )}
+                <label className="form-row" htmlFor="unavailability-end">
+                  <span className="form-row-label">End time</span>
+                  <input
+                    id="unavailability-end"
+                    type="time"
+                    className="text-input"
+                    value={unavailabilityForm.endTime}
+                    onChange={(event) =>
+                      setUnavailabilityForm((prev) => ({ ...prev, endTime: event.target.value }))
+                    }
+                    required
+                  />
+                </label>
+              </>
+            )}
 
-          <label className="field-label" htmlFor="unavailability-reason">
-            Reason (optional)
-            <input
-              id="unavailability-reason"
-              className="text-input"
-              value={unavailabilityForm.reason}
-              onChange={(event) =>
-                setUnavailabilityForm((prev) => ({ ...prev, reason: event.target.value }))
-              }
-            />
-          </label>
+            <label className="form-row" htmlFor="unavailability-reason">
+              <span className="form-row-label">Reason (optional)</span>
+              <input
+                id="unavailability-reason"
+                className="text-input"
+                value={unavailabilityForm.reason}
+                onChange={(event) =>
+                  setUnavailabilityForm((prev) => ({ ...prev, reason: event.target.value }))
+                }
+              />
+            </label>
+          </div>
 
           <div className="form-actions">
             <button

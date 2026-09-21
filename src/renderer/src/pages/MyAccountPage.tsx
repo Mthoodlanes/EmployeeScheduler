@@ -91,7 +91,7 @@ export function MyAccountPage(): React.JSX.Element {
       <InstallAppPrompt />
 
       <div className="card section">
-        <form className="form-grid" onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit}>
           {formError && (
             <div role="alert" className="form-error" data-testid="my-account-error">
               {formError}
@@ -103,17 +103,19 @@ export function MyAccountPage(): React.JSX.Element {
             </div>
           )}
 
-          <label className="field-label" htmlFor="my-account-name">
-            Full name
-            <input
-              id="my-account-name"
-              className="text-input"
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              data-testid="my-account-name"
-              required
-            />
-          </label>
+          <div className="form-rows">
+            <label className="form-row" htmlFor="my-account-name">
+              <span className="form-row-label">Full name</span>
+              <input
+                id="my-account-name"
+                className="text-input"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                data-testid="my-account-name"
+                required
+              />
+            </label>
+          </div>
 
           <h2>Change Password</h2>
           <p className="modal-subtitle">
@@ -121,44 +123,46 @@ export function MyAccountPage(): React.JSX.Element {
             password.
           </p>
 
-          <label className="field-label" htmlFor="my-account-current-password">
-            Current password
-            <input
-              id="my-account-current-password"
-              type="password"
-              className="text-input"
-              value={currentPassword}
-              onChange={(event) => setCurrentPassword(event.target.value)}
-              autoComplete="current-password"
-              data-testid="my-account-current-password"
-            />
-          </label>
+          <div className="form-rows">
+            <label className="form-row" htmlFor="my-account-current-password">
+              <span className="form-row-label">Current password</span>
+              <input
+                id="my-account-current-password"
+                type="password"
+                className="text-input"
+                value={currentPassword}
+                onChange={(event) => setCurrentPassword(event.target.value)}
+                autoComplete="current-password"
+                data-testid="my-account-current-password"
+              />
+            </label>
 
-          <label className="field-label" htmlFor="my-account-new-password">
-            New password
-            <input
-              id="my-account-new-password"
-              type="password"
-              className="text-input"
-              value={newPassword}
-              onChange={(event) => setNewPassword(event.target.value)}
-              autoComplete="new-password"
-              data-testid="my-account-new-password"
-            />
-          </label>
+            <label className="form-row" htmlFor="my-account-new-password">
+              <span className="form-row-label">New password</span>
+              <input
+                id="my-account-new-password"
+                type="password"
+                className="text-input"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                autoComplete="new-password"
+                data-testid="my-account-new-password"
+              />
+            </label>
 
-          <label className="field-label" htmlFor="my-account-confirm-password">
-            Confirm new password
-            <input
-              id="my-account-confirm-password"
-              type="password"
-              className="text-input"
-              value={confirmNewPassword}
-              onChange={(event) => setConfirmNewPassword(event.target.value)}
-              autoComplete="new-password"
-              data-testid="my-account-confirm-password"
-            />
-          </label>
+            <label className="form-row" htmlFor="my-account-confirm-password">
+              <span className="form-row-label">Confirm new password</span>
+              <input
+                id="my-account-confirm-password"
+                type="password"
+                className="text-input"
+                value={confirmNewPassword}
+                onChange={(event) => setConfirmNewPassword(event.target.value)}
+                autoComplete="new-password"
+                data-testid="my-account-confirm-password"
+              />
+            </label>
+          </div>
 
           <div className="form-actions">
             <button

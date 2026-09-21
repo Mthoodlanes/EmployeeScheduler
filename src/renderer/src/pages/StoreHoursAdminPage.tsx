@@ -330,7 +330,6 @@ function SpecialEventsCard(): React.JSX.Element {
       <div className="card">
         <h2>{isEditing ? `Edit special event (${form.eventDate})` : 'Add special event'}</h2>
         <form
-          className="form-grid"
           onSubmit={(event) => {
             handleSubmit(event);
           }}
@@ -341,72 +340,78 @@ function SpecialEventsCard(): React.JSX.Element {
             </div>
           )}
 
-          <label className="field-label" htmlFor="special-event-date">
-            Date
-            <input
-              id="special-event-date"
-              type="date"
-              className="text-input"
-              value={form.eventDate}
-              disabled={isEditing}
-              onChange={(event) => setForm((prev) => ({ ...prev, eventDate: event.target.value }))}
-              required
-            />
-          </label>
+          <div className="form-rows">
+            <label className="form-row" htmlFor="special-event-date">
+              <span className="form-row-label">Date</span>
+              <input
+                id="special-event-date"
+                type="date"
+                className="text-input"
+                value={form.eventDate}
+                disabled={isEditing}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, eventDate: event.target.value }))
+                }
+                required
+              />
+            </label>
 
-          <label className="field-label" htmlFor="special-event-label">
-            Label
-            <input
-              id="special-event-label"
-              className="text-input"
-              value={form.label}
-              placeholder="Tournament - Opens at 8am"
-              onChange={(event) => setForm((prev) => ({ ...prev, label: event.target.value }))}
-              required
-            />
-          </label>
+            <label className="form-row" htmlFor="special-event-label">
+              <span className="form-row-label">Label</span>
+              <input
+                id="special-event-label"
+                className="text-input"
+                value={form.label}
+                placeholder="Tournament - Opens at 8am"
+                onChange={(event) => setForm((prev) => ({ ...prev, label: event.target.value }))}
+                required
+              />
+            </label>
 
-          <label className="checkbox-row" htmlFor="special-event-closed">
-            <input
-              id="special-event-closed"
-              type="checkbox"
-              checked={form.isClosed}
-              onChange={(event) => setForm((prev) => ({ ...prev, isClosed: event.target.checked }))}
-            />
-            Fully closed this date
-          </label>
+            <label className="checkbox-row" htmlFor="special-event-closed">
+              <input
+                id="special-event-closed"
+                type="checkbox"
+                checked={form.isClosed}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, isClosed: event.target.checked }))
+                }
+              />
+              Fully closed this date
+            </label>
 
-          {!form.isClosed && (
-            <>
-              <label className="field-label" htmlFor="special-event-open">
-                Open
-                <input
-                  id="special-event-open"
-                  type="time"
-                  className="text-input"
-                  value={form.openTime}
-                  onChange={(event) =>
-                    setForm((prev) => ({ ...prev, openTime: event.target.value }))
-                  }
-                  required={!form.isClosed}
-                />
-              </label>
+            {!form.isClosed && (
+              <>
+                <label className="form-row" htmlFor="special-event-open">
+                  <span className="form-row-label">Open</span>
+                  <input
+                    id="special-event-open"
+                    type="time"
+                    className="text-input"
+                    value={form.openTime}
+                    onChange={(event) =>
+                      setForm((prev) => ({ ...prev, openTime: event.target.value }))
+                    }
+                    required={!form.isClosed}
+                  />
+                </label>
 
-              <label className="field-label" htmlFor="special-event-close">
-                Close
-                <input
-                  id="special-event-close"
-                  type="time"
-                  className="text-input"
-                  value={form.closeTime}
-                  onChange={(event) =>
-                    setForm((prev) => ({ ...prev, closeTime: event.target.value }))
-                  }
-                  required={!form.isClosed}
-                />
-              </label>
-            </>
-          )}
+                <label className="form-row" htmlFor="special-event-close">
+                  <span className="form-row-label">Close</span>
+                  <input
+                    id="special-event-close"
+                    type="time"
+                    className="text-input"
+                    value={form.closeTime}
+                    onChange={(event) =>
+                      setForm((prev) => ({ ...prev, closeTime: event.target.value }))
+                    }
+                    required={!form.isClosed}
+                  />
+                </label>
+              </>
+            )}
+          </div>
 
           <div className="form-actions">
             <button

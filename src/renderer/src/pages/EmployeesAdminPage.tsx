@@ -162,7 +162,7 @@ function EmployeePreferencesPanel({
       )}
 
       <form
-        className="form-grid form-top-gap"
+        className="form-top-gap"
         onSubmit={(event) => {
           handleAddPreference(event);
         }}
@@ -173,59 +173,61 @@ function EmployeePreferencesPanel({
           </div>
         )}
 
-        <label className="field-label" htmlFor="preference-day">
-          Day of week
-          <select
-            id="preference-day"
-            className="text-input"
-            value={prefForm.dayOfWeek}
-            onChange={(event) =>
-              setPrefForm((prev) => ({ ...prev, dayOfWeek: Number(event.target.value) }))
-            }
-          >
-            {DAY_OF_WEEK_LABELS.map((label, index) => (
-              <option key={label} value={index}>
-                {label}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="form-rows">
+          <label className="form-row" htmlFor="preference-day">
+            <span className="form-row-label">Day of week</span>
+            <select
+              id="preference-day"
+              className="text-input"
+              value={prefForm.dayOfWeek}
+              onChange={(event) =>
+                setPrefForm((prev) => ({ ...prev, dayOfWeek: Number(event.target.value) }))
+              }
+            >
+              {DAY_OF_WEEK_LABELS.map((label, index) => (
+                <option key={label} value={index}>
+                  {label}
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label className="field-label" htmlFor="preference-start">
-          Preferred start
-          <input
-            id="preference-start"
-            type="time"
-            className="text-input"
-            value={prefForm.preferredStartTime}
-            onChange={(event) =>
-              setPrefForm((prev) => ({ ...prev, preferredStartTime: event.target.value }))
-            }
-          />
-        </label>
+          <label className="form-row" htmlFor="preference-start">
+            <span className="form-row-label">Preferred start</span>
+            <input
+              id="preference-start"
+              type="time"
+              className="text-input"
+              value={prefForm.preferredStartTime}
+              onChange={(event) =>
+                setPrefForm((prev) => ({ ...prev, preferredStartTime: event.target.value }))
+              }
+            />
+          </label>
 
-        <label className="field-label" htmlFor="preference-end">
-          Preferred end
-          <input
-            id="preference-end"
-            type="time"
-            className="text-input"
-            value={prefForm.preferredEndTime}
-            onChange={(event) =>
-              setPrefForm((prev) => ({ ...prev, preferredEndTime: event.target.value }))
-            }
-          />
-        </label>
+          <label className="form-row" htmlFor="preference-end">
+            <span className="form-row-label">Preferred end</span>
+            <input
+              id="preference-end"
+              type="time"
+              className="text-input"
+              value={prefForm.preferredEndTime}
+              onChange={(event) =>
+                setPrefForm((prev) => ({ ...prev, preferredEndTime: event.target.value }))
+              }
+            />
+          </label>
 
-        <label className="field-label" htmlFor="preference-note">
-          Note (optional)
-          <input
-            id="preference-note"
-            className="text-input"
-            value={prefForm.note}
-            onChange={(event) => setPrefForm((prev) => ({ ...prev, note: event.target.value }))}
-          />
-        </label>
+          <label className="form-row" htmlFor="preference-note">
+            <span className="form-row-label">Note (optional)</span>
+            <input
+              id="preference-note"
+              className="text-input"
+              value={prefForm.note}
+              onChange={(event) => setPrefForm((prev) => ({ ...prev, note: event.target.value }))}
+            />
+          </label>
+        </div>
 
         <div className="form-actions">
           <button type="submit" className="btn btn-primary" disabled={createPreference.isPending}>
@@ -406,7 +408,6 @@ export function EmployeesAdminPage(): React.JSX.Element {
       <div className="card" ref={formCardRef}>
         <h2>{isEditing ? `Edit ${form.name}` : 'Add employee'}</h2>
         <form
-          className="form-grid"
           onSubmit={(event) => {
             handleSubmit(event);
           }}
@@ -416,58 +417,66 @@ export function EmployeesAdminPage(): React.JSX.Element {
               {formError}
             </div>
           )}
-          <label className="field-label" htmlFor="employee-name">
-            Name
-            <input
-              id="employee-name"
-              className="text-input"
-              value={form.name}
-              onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-              required
-            />
-          </label>
+          <div className="form-rows">
+            <label className="form-row" htmlFor="employee-name">
+              <span className="form-row-label">Name</span>
+              <input
+                id="employee-name"
+                className="text-input"
+                value={form.name}
+                onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
+                required
+              />
+            </label>
 
-          <label className="field-label" htmlFor="employee-username">
-            Username
-            <input
-              id="employee-username"
-              className="text-input"
-              value={form.username}
-              disabled={isEditing}
-              onChange={(event) => setForm((prev) => ({ ...prev, username: event.target.value }))}
-              required
-            />
-          </label>
+            <label className="form-row" htmlFor="employee-username">
+              <span className="form-row-label">Username</span>
+              <input
+                id="employee-username"
+                className="text-input"
+                value={form.username}
+                disabled={isEditing}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, username: event.target.value }))
+                }
+                required
+              />
+            </label>
 
-          <label className="field-label" htmlFor="employee-password">
-            {isEditing ? 'Reset password (optional)' : 'Password'}
-            <input
-              id="employee-password"
-              className="text-input"
-              type="password"
-              autoComplete="new-password"
-              value={form.password}
-              onChange={(event) => setForm((prev) => ({ ...prev, password: event.target.value }))}
-              required={!isEditing}
-            />
-          </label>
+            <label className="form-row" htmlFor="employee-password">
+              <span className="form-row-label">
+                {isEditing ? 'Reset password (optional)' : 'Password'}
+              </span>
+              <input
+                id="employee-password"
+                className="text-input"
+                type="password"
+                autoComplete="new-password"
+                value={form.password}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, password: event.target.value }))
+                }
+                required={!isEditing}
+              />
+            </label>
 
-          <label className="field-label" htmlFor="employee-role">
-            Role
-            <select
-              id="employee-role"
-              className="text-input"
-              value={form.role}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, role: event.target.value as Role }))
-              }
-            >
-              <option value="employee">Employee</option>
-              <option value="coordinator">Event Coordinator</option>
-              <option value="manager">Manager</option>
-              <option value="secretary">Secretary</option>
-            </select>
-          </label>
+            <label className="form-row" htmlFor="employee-role">
+              <span className="form-row-label">Role</span>
+              <select
+                id="employee-role"
+                className="text-input"
+                value={form.role}
+                onChange={(event) =>
+                  setForm((prev) => ({ ...prev, role: event.target.value as Role }))
+                }
+              >
+                <option value="employee">Employee</option>
+                <option value="coordinator">Event Coordinator</option>
+                <option value="manager">Manager</option>
+                <option value="secretary">Secretary</option>
+              </select>
+            </label>
+          </div>
 
           <span className="field-label">Departments</span>
           {DEPARTMENTS.map((department) => (

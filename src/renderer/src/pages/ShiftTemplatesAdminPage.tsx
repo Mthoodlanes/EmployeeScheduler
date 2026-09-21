@@ -133,8 +133,11 @@ export function ShiftTemplatesAdminPage(): React.JSX.Element {
       </div>
 
       <div className="card section">
-        <label className="field-label" htmlFor="template-filter-department">
-          Filter by department
+        {/* A bare `.form-row` (not wrapped in `.form-rows`) — this card also
+            holds the templates table below, so it must NOT trigger the
+            `.card:has(.form-rows)` width cap that a dedicated form card gets. */}
+        <label className="form-row" htmlFor="template-filter-department">
+          <span className="form-row-label">Filter by department</span>
           <select
             id="template-filter-department"
             className="text-input"
@@ -232,7 +235,6 @@ export function ShiftTemplatesAdminPage(): React.JSX.Element {
       <div className="card">
         <h2>{isEditing ? `Edit ${form.name}` : 'Add shift template'}</h2>
         <form
-          className="form-grid"
           onSubmit={(event) => {
             handleSubmit(event);
           }}
@@ -243,86 +245,88 @@ export function ShiftTemplatesAdminPage(): React.JSX.Element {
             </div>
           )}
 
-          <label className="field-label" htmlFor="template-name">
-            Name
-            <input
-              id="template-name"
-              className="text-input"
-              value={form.name}
-              onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-              required
-            />
-          </label>
-
-          <label className="field-label" htmlFor="template-department">
-            Department
-            <select
-              id="template-department"
-              className="text-input"
-              value={form.department}
-              disabled={isEditing}
-              onChange={(event) =>
-                setForm((prev) => ({
-                  ...prev,
-                  department: event.target.value as DepartmentFormValue,
-                }))
-              }
-            >
-              {DEPARTMENTS.map((department) => (
-                <option key={department} value={department}>
-                  {DEPARTMENT_LABELS[department]}
-                </option>
-              ))}
-              <option value={SHARED_DEPARTMENT}>All Departments (Shared)</option>
-            </select>
-          </label>
-
-          <AnchorTimeField
-            idPrefix="template-start"
-            label="Start"
-            liveAnchor="open"
-            liveAnchorLabel="Opens with store"
-            anchor={form.startAnchor}
-            time={form.startTime}
-            onAnchorChange={(anchor) => setForm((prev) => ({ ...prev, startAnchor: anchor }))}
-            onTimeChange={(time) => setForm((prev) => ({ ...prev, startTime: time }))}
-          />
-
-          <AnchorTimeField
-            idPrefix="template-end"
-            label="End"
-            liveAnchor="close"
-            liveAnchorLabel="Closes with store"
-            anchor={form.endAnchor}
-            time={form.endTime}
-            onAnchorChange={(anchor) => setForm((prev) => ({ ...prev, endAnchor: anchor }))}
-            onTimeChange={(time) => setForm((prev) => ({ ...prev, endTime: time }))}
-          />
-
-          <label className="field-label" htmlFor="template-color">
-            Color
-            <input
-              id="template-color"
-              type="color"
-              className="color-input"
-              value={form.color}
-              onChange={(event) => setForm((prev) => ({ ...prev, color: event.target.value }))}
-            />
-          </label>
-
-          {isEditing && (
-            <label className="checkbox-row" htmlFor="template-active">
+          <div className="form-rows">
+            <label className="form-row" htmlFor="template-name">
+              <span className="form-row-label">Name</span>
               <input
-                id="template-active"
-                type="checkbox"
-                checked={form.isActive}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, isActive: event.target.checked }))
-                }
+                id="template-name"
+                className="text-input"
+                value={form.name}
+                onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
+                required
               />
-              Active
             </label>
-          )}
+
+            <label className="form-row" htmlFor="template-department">
+              <span className="form-row-label">Department</span>
+              <select
+                id="template-department"
+                className="text-input"
+                value={form.department}
+                disabled={isEditing}
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    department: event.target.value as DepartmentFormValue,
+                  }))
+                }
+              >
+                {DEPARTMENTS.map((department) => (
+                  <option key={department} value={department}>
+                    {DEPARTMENT_LABELS[department]}
+                  </option>
+                ))}
+                <option value={SHARED_DEPARTMENT}>All Departments (Shared)</option>
+              </select>
+            </label>
+
+            <AnchorTimeField
+              idPrefix="template-start"
+              label="Start"
+              liveAnchor="open"
+              liveAnchorLabel="Opens with store"
+              anchor={form.startAnchor}
+              time={form.startTime}
+              onAnchorChange={(anchor) => setForm((prev) => ({ ...prev, startAnchor: anchor }))}
+              onTimeChange={(time) => setForm((prev) => ({ ...prev, startTime: time }))}
+            />
+
+            <AnchorTimeField
+              idPrefix="template-end"
+              label="End"
+              liveAnchor="close"
+              liveAnchorLabel="Closes with store"
+              anchor={form.endAnchor}
+              time={form.endTime}
+              onAnchorChange={(anchor) => setForm((prev) => ({ ...prev, endAnchor: anchor }))}
+              onTimeChange={(time) => setForm((prev) => ({ ...prev, endTime: time }))}
+            />
+
+            <label className="form-row" htmlFor="template-color">
+              <span className="form-row-label">Color</span>
+              <input
+                id="template-color"
+                type="color"
+                className="color-input"
+                value={form.color}
+                onChange={(event) => setForm((prev) => ({ ...prev, color: event.target.value }))}
+              />
+            </label>
+
+            {isEditing && (
+              <label className="checkbox-row" htmlFor="template-active">
+                <input
+                  id="template-active"
+                  type="checkbox"
+                  checked={form.isActive}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, isActive: event.target.checked }))
+                  }
+                />
+                Active
+              </label>
+            )}
+          </div>
 
           <div className="form-actions">
             <button type="submit" className="btn btn-primary" disabled={isSaving}>

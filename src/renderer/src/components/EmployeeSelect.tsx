@@ -27,8 +27,8 @@ export function EmployeeSelect({
   disabled,
 }: EmployeeSelectProps): React.JSX.Element {
   return (
-    <label className="field-label" htmlFor={id}>
-      {label}
+    <label className="form-row" htmlFor={id}>
+      <span className="form-row-label">{label}</span>
       <select
         id={id}
         className="text-input"

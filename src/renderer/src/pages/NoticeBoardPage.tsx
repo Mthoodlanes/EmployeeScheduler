@@ -173,7 +173,6 @@ export function NoticeBoardPage(): React.JSX.Element {
         <div className="card">
           <h2>{isEditing ? 'Edit notice' : 'Post a notice'}</h2>
           <form
-            className="form-grid"
             onSubmit={(event) => {
               handleSubmit(event);
             }}
@@ -184,42 +183,49 @@ export function NoticeBoardPage(): React.JSX.Element {
               </div>
             )}
 
-            <label className="field-label" htmlFor="notice-title">
-              Title
-              <input
-                id="notice-title"
-                className="text-input"
-                value={form.title}
-                placeholder="New special: Tuesday Taco Night"
-                onChange={(event) => setForm((prev) => ({ ...prev, title: event.target.value }))}
-                required
-              />
-            </label>
+            <div className="form-rows">
+              <label className="form-row" htmlFor="notice-title">
+                <span className="form-row-label">Title</span>
+                <input
+                  id="notice-title"
+                  className="text-input"
+                  value={form.title}
+                  placeholder="New special: Tuesday Taco Night"
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, title: event.target.value }))
+                  }
+                  required
+                />
+              </label>
 
-            <label className="field-label" htmlFor="notice-body">
-              Details
-              <textarea
-                id="notice-body"
-                className="text-input"
-                rows={4}
-                value={form.body}
-                onChange={(event) => setForm((prev) => ({ ...prev, body: event.target.value }))}
-                required
-              />
-            </label>
+              {/* A textarea stays label-above (not row-style) — the row's
+                  180px-capped input width would make writing a paragraph of
+                  notice text unreasonably cramped. */}
+              <label className="field-label" htmlFor="notice-body">
+                Details
+                <textarea
+                  id="notice-body"
+                  className="text-input"
+                  rows={4}
+                  value={form.body}
+                  onChange={(event) => setForm((prev) => ({ ...prev, body: event.target.value }))}
+                  required
+                />
+              </label>
 
-            <label className="field-label" htmlFor="notice-expires">
-              Show until (optional)
-              <input
-                id="notice-expires"
-                type="date"
-                className="text-input"
-                value={form.expiresAt}
-                onChange={(event) =>
-                  setForm((prev) => ({ ...prev, expiresAt: event.target.value }))
-                }
-              />
-            </label>
+              <label className="form-row" htmlFor="notice-expires">
+                <span className="form-row-label">Show until (optional)</span>
+                <input
+                  id="notice-expires"
+                  type="date"
+                  className="text-input"
+                  value={form.expiresAt}
+                  onChange={(event) =>
+                    setForm((prev) => ({ ...prev, expiresAt: event.target.value }))
+                  }
+                />
+              </label>
+            </div>
 
             <div className="form-actions">
               <button

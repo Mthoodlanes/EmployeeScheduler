@@ -585,6 +585,72 @@ textarea.text-input {
   gap: 2px;
 }
 
+/* The same settings-row pattern established for the Secretary Apps dues
+   tracker (see secretary.css's `.secretary-form-rows` for the original),
+   generalized here for the rest of the app's admin/settings forms
+   (Employees, Shift Templates, Store Hours, Notice Board, Time Off, My
+   Account, Settings) — a fixed-width label to the left, a compact
+   width-capped control to the right, one row per field. Without this,
+   `.form-grid`/`.field-label`'s `.text-input { width: 100% }` stretches
+   every input/dropdown to the full width of its card, which reads as
+   oversized on anything wider than a phone. */
+.form-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-width: 560px;
+  /* Cards with a heading (e.g. "Change Password") or a checkbox group
+     right after a `.form-rows` block need SOME breathing room — `.card h2`
+     itself is `margin-top: 0` by design (flush against whatever's directly
+     above it inside a card), so without this the two sit flush together. */
+  margin-bottom: var(--space-3);
+}
+
+/* A card that's only a form gets the same cap on the card itself, so the
+   whole panel reads as a compact settings form rather than an oversized
+   box with content hugging one side. Descendant (not direct-child) match,
+   since every one of these forms nests `.form-rows` inside a `<form>` —
+   safe everywhere it's used today because no card here also holds a wide
+   table alongside its form (unlike the dues tracker's Roster page, which
+   is why that one keeps the stricter direct-child version). */
+.card:has(.form-rows) {
+  max-width: 640px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1) var(--space-4);
+  min-height: 38px;
+}
+
+.form-row-label {
+  flex: 0 0 230px;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+}
+
+.form-row .text-input {
+  flex: 0 1 180px;
+  max-width: 180px;
+  border-color: var(--color-border-strong);
+}
+
+/* Selects get a wider cap than plain text/date/time inputs — dropdown
+   option text (department names, employee names, "24-hour (military
+   time) — e.g. 14:00") truncates unreadably at 180px, where a short date
+   or number never would. */
+.form-row select.text-input {
+  flex: 0 1 260px;
+  max-width: 260px;
+}
+
+.form-row input[type='checkbox'] {
+  flex: 0 0 auto;
+}
+
 .form-actions {
   display: flex;
   flex-wrap: wrap;

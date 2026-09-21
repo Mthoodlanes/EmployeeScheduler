@@ -26,19 +26,21 @@ export function SettingsPage(): React.JSX.Element {
           device. Fixed times you type (in a shift template, custom shift, or store hours) still
           use your browser&rsquo;s own time picker either way.
         </p>
-        <label className="field-label" htmlFor="settings-time-format">
-          Clock style
-          <select
-            id="settings-time-format"
-            className="text-input"
-            data-testid="settings-time-format"
-            value={timeFormat}
-            onChange={(event) => setTimeFormat(event.target.value as TimeFormat)}
-          >
-            <option value="24h">24-hour (military time) — e.g. 14:00</option>
-            <option value="12h">12-hour — e.g. 2:00 PM</option>
-          </select>
-        </label>
+        <div className="form-rows">
+          <label className="form-row" htmlFor="settings-time-format">
+            <span className="form-row-label">Clock style</span>
+            <select
+              id="settings-time-format"
+              className="text-input"
+              data-testid="settings-time-format"
+              value={timeFormat}
+              onChange={(event) => setTimeFormat(event.target.value as TimeFormat)}
+            >
+              <option value="24h">24-hour (military time) — e.g. 14:00</option>
+              <option value="12h">12-hour — e.g. 2:00 PM</option>
+            </select>
+          </label>
+        </div>
       </div>
     </div>
   );
