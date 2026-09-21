@@ -18,6 +18,8 @@ import { SecretaryLoginPage } from './pages/SecretaryLoginPage';
 import { SecretaryRosterPage } from './pages/SecretaryRosterPage';
 import { SecretaryWeeklyEntriesPage } from './pages/SecretaryWeeklyEntriesPage';
 import { SecretaryWeeklyBankingPage } from './pages/SecretaryWeeklyBankingPage';
+import { SecretaryBowlerSummaryPage } from './pages/SecretaryBowlerSummaryPage';
+import { SecretarySeasonSummaryPage } from './pages/SecretarySeasonSummaryPage';
 import { TimeOffQueuePage } from './pages/TimeOffQueuePage';
 import { RequestTimeOffPage } from './pages/RequestTimeOffPage';
 import { EmployeesAdminPage } from './pages/EmployeesAdminPage';
@@ -122,6 +124,14 @@ export function App(): React.JSX.Element {
               <Route
                 path="/secretary/leagues/:leagueId/weekly-banking"
                 element={<SecretaryWeeklyBankingPage />}
+              />
+              <Route
+                path="/secretary/leagues/:leagueId/bowler-summary"
+                element={<SecretaryBowlerSummaryPage />}
+              />
+              <Route
+                path="/secretary/leagues/:leagueId/season-summary"
+                element={<SecretarySeasonSummaryPage />}
               />
             </Route>
           </Route>

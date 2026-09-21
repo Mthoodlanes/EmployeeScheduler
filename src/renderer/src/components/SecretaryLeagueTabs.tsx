@@ -8,7 +8,7 @@ function tabClassName({ isActive }: { isActive: boolean }): string {
   return isActive ? 'btn btn-toggle active' : 'btn btn-toggle';
 }
 
-/** Sub-nav for one league's pages, shown under the page header on each — Bowler/Season Summary (Milestone 9) will add its own tab here too. */
+/** Sub-nav for one league's pages, shown under the page header on each. */
 export function SecretaryLeagueTabs({ leagueId }: SecretaryLeagueTabsProps): React.JSX.Element {
   return (
     <div className="secretary-league-tabs">
@@ -23,6 +23,12 @@ export function SecretaryLeagueTabs({ leagueId }: SecretaryLeagueTabsProps): Rea
       </NavLink>
       <NavLink to={`/secretary/leagues/${leagueId}/weekly-banking`} className={tabClassName}>
         Weekly Banking
+      </NavLink>
+      <NavLink to={`/secretary/leagues/${leagueId}/bowler-summary`} className={tabClassName}>
+        Bowler Summary
+      </NavLink>
+      <NavLink to={`/secretary/leagues/${leagueId}/season-summary`} className={tabClassName}>
+        Season Summary
       </NavLink>
     </div>
   );
