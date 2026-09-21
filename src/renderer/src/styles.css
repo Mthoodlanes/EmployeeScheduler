@@ -632,19 +632,19 @@ textarea.text-input {
   color: var(--color-text);
 }
 
+/* One width for every control type in a row (text, date, time, select) —
+   a form is read as a column, and a select sized differently than the
+   text inputs stacked above/below it breaks that column's right edge,
+   which reads as janky even though each control looks fine on its own.
+   220px is a compromise: wide enough that most select option text
+   (department/employee names) doesn't truncate, while still `select` text
+   that's unusually long ("24-hour (military time) — e.g. 14:00") just
+   truncates with an ellipsis — the full text is always visible once the
+   dropdown itself is opened. */
 .form-row .text-input {
-  flex: 0 1 180px;
-  max-width: 180px;
+  flex: 0 1 220px;
+  max-width: 220px;
   border-color: var(--color-border-strong);
-}
-
-/* Selects get a wider cap than plain text/date/time inputs — dropdown
-   option text (department names, employee names, "24-hour (military
-   time) — e.g. 14:00") truncates unreadably at 180px, where a short date
-   or number never would. */
-.form-row select.text-input {
-  flex: 0 1 260px;
-  max-width: 260px;
 }
 
 .form-row input[type='checkbox'] {
