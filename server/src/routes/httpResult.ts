@@ -69,6 +69,10 @@ import {
 } from '../services/duesTeamService.js';
 import { BowlerNotFoundError, UnauthorizedBowlerActionError } from '../services/bowlerService.js';
 import { UnauthorizedWeeklyEntryActionError } from '../services/weeklyEntryService.js';
+import {
+  DuesTrackerBackupNotFoundError,
+  UnauthorizedDuesTrackerBackupActionError,
+} from '../services/duesTrackerBackupService.js';
 
 interface ErrorMapping {
   ctor: new (...args: never[]) => Error;
@@ -86,6 +90,7 @@ const ERROR_STATUS_MAP: ErrorMapping[] = [
   { ctor: LeagueNotFoundError, status: 404 },
   { ctor: DuesTeamNotFoundError, status: 404 },
   { ctor: BowlerNotFoundError, status: 404 },
+  { ctor: DuesTrackerBackupNotFoundError, status: 404 },
   // 409 – conflict
   { ctor: DuplicateUsernameError, status: 409 },
   { ctor: InvalidApprovalTransitionError, status: 409 },
@@ -104,6 +109,7 @@ const ERROR_STATUS_MAP: ErrorMapping[] = [
   { ctor: UnauthorizedDuesTeamActionError, status: 403 },
   { ctor: UnauthorizedBowlerActionError, status: 403 },
   { ctor: UnauthorizedWeeklyEntryActionError, status: 403 },
+  { ctor: UnauthorizedDuesTrackerBackupActionError, status: 403 },
   // 401 – not authenticated at all (login only; unused by this milestone's
   // routes, kept here so the mapping table documents every known error).
   { ctor: InvalidCredentialsError, status: 401 },

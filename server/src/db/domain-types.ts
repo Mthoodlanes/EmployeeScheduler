@@ -249,3 +249,18 @@ export interface WeeklyEntry {
   week: number;
   amountPaid: number;
 }
+
+export type BackupSource = 'manual' | 'pre_restore';
+
+export interface DuesTrackerBackup {
+  id: number;
+  label: string | null;
+  source: BackupSource;
+  restoredFromBackupId: number | null;
+  leagueCount: number;
+  teamCount: number;
+  bowlerCount: number;
+  weeklyEntryCount: number;
+  createdByEmployeeId: number;
+  createdAt: string;
+}

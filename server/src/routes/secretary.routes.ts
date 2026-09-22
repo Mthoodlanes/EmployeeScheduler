@@ -28,16 +28,22 @@
  *   GET    /api/secretary/leagues/:leagueId/weekly-entries
  *   PUT    /api/secretary/bowlers/:bowlerId/weekly-entries/:week
  *   DELETE /api/secretary/bowlers/:bowlerId/weekly-entries/:week
+ *
+ *   GET    /api/secretary/backups
+ *   POST   /api/secretary/backups
+ *   POST   /api/secretary/backups/:id/restore
  */
 import { Router, type Request } from 'express';
 import * as leagueService from '../services/leagueService.js';
 import * as duesTeamService from '../services/duesTeamService.js';
 import * as bowlerService from '../services/bowlerService.js';
 import * as weeklyEntryService from '../services/weeklyEntryService.js';
+import * as duesTrackerBackupService from '../services/duesTrackerBackupService.js';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { handleRoute } from './httpResult.js';
 import {
   bodyOf,
+  nullableString,
   requireBoolean,
   requireIdParam,
   requireInteger,
@@ -276,6 +282,38 @@ router.delete(
     );
     return { success: true };
   }),
+);
+
+// ---------------------------------------------------------------------
+// Backups
+// ---------------------------------------------------------------------
+
+router.get(
+  '/backups',
+  handleRoute((req) => duesTrackerBackupService.listBackups(actorOf(req))),
+);
+
+router.post(
+  '/backups',
+  handleRoute(
+    (req) =>
+      duesTrackerBackupService.createBackup(
+        actorOf(req),
+        nullableString(bodyOf(req).label, 'label'),
+      ),
+    201,
+  ),
+);
+
+router.post(
+  '/backups/:id/restore',
+  handleRoute((req) =>
+    duesTrackerBackupService.restoreBackup(
+      actorOf(req),
+      requireIdParam(req),
+      requireString(bodyOf(req).confirmationText, 'confirmationText'),
+    ),
+  ),
 );
 
 export default router;

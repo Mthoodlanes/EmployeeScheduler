@@ -10,6 +10,8 @@ import {
   uniqueIndex,
   index,
   check,
+  jsonb,
+  type AnyPgColumn,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -454,3 +456,42 @@ export const weeklyEntries = pgTable(
     index('idx_weekly_entries_bowler_id').on(table.bowlerId),
   ],
 );
+
+// Secretary Apps: a save/restore library for the 4 dues-tracker tables
+// above, deliberately its own table rather than living in any of them —
+// a restore's TRUNCATE only ever names leagues/teams/bowlers/weekly_entries
+// explicitly, so a row here survives being the very thing that just
+// overwrote those tables. `payload` is a full snapshot (the same shape
+// `backup-dues-tracker.ts` writes to a file), stored inline rather than in
+// an external file store since Render's disk is ephemeral and this repo
+// has no other persistent storage configured — Postgres already is one.
+// The 4 `*Count` columns are denormalized purely so the UI can render a
+// backup's row (list view) without ever parsing the (potentially large)
+// `payload` jsonb blob.
+export const backupSourceEnum = pgEnum('backup_source', ['manual', 'pre_restore']);
+
+export const duesTrackerBackups = pgTable('dues_tracker_backups', {
+  id: integer('id').generatedAlwaysAsIdentity().primaryKey(),
+  label: text('label'),
+  source: backupSourceEnum('source').notNull(),
+  // Only set on a `source: 'pre_restore'` row — which backup a manager
+  // restored AT the moment this safety snapshot was taken, doubling this
+  // table as the restore audit trail (who/when is already `createdByEmployeeId`/
+  // `createdAt`) without a second table. `onDelete: 'set null'` rather than
+  // `cascade`/no-action: nothing currently deletes a backup row, but if that
+  // ever changes, losing the pointer is preferable to a delete somehow
+  // failing or silently cascading through backup history.
+  restoredFromBackupId: integer('restored_from_backup_id').references(
+    (): AnyPgColumn => duesTrackerBackups.id,
+    { onDelete: 'set null' },
+  ),
+  leagueCount: integer('league_count').notNull(),
+  teamCount: integer('team_count').notNull(),
+  bowlerCount: integer('bowler_count').notNull(),
+  weeklyEntryCount: integer('weekly_entry_count').notNull(),
+  payload: jsonb('payload').notNull(),
+  createdByEmployeeId: integer('created_by_employee_id')
+    .notNull()
+    .references(() => employees.id),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});

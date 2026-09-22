@@ -134,6 +134,11 @@ import type {
   SecretaryWeeklyEntriesRecordResponse,
   SecretaryWeeklyEntriesRemoveRequest,
   SecretaryWeeklyEntriesRemoveResponse,
+  SecretaryBackupsListResponse,
+  SecretaryBackupsCreateRequest,
+  SecretaryBackupsCreateResponse,
+  SecretaryBackupsRestoreRequest,
+  SecretaryBackupsRestoreResponse,
   StoreHoursListResponse,
   StoreHoursUpsertRequest,
   StoreHoursUpsertResponse,
@@ -320,6 +325,13 @@ export interface Api {
       remove: (
         request: SecretaryWeeklyEntriesRemoveRequest,
       ) => Promise<SecretaryWeeklyEntriesRemoveResponse>;
+    };
+    backups: {
+      list: () => Promise<SecretaryBackupsListResponse>;
+      create: (request: SecretaryBackupsCreateRequest) => Promise<SecretaryBackupsCreateResponse>;
+      restore: (
+        request: SecretaryBackupsRestoreRequest,
+      ) => Promise<SecretaryBackupsRestoreResponse>;
     };
   };
   /**
@@ -654,6 +666,15 @@ const secretary: Api['secretary'] = {
       del<SecretaryWeeklyEntriesRemoveResponse>(
         `/secretary/bowlers/${removeRequest.bowlerId}/weekly-entries/${removeRequest.week}`,
       ),
+  },
+  backups: {
+    list: () => get<SecretaryBackupsListResponse>('/secretary/backups'),
+    create: (createRequest: SecretaryBackupsCreateRequest) =>
+      post<SecretaryBackupsCreateResponse>('/secretary/backups', createRequest),
+    restore: (restoreRequest: SecretaryBackupsRestoreRequest) =>
+      post<SecretaryBackupsRestoreResponse>(`/secretary/backups/${restoreRequest.id}/restore`, {
+        confirmationText: restoreRequest.confirmationText,
+      }),
   },
 };
 

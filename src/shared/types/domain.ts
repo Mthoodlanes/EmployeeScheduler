@@ -298,3 +298,26 @@ export interface WeeklyEntry {
   week: number;
   amountPaid: number;
 }
+
+export type BackupSource = 'manual' | 'pre_restore';
+
+/**
+ * Metadata for one save/restore snapshot of the dues tracker's 4 tables
+ * (leagues/teams/bowlers/weeklyEntries) — deliberately never carries the
+ * actual snapshot data (see `duesTrackerBackupRepo.ts`'s `DuesBackupPayload`
+ * server-side-only type), since the UI only ever needs to list/restore a
+ * backup by id, never read its contents directly.
+ */
+export interface DuesTrackerBackup {
+  id: number;
+  label: string | null;
+  source: BackupSource;
+  /** Only set on a `source: 'pre_restore'` row — which backup a manager restored at the moment this safety snapshot was taken. */
+  restoredFromBackupId: number | null;
+  leagueCount: number;
+  teamCount: number;
+  bowlerCount: number;
+  weeklyEntryCount: number;
+  createdByEmployeeId: number;
+  createdAt: string;
+}

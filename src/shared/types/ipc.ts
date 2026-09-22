@@ -22,6 +22,7 @@ import type {
   BowlerStatus,
   Department,
   DuesTeam,
+  DuesTrackerBackup,
   Employee,
   EmployeePreference,
   EmployeeUnavailability,
@@ -609,6 +610,22 @@ export interface SecretaryWeeklyEntriesRemoveRequest {
   week: number;
 }
 export type SecretaryWeeklyEntriesRemoveResponse = { success: true };
+
+// ---- secretaryBackups:list ----
+export type SecretaryBackupsListResponse = DuesTrackerBackup[];
+
+// ---- secretaryBackups:create ----
+export interface SecretaryBackupsCreateRequest {
+  label: string | null;
+}
+export type SecretaryBackupsCreateResponse = DuesTrackerBackup;
+
+// ---- secretaryBackups:restore ----
+export interface SecretaryBackupsRestoreRequest {
+  id: number;
+  confirmationText: string;
+}
+export type SecretaryBackupsRestoreResponse = DuesTrackerBackup;
 
 // ---- windowControls:minimize / toggleMaximize / close ----
 export type WindowControlsMinimizeResponse = { success: true };
