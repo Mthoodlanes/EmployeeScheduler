@@ -136,7 +136,9 @@ export function AppLayout(): React.JSX.Element {
         </div>
       </nav>
       <div className="app-content">
-        <Outlet />
+        <div className="app-content-inner">
+          <Outlet />
+        </div>
       </div>
       <NoticeAlertToast />
     </div>

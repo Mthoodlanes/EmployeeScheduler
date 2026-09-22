@@ -321,15 +321,28 @@
   white-space: nowrap;
 }
 
+/*
+ * The scroll viewport itself — deliberately full-width with NO max-width/
+ * centering of its own. Those used to live here directly, which meant on
+ * any screen wider than the 1200px cap this element's own scrollbar (from
+ * `overflow-y: auto`) sat at the edge of that centered 1200px box, not the
+ * true edge of the browser window — a visible gap of dead space between
+ * the content and a scrollbar that reads as floating in the middle of the
+ * screen. `.app-content-inner` below now owns the max-width/centering, so
+ * this element (and therefore its scrollbar) always spans the full window.
+ */
 .app-content {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: var(--space-6);
+  animation: fade-in var(--transition-slow) var(--ease-standard);
+}
+
+.app-content-inner {
   max-width: 1200px;
   width: 100%;
   margin: 0 auto;
-  animation: fade-in var(--transition-slow) var(--ease-standard);
+  padding: var(--space-6);
 }
 
 /* ==========================================================================
@@ -1368,7 +1381,7 @@ table.data-table tbody tr:last-child td {
   }
 
   /* ---- Page chrome — reclaim side padding for narrow viewports ---- */
-  .app-content {
+  .app-content-inner {
     padding: var(--space-4);
   }
 
@@ -1671,7 +1684,7 @@ table.data-table tbody tr:last-child td {
     background: #fff !important;
   }
 
-  .app-content {
+  .app-content-inner {
     padding: 0 !important;
     max-width: none !important;
     margin: 0 !important;

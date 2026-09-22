@@ -82,8 +82,8 @@ function RestoreConfirmDialog({
           {error}
         </div>
       )}
-      <label className="form-row" htmlFor="restore-confirmation-text">
-        <span className="form-row-label">
+      <label className="secretary-form-row" htmlFor="restore-confirmation-text">
+        <span className="secretary-form-row-label">
           Type <strong>{RESTORE_CONFIRMATION_PHRASE}</strong> to confirm
         </span>
         <input
@@ -257,7 +257,7 @@ export function SecretaryLeaguesPage(): React.JSX.Element {
         )}
       </div>
 
-      <div className="card">
+      <div className="card section">
         <h2>Add league</h2>
         <form
           className="form-grid"
@@ -370,9 +370,9 @@ export function SecretaryLeaguesPage(): React.JSX.Element {
               {backupFormError}
             </div>
           )}
-          <div className="form-rows">
-            <label className="form-row" htmlFor="backup-label">
-              <span className="form-row-label">Label (optional)</span>
+          <div className="secretary-form-rows">
+            <label className="secretary-form-row" htmlFor="backup-label">
+              <span className="secretary-form-row-label">Label (optional)</span>
               <input
                 id="backup-label"
                 className="text-input"
