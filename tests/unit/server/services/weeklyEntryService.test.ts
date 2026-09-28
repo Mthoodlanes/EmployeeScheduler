@@ -51,7 +51,6 @@ const bowlerInput: BowlerInput = {
   depositPaid: 0,
   depositOptOut: false,
   usbcCardPaid: false,
-  lastTwoWeeksPaid: 0,
 };
 
 async function makeBowler() {
@@ -91,45 +90,57 @@ describe('weeklyEntryService', () => {
   describe('recordAmount', () => {
     it('records a new weekly payment', async () => {
       const { bowler } = await makeBowler();
-      const entry = await weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, 5.5);
+      const entry = await weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, 5.5, false);
       expect(entry.week).toBe(1);
       expect(entry.amountPaid).toBe(5.5);
+      expect(entry.appliedToLastTwoWeeks).toBe(false);
     });
 
     it('overwrites an existing week rather than duplicating it', async () => {
       const { bowler } = await makeBowler();
-      await weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, 5.5);
-      const corrected = await weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, 6);
+      await weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, 5.5, false);
+      const corrected = await weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, 6, false);
 
       const entries = await weeklyEntryService.listEntriesForBowlers(secretaryActor, [bowler.id]);
       expect(entries).toHaveLength(1);
       expect(corrected.amountPaid).toBe(6);
     });
 
+    it('records and can later toggle the appliedToLastTwoWeeks flag without disturbing the amount', async () => {
+      const { bowler } = await makeBowler();
+      const marked = await weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, 30, true);
+      expect(marked.appliedToLastTwoWeeks).toBe(true);
+      expect(marked.amountPaid).toBe(30);
+
+      const unmarked = await weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, 30, false);
+      expect(unmarked.appliedToLastTwoWeeks).toBe(false);
+      expect(unmarked.amountPaid).toBe(30);
+    });
+
     it('refuses a plain employee', async () => {
       const { bowler } = await makeBowler();
       await expect(
-        weeklyEntryService.recordAmount(employeeActor, bowler.id, 1, 5),
+        weeklyEntryService.recordAmount(employeeActor, bowler.id, 1, 5, false),
       ).rejects.toThrow(UnauthorizedWeeklyEntryActionError);
     });
 
     it('rejects a negative amount', async () => {
       const { bowler } = await makeBowler();
       await expect(
-        weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, -5),
+        weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, -5, false),
       ).rejects.toThrow();
     });
 
     it('rejects a week below 1', async () => {
       const { bowler } = await makeBowler();
       await expect(
-        weeklyEntryService.recordAmount(secretaryActor, bowler.id, 0, 5),
+        weeklyEntryService.recordAmount(secretaryActor, bowler.id, 0, 5, false),
       ).rejects.toThrow();
     });
 
     it('throws when the bowler does not exist', async () => {
       await expect(
-        weeklyEntryService.recordAmount(secretaryActor, 999999, 1, 5),
+        weeklyEntryService.recordAmount(secretaryActor, 999999, 1, 5, false),
       ).rejects.toThrow();
     });
   });
@@ -141,8 +152,8 @@ describe('weeklyEntryService', () => {
         ...bowlerInput,
         name: 'Donny Kerabatsos',
       });
-      await weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, 5);
-      await weeklyEntryService.recordAmount(secretaryActor, otherBowler.id, 1, 7.5);
+      await weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, 5, false);
+      await weeklyEntryService.recordAmount(secretaryActor, otherBowler.id, 1, 7.5, false);
 
       const entries = await weeklyEntryService.listEntriesForLeague(secretaryActor, league.id);
       expect(entries).toHaveLength(2);
@@ -153,7 +164,7 @@ describe('weeklyEntryService', () => {
   describe('removeEntry', () => {
     it('removes a recorded entry', async () => {
       const { bowler } = await makeBowler();
-      await weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, 5);
+      await weeklyEntryService.recordAmount(secretaryActor, bowler.id, 1, 5, false);
       await weeklyEntryService.removeEntry(secretaryActor, bowler.id, 1);
       expect(
         await weeklyEntryService.listEntriesForBowlers(secretaryActor, [bowler.id]),

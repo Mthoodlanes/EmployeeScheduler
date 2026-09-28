@@ -26,6 +26,8 @@ export interface EntryFlat {
   teamId: number;
   due: number;
   paid: number;
+  /** This entry's overpayment (if any) is earmarked for the bowler's last-two-weeks charge — see `buildLastTwoWeeksBalanceByBowler`. */
+  appliedToLastTwoWeeks: boolean;
 }
 
 export type BowlerLedger = Record<number, { dueTotal: number; paidTotal: number }>;
@@ -131,6 +133,7 @@ export function buildFlatEntries(
         teamId: bowler.teamId,
         due: computeWeeklyDueForBowler(standardWeeklyDue, league, bowler),
         paid: entry.amountPaid,
+        appliedToLastTwoWeeks: entry.appliedToLastTwoWeeks,
       });
     }
   }
@@ -182,44 +185,43 @@ export function buildRunningBalanceByWeek(flatEntries: EntryFlat[]): RunningBala
 }
 
 /**
- * What each bowler owes specifically for the season's final two weeks,
- * crediting any prepayment they'd already built up before those two weeks
- * began — an ordinary mid-season DEBT does not reduce this (it's already
- * reflected in their whole-season balance); only a CREDIT does, and only
- * once, against this specific number. `lastTwoWeeksPaidByBowler` is a
- * SECOND, independent source of that same kind of credit: a running amount
- * the secretary records directly on the bowler (see `Bowler.lastTwoWeeksPaid`)
- * rather than needing to overpay some earlier week's entry to create the
- * credit indirectly. Both sources are simply added together — a bowler with
- * no weekly entries recorded at all yet can still show a $0 balance here
- * purely from this manual credit, which is why bowler ids come from the
- * union of both inputs, not just whoever has an entry.
+ * What each bowler owes specifically for the season's final two weeks.
+ *
+ * Credit toward this number comes ONLY from entries the secretary has
+ * explicitly marked `appliedToLastTwoWeeks` — an ordinary, unmarked
+ * overpayment sitting elsewhere in the season does NOT auto-apply here,
+ * by design. Earlier versions of this function netted a bowler's entire
+ * season-to-date balance and rolled any leftover credit forward
+ * automatically; that silently let an unrelated missed payment in some
+ * other week eat into money a secretary had specifically earmarked for a
+ * bowler's final two weeks (e.g. a bowler who pays ahead for the end of
+ * the season but then falls behind on a handful of weeks in between —
+ * that prepayment must stay protected, not get netted against the
+ * separate shortfall). Marking is explicit and per-entry precisely so the
+ * secretary decides, payment by payment, rather than the system guessing.
+ *
+ * A marked entry's contribution is its own overpayment only
+ * (`max(0, paid - due)` for THAT week) — marking a week where the bowler
+ * merely paid what they owed contributes nothing. A bowler can mark just
+ * one earlier payment covering only one of the two final weeks; the
+ * credit is a plain dollar sum, not tied to either specific week, so a
+ * partial (one-week's-worth) credit works exactly as expected.
  */
 export function buildLastTwoWeeksBalanceByBowler(
   flatEntries: EntryFlat[],
   numWeeks: number,
-  lastTwoWeeksPaidByBowler: Record<number, number>,
 ): Record<number, number> {
   const result: Record<number, number> = {};
   const lastTwoWeekNums = new Set([numWeeks - 1, numWeeks].filter((week) => week >= 1));
-  const entriesByBowler = groupByBowler(flatEntries);
-  const bowlerIds = new Set([
-    ...entriesByBowler.keys(),
-    ...Object.keys(lastTwoWeeksPaidByBowler).map(Number),
-  ]);
-  for (const bowlerId of bowlerIds) {
-    const entries = entriesByBowler.get(bowlerId) ?? [];
-    const priorEntries = entries.filter((entry) => entry.week <= numWeeks - 2);
-    const priorDue = priorEntries.reduce((sum, entry) => sum + entry.due, 0);
-    const priorPaid = priorEntries.reduce((sum, entry) => sum + entry.paid, 0);
-    const priorBalance = priorDue - priorPaid;
-    const automaticCredit = priorBalance < 0 ? -priorBalance : 0;
-    const manualCredit = lastTwoWeeksPaidByBowler[bowlerId] ?? 0;
+  for (const [bowlerId, entries] of groupByBowler(flatEntries)) {
+    const earmarkedCredit = entries
+      .filter((entry) => entry.appliedToLastTwoWeeks && !lastTwoWeekNums.has(entry.week))
+      .reduce((sum, entry) => sum + Math.max(0, entry.paid - entry.due), 0);
 
     const relevant = entries.filter((entry) => lastTwoWeekNums.has(entry.week));
     const due = relevant.reduce((sum, entry) => sum + entry.due, 0);
     const paid = relevant.reduce((sum, entry) => sum + entry.paid, 0);
-    result[bowlerId] = Math.max(0, due - paid - automaticCredit - manualCredit);
+    result[bowlerId] = Math.max(0, due - paid - earmarkedCredit);
   }
   return result;
 }

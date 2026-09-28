@@ -40,11 +40,7 @@ export function SecretarySeasonSummaryPage(): React.JSX.Element {
         bowlers,
         buildBowlerLedger(flatEntries, league.currentWeek),
         flatEntries,
-        buildLastTwoWeeksBalanceByBowler(
-          flatEntries,
-          league.numWeeks,
-          Object.fromEntries(bowlers.map((bowler) => [bowler.id, bowler.lastTwoWeeksPaid])),
-        ),
+        buildLastTwoWeeksBalanceByBowler(flatEntries, league.numWeeks),
       )
     : [];
   const leagueTotals = aggregateLeagueTotals(rows);

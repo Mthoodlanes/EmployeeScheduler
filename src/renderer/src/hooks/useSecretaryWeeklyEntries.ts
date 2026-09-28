@@ -34,8 +34,12 @@ export function useRecordSecretaryWeeklyEntry(leagueId: number) {
   const queryClient = useQueryClient();
   const queryKey = weeklyEntriesForLeagueKey(leagueId);
   return useMutation({
-    mutationFn: (input: { bowlerId: number; week: number; amountPaid: number }) =>
-      api.secretary.weeklyEntries.record(input),
+    mutationFn: (input: {
+      bowlerId: number;
+      week: number;
+      amountPaid: number;
+      appliedToLastTwoWeeks: boolean;
+    }) => api.secretary.weeklyEntries.record(input),
     onMutate: async (input): Promise<OptimisticContext> => {
       await queryClient.cancelQueries({ queryKey });
       const previous = queryClient.getQueryData<WeeklyEntry[]>(queryKey);
@@ -43,7 +47,13 @@ export function useRecordSecretaryWeeklyEntry(leagueId: number) {
         ...current.filter(
           (entry) => !(entry.bowlerId === input.bowlerId && entry.week === input.week),
         ),
-        { id: -1, bowlerId: input.bowlerId, week: input.week, amountPaid: input.amountPaid },
+        {
+          id: -1,
+          bowlerId: input.bowlerId,
+          week: input.week,
+          amountPaid: input.amountPaid,
+          appliedToLastTwoWeeks: input.appliedToLastTwoWeeks,
+        },
       ]);
       return { previous };
     },

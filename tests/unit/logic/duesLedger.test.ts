@@ -63,7 +63,6 @@ function makeBowler(overrides: Partial<Bowler> = {}): Bowler {
     depositPaid: 0,
     depositOptOut: false,
     usbcCardPaid: false,
-    lastTwoWeeksPaid: 0,
     ...overrides,
   };
 }
@@ -73,7 +72,14 @@ function makeTeam(overrides: Partial<DuesTeam> = {}): DuesTeam {
 }
 
 function makeEntry(overrides: Partial<WeeklyEntry> = {}): WeeklyEntry {
-  return { id: 1, bowlerId: 1, week: 1, amountPaid: 0, ...overrides };
+  return {
+    id: 1,
+    bowlerId: 1,
+    week: 1,
+    amountPaid: 0,
+    appliedToLastTwoWeeks: false,
+    ...overrides,
+  };
 }
 
 describe('computeStandardWeeklyDue', () => {
@@ -142,8 +148,8 @@ describe('buildFlatEntries', () => {
     const flat = buildFlatEntries(league, bowlers, entries);
 
     expect(flat).toEqual([
-      { week: 1, bowlerId: 1, teamId: 1, due: 15, paid: 15 },
-      { week: 2, bowlerId: 2, teamId: 1, due: 13, paid: 13 },
+      { week: 1, bowlerId: 1, teamId: 1, due: 15, paid: 15, appliedToLastTwoWeeks: false },
+      { week: 2, bowlerId: 2, teamId: 1, due: 13, paid: 13, appliedToLastTwoWeeks: false },
     ]);
   });
 
@@ -196,94 +202,122 @@ describe('buildRunningBalanceByWeek', () => {
 });
 
 describe('buildLastTwoWeeksBalanceByBowler', () => {
-  it('is credit-aware: an earlier prepayment offsets what is owed for the final two weeks', () => {
+  it('applies an earlier overpayment to the final two weeks ONLY when marked appliedToLastTwoWeeks', () => {
     const league = makeLeague({ numWeeks: 4 });
     const bowlers = [makeBowler({ id: 1 })];
-    // Week 1: due 15, paid 30 -> a 15 credit banked before the final two weeks.
+    // Week 1: due 15, paid 30 -> a 15 overpayment, explicitly earmarked.
     // Weeks 3-4 (the final two, since numWeeks=4): due 15 each = 30, nothing paid.
     const entries = [
-      makeEntry({ id: 1, bowlerId: 1, week: 1, amountPaid: 30 }),
+      makeEntry({ id: 1, bowlerId: 1, week: 1, amountPaid: 30, appliedToLastTwoWeeks: true }),
       makeEntry({ id: 2, bowlerId: 1, week: 3, amountPaid: 0 }),
       makeEntry({ id: 3, bowlerId: 1, week: 4, amountPaid: 0 }),
     ];
     const flat = buildFlatEntries(league, bowlers, entries);
 
-    const result = buildLastTwoWeeksBalanceByBowler(flat, 4, {});
+    const result = buildLastTwoWeeksBalanceByBowler(flat, 4);
 
-    // Owed 30, credit 15 -> 15 still owed.
+    // Owed 30, earmarked credit 15 -> 15 still owed.
     expect(result[1]).toBe(15);
   });
 
-  it('does NOT let an ordinary mid-season debt reduce the final-two-weeks number', () => {
+  it('does NOT auto-apply an overpayment left unmarked, even though it is a real season credit', () => {
     const league = makeLeague({ numWeeks: 4 });
     const bowlers = [makeBowler({ id: 1 })];
-    // Week 1: due 15, paid 0 -> a 15 DEBT (not a credit) before the final two weeks.
-    // Weeks 3-4: due 15 each, paid in full.
+    // Same $15 week-1 overpayment as above, but NOT marked this time.
     const entries = [
-      makeEntry({ id: 1, bowlerId: 1, week: 1, amountPaid: 0 }),
-      makeEntry({ id: 2, bowlerId: 1, week: 3, amountPaid: 15 }),
-      makeEntry({ id: 3, bowlerId: 1, week: 4, amountPaid: 15 }),
-    ];
-    const flat = buildFlatEntries(league, bowlers, entries);
-
-    const result = buildLastTwoWeeksBalanceByBowler(flat, 4, {});
-
-    // Fully paid for weeks 3-4 -> 0 owed for the final two weeks specifically,
-    // even though the bowler is behind overall from week 1.
-    expect(result[1]).toBe(0);
-  });
-
-  it('never goes negative — a bigger credit than owed just fully covers it', () => {
-    const league = makeLeague({ numWeeks: 4 });
-    const bowlers = [makeBowler({ id: 1 })];
-    const entries = [
-      makeEntry({ id: 1, bowlerId: 1, week: 1, amountPaid: 100 }),
+      makeEntry({ id: 1, bowlerId: 1, week: 1, amountPaid: 30, appliedToLastTwoWeeks: false }),
       makeEntry({ id: 2, bowlerId: 1, week: 3, amountPaid: 0 }),
       makeEntry({ id: 3, bowlerId: 1, week: 4, amountPaid: 0 }),
     ];
     const flat = buildFlatEntries(league, bowlers, entries);
 
-    expect(buildLastTwoWeeksBalanceByBowler(flat, 4, {})[1]).toBe(0);
+    const result = buildLastTwoWeeksBalanceByBowler(flat, 4);
+
+    // Full $30 still owed -- the secretary never earmarked that overpayment,
+    // so it stays ordinary season credit and doesn't touch this number.
+    expect(result[1]).toBe(30);
   });
 
-  it('adds a manually recorded last-two-weeks payment as its own credit, on top of any automatic credit', () => {
-    const league = makeLeague({ numWeeks: 4 });
+  it('protects an earmarked credit from an unrelated later shortfall in a different week', () => {
+    const league = makeLeague({ numWeeks: 6 });
     const bowlers = [makeBowler({ id: 1 })];
-    // Weeks 3-4 (the final two): due 15 each = 30, nothing paid, no prior credit.
+    // Week 1: overpays by 15, earmarked for the final two weeks.
+    // Week 3: misses the week entirely (a real, separate shortfall).
+    // Weeks 5-6 (the final two): due 15 each = 30, nothing paid yet.
     const entries = [
-      makeEntry({ id: 1, bowlerId: 1, week: 3, amountPaid: 0 }),
-      makeEntry({ id: 2, bowlerId: 1, week: 4, amountPaid: 0 }),
+      makeEntry({ id: 1, bowlerId: 1, week: 1, amountPaid: 30, appliedToLastTwoWeeks: true }),
+      makeEntry({ id: 2, bowlerId: 1, week: 3, amountPaid: 0 }),
+      makeEntry({ id: 3, bowlerId: 1, week: 5, amountPaid: 0 }),
+      makeEntry({ id: 4, bowlerId: 1, week: 6, amountPaid: 0 }),
     ];
     const flat = buildFlatEntries(league, bowlers, entries);
 
-    const result = buildLastTwoWeeksBalanceByBowler(flat, 4, { 1: 20 });
+    const result = buildLastTwoWeeksBalanceByBowler(flat, 6);
 
-    // Owed 30, manual credit 20 -> 10 still owed.
-    expect(result[1]).toBe(10);
+    // The week-3 miss is a separate problem (shows up in the bowler's
+    // overall season balance) -- it must NOT eat into the week-1 money
+    // specifically earmarked for weeks 5-6. Owed 30, earmarked credit 15
+    // (unaffected by week 3) -> 15 still owed for the final two weeks.
+    expect(result[1]).toBe(15);
   });
 
-  it('never goes negative from a manual credit larger than what is owed', () => {
+  it('never goes negative — a bigger earmarked credit than owed just fully covers it', () => {
     const league = makeLeague({ numWeeks: 4 });
     const bowlers = [makeBowler({ id: 1 })];
     const entries = [
-      makeEntry({ id: 1, bowlerId: 1, week: 3, amountPaid: 0 }),
-      makeEntry({ id: 2, bowlerId: 1, week: 4, amountPaid: 0 }),
+      makeEntry({ id: 1, bowlerId: 1, week: 1, amountPaid: 100, appliedToLastTwoWeeks: true }),
+      makeEntry({ id: 2, bowlerId: 1, week: 3, amountPaid: 0 }),
+      makeEntry({ id: 3, bowlerId: 1, week: 4, amountPaid: 0 }),
     ];
     const flat = buildFlatEntries(league, bowlers, entries);
 
-    expect(buildLastTwoWeeksBalanceByBowler(flat, 4, { 1: 500 })[1]).toBe(0);
+    expect(buildLastTwoWeeksBalanceByBowler(flat, 4)[1]).toBe(0);
   });
 
-  it('includes a bowler who has a manual credit but zero recorded weekly entries at all', () => {
+  it('a marked entry with no overpayment (paid <= due that week) contributes nothing', () => {
     const league = makeLeague({ numWeeks: 4 });
-    const flat = buildFlatEntries(league, [], []);
+    const bowlers = [makeBowler({ id: 1 })];
+    const entries = [
+      // Marked, but only paid exactly what week 1 owed -- no overpayment to earmark.
+      makeEntry({ id: 1, bowlerId: 1, week: 1, amountPaid: 15, appliedToLastTwoWeeks: true }),
+      makeEntry({ id: 2, bowlerId: 1, week: 3, amountPaid: 0 }),
+      makeEntry({ id: 3, bowlerId: 1, week: 4, amountPaid: 0 }),
+    ];
+    const flat = buildFlatEntries(league, bowlers, entries);
 
-    const result = buildLastTwoWeeksBalanceByBowler(flat, 4, { 7: 25 });
+    expect(buildLastTwoWeeksBalanceByBowler(flat, 4)[1]).toBe(30);
+  });
 
-    // No entries at all -> nothing due for the final two weeks, so the
-    // manual credit doesn't even matter here, but the bowler must still
-    // show up in the result (at 0) rather than being silently dropped.
-    expect(result[7]).toBe(0);
+  it('marking one of the final two weeks itself has no extra effect (already counted directly)', () => {
+    const league = makeLeague({ numWeeks: 4 });
+    const bowlers = [makeBowler({ id: 1 })];
+    // Week 4 overpays by 15 and is (pointlessly) marked -- it's already one
+    // of the two relevant weeks, so it must not be double-counted as credit
+    // on top of being counted as "paid" for that same week.
+    const entries = [
+      makeEntry({ id: 1, bowlerId: 1, week: 3, amountPaid: 0 }),
+      makeEntry({ id: 2, bowlerId: 1, week: 4, amountPaid: 30, appliedToLastTwoWeeks: true }),
+    ];
+    const flat = buildFlatEntries(league, bowlers, entries);
+
+    // Owed 30 total (weeks 3+4), paid 30 (all in week 4) -> 0 owed either way.
+    expect(buildLastTwoWeeksBalanceByBowler(flat, 4)[1]).toBe(0);
+  });
+
+  it('a partial earmark (covering only one of the two final weeks) still applies as a plain dollar credit', () => {
+    const league = makeLeague({ numWeeks: 4 });
+    const bowlers = [makeBowler({ id: 1 })];
+    // Week 1 overpays by exactly one week's worth (15), earmarked -- the
+    // bowler is only pre-paying ONE of their last two weeks, not both.
+    const entries = [
+      makeEntry({ id: 1, bowlerId: 1, week: 1, amountPaid: 30, appliedToLastTwoWeeks: true }),
+      makeEntry({ id: 2, bowlerId: 1, week: 3, amountPaid: 0 }),
+      makeEntry({ id: 3, bowlerId: 1, week: 4, amountPaid: 0 }),
+    ];
+    const flat = buildFlatEntries(league, bowlers, entries);
+
+    // Owed 30, earmarked credit 15 (one week's worth) -> 15 still owed.
+    expect(buildLastTwoWeeksBalanceByBowler(flat, 4)[1]).toBe(15);
   });
 });
 

@@ -11,6 +11,7 @@ function toWeeklyEntry(row: WeeklyEntryRow): WeeklyEntry {
     bowlerId: row.bowlerId,
     week: row.week,
     amountPaid: Number(row.amountPaid),
+    appliedToLastTwoWeeks: row.appliedToLastTwoWeeks,
   };
 }
 
@@ -35,14 +36,15 @@ export async function upsertAmount(
   bowlerId: number,
   week: number,
   amountPaid: number,
+  appliedToLastTwoWeeks: boolean,
 ): Promise<WeeklyEntry> {
   const db = getDb();
   const [row] = await db
     .insert(weeklyEntries)
-    .values({ bowlerId, week, amountPaid: amountPaid.toString() })
+    .values({ bowlerId, week, amountPaid: amountPaid.toString(), appliedToLastTwoWeeks })
     .onConflictDoUpdate({
       target: [weeklyEntries.bowlerId, weeklyEntries.week],
-      set: { amountPaid: amountPaid.toString(), updatedAt: new Date() },
+      set: { amountPaid: amountPaid.toString(), appliedToLastTwoWeeks, updatedAt: new Date() },
     })
     .returning();
 

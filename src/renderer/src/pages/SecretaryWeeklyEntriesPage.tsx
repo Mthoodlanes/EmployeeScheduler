@@ -103,7 +103,7 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
         .filter((entry) => entry.bowlerId === bowler.id && entry.week < week)
         .sort((a, b) => b.week - a.week)[0];
       if (mostRecentPrior) {
-        recordEntry.mutate({ bowlerId: bowler.id, week, amountPaid: 0 });
+        recordEntry.mutate({ bowlerId: bowler.id, week, amountPaid: 0, appliedToLastTwoWeeks: false });
       }
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -117,12 +117,20 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
   const numWeeks = league?.numWeeks ?? 1;
   const standardWeeklyDue = league ? computeStandardWeeklyDue(league) : 0;
 
-  const entryFor = (bowlerId: number): { paid: number } | undefined =>
+  // Marking an entry doesn't mean anything for a week that's already one of
+  // the final two — that overpayment already counts directly toward the
+  // last-two-weeks due (see `buildLastTwoWeeksBalanceByBowler`), so earmark
+  // only makes sense for an EARLIER week's overpayment.
+  const isWithinLastTwoWeeks = currentWeek >= numWeeks - 1;
+
+  const entryFor = (
+    bowlerId: number,
+  ): { paid: number; appliedToLastTwoWeeks: boolean } | undefined =>
     flatEntries.find((entry) => entry.bowlerId === bowlerId && entry.week === currentWeek);
 
   const handleTogglePlaying = (bowlerId: number, checked: boolean): void => {
     if (checked) {
-      recordEntry.mutate({ bowlerId, week: currentWeek, amountPaid: 0 });
+      recordEntry.mutate({ bowlerId, week: currentWeek, amountPaid: 0, appliedToLastTwoWeeks: false });
     } else {
       removeEntry.mutate({ bowlerId, week: currentWeek });
       setAmountDrafts((prev) => {
@@ -138,7 +146,20 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
     if (draft === undefined) return;
     const amountPaid = Number(draft);
     if (Number.isNaN(amountPaid) || amountPaid < 0) return;
-    recordEntry.mutate({ bowlerId, week: currentWeek, amountPaid });
+    const appliedToLastTwoWeeks = entryFor(bowlerId)?.appliedToLastTwoWeeks ?? false;
+    recordEntry.mutate({ bowlerId, week: currentWeek, amountPaid, appliedToLastTwoWeeks });
+  };
+
+  /** Toggling this doesn't touch the amount already on file for the week — just re-sends it alongside the new flag. */
+  const handleToggleAppliedToLastTwoWeeks = (bowlerId: number, checked: boolean): void => {
+    const entry = entryFor(bowlerId);
+    if (!entry) return;
+    recordEntry.mutate({
+      bowlerId,
+      week: currentWeek,
+      amountPaid: entry.paid,
+      appliedToLastTwoWeeks: checked,
+    });
   };
 
   /** Advances the league's actual current week to whatever's being viewed here — shares the same league record (and query cache) the Setup page reads/writes, so it updates there too. */
@@ -253,6 +274,7 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
                       <th>Playing?</th>
                       <th>Bowler</th>
                       <th>Amount Paid</th>
+                      {!isWithinLastTwoWeeks && <th>Credit → Last 2 Wks</th>}
                       <th>Weekly Due</th>
                       <th>Balance</th>
                     </tr>
@@ -296,6 +318,20 @@ export function SecretaryWeeklyEntriesPage(): React.JSX.Element {
                               onBlur={() => handleAmountBlur(bowler.id)}
                             />
                           </td>
+                          {!isWithinLastTwoWeeks && (
+                            <td>
+                              <input
+                                type="checkbox"
+                                checked={entry?.appliedToLastTwoWeeks ?? false}
+                                disabled={!playing}
+                                aria-label={`${bowler.name} week ${currentWeek} credits last two weeks`}
+                                title="Marks this week's overpayment (if any) as reserved for this bowler's final two weeks, instead of ordinary running credit."
+                                onChange={(event) =>
+                                  handleToggleAppliedToLastTwoWeeks(bowler.id, event.target.checked)
+                                }
+                              />
+                            </td>
+                          )}
                           <td>{formatCurrency(due)}</td>
                           <td style={balance > 0 ? { color: 'var(--color-danger)' } : undefined}>
                             {formatCurrency(balance)}

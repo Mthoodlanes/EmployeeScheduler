@@ -240,7 +240,6 @@ export interface Bowler {
   depositPaid: number;
   depositOptOut: boolean;
   usbcCardPaid: boolean;
-  lastTwoWeeksPaid: number;
 }
 
 export interface WeeklyEntry {
@@ -248,6 +247,7 @@ export interface WeeklyEntry {
   bowlerId: number;
   week: number;
   amountPaid: number;
+  appliedToLastTwoWeeks: boolean;
 }
 
 export type BackupSource = 'manual' | 'pre_restore';

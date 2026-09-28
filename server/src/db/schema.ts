@@ -424,14 +424,6 @@ export const bowlers = pgTable('bowlers', {
   depositPaid: numeric('deposit_paid', { precision: 10, scale: 2 }).notNull().default('0'),
   depositOptOut: boolean('deposit_opt_out').notNull().default(false),
   usbcCardPaid: boolean('usbc_card_paid').notNull().default(false),
-  // A running amount the secretary records directly, credited toward the
-  // last-two-weeks charge on top of any automatic overpayment credit (see
-  // `duesLedger.ts`'s `buildLastTwoWeeksBalanceByBowler`) — lets a bowler
-  // pre-pay their final-two-weeks dues without needing to overpay some
-  // earlier week's entry to create that credit indirectly.
-  lastTwoWeeksPaid: numeric('last_two_weeks_paid', { precision: 10, scale: 2 })
-    .notNull()
-    .default('0'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
 });
@@ -448,6 +440,15 @@ export const weeklyEntries = pgTable(
       .references(() => bowlers.id, { onDelete: 'cascade' }),
     week: integer('week').notNull(),
     amountPaid: numeric('amount_paid', { precision: 10, scale: 2 }).notNull().default('0'),
+    // Marks this entry's OVERPAYMENT (amountPaid beyond this week's own due,
+    // if any) as earmarked for the bowler's final-two-weeks charge specifically
+    // — rather than sitting as ordinary running credit that a later missed
+    // week elsewhere could silently absorb before it ever reaches the end of
+    // the season. See `duesLedger.ts`'s `buildLastTwoWeeksBalanceByBowler`:
+    // only entries marked this way ever count toward that credit; an
+    // ordinary unmarked overpayment no longer auto-applies there at all,
+    // by design — the secretary decides, explicitly, per payment.
+    appliedToLastTwoWeeks: boolean('applied_to_last_two_weeks').notNull().default(false),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

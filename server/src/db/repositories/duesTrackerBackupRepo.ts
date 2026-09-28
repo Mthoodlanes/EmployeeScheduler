@@ -243,11 +243,11 @@ export async function restore(
         insert into bowlers (
           id, team_id, name, status, phone, lineage_discount, prize_fund_discount,
           drop_notice_week, notes, deposit_paid, deposit_opt_out, usbc_card_paid,
-          last_two_weeks_paid, created_at, updated_at
+          created_at, updated_at
         ) overriding system value values (
           ${b.id}, ${b.teamId}, ${b.name}, ${b.status}, ${b.phone}, ${b.lineageDiscount},
           ${b.prizeFundDiscount}, ${b.dropNoticeWeek}, ${b.notes}, ${b.depositPaid},
-          ${b.depositOptOut}, ${b.usbcCardPaid}, ${b.lastTwoWeeksPaid},
+          ${b.depositOptOut}, ${b.usbcCardPaid},
           ${b.createdAt}, ${b.updatedAt}
         )
       `);
@@ -256,9 +256,12 @@ export async function restore(
     for (const e of target.weeklyEntries) {
       // eslint-disable-next-line no-await-in-loop -- see the leagues loop above.
       await tx.execute(sql`
-        insert into weekly_entries (id, bowler_id, week, amount_paid, created_at, updated_at)
+        insert into weekly_entries (
+          id, bowler_id, week, amount_paid, applied_to_last_two_weeks, created_at, updated_at
+        )
         overriding system value values (
-          ${e.id}, ${e.bowlerId}, ${e.week}, ${e.amountPaid}, ${e.createdAt}, ${e.updatedAt}
+          ${e.id}, ${e.bowlerId}, ${e.week}, ${e.amountPaid}, ${e.appliedToLastTwoWeeks},
+          ${e.createdAt}, ${e.updatedAt}
         )
       `);
     }

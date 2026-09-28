@@ -557,7 +557,6 @@ export interface BowlerInput {
   depositPaid: number;
   depositOptOut: boolean;
   usbcCardPaid: boolean;
-  lastTwoWeeksPaid: number;
 }
 
 // ---- secretaryBowlers:listForTeam ----
@@ -601,6 +600,7 @@ export interface SecretaryWeeklyEntriesRecordRequest {
   bowlerId: number;
   week: number;
   amountPaid: number;
+  appliedToLastTwoWeeks: boolean;
 }
 export type SecretaryWeeklyEntriesRecordResponse = WeeklyEntry;
 

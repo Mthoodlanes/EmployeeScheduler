@@ -660,7 +660,10 @@ const secretary: Api['secretary'] = {
     record: (recordRequest: SecretaryWeeklyEntriesRecordRequest) =>
       put<SecretaryWeeklyEntriesRecordResponse>(
         `/secretary/bowlers/${recordRequest.bowlerId}/weekly-entries/${recordRequest.week}`,
-        { amountPaid: recordRequest.amountPaid },
+        {
+          amountPaid: recordRequest.amountPaid,
+          appliedToLastTwoWeeks: recordRequest.appliedToLastTwoWeeks,
+        },
       ),
     remove: (removeRequest: SecretaryWeeklyEntriesRemoveRequest) =>
       del<SecretaryWeeklyEntriesRemoveResponse>(

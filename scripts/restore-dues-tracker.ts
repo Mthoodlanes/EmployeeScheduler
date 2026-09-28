@@ -138,13 +138,13 @@ try {
           insert into bowlers (
             id, team_id, name, status, phone, lineage_discount, prize_fund_discount,
             drop_notice_week, notes, deposit_paid, deposit_opt_out, usbc_card_paid,
-            last_two_weeks_paid, created_at, updated_at
+            created_at, updated_at
           ) overriding system value values (
             ${b.id as number}, ${b.teamId as number}, ${b.name as string}, ${b.status as string},
             ${b.phone as string}, ${b.lineageDiscount as boolean}, ${b.prizeFundDiscount as boolean},
             ${b.dropNoticeWeek as string}, ${b.notes as string}, ${b.depositPaid as string},
             ${b.depositOptOut as boolean}, ${b.usbcCardPaid as boolean},
-            ${b.lastTwoWeeksPaid as string}, ${b.createdAt as string}, ${b.updatedAt as string}
+            ${b.createdAt as string}, ${b.updatedAt as string}
           )
         `;
       }
@@ -152,10 +152,13 @@ try {
       for (const e of backup.weeklyEntries) {
         // eslint-disable-next-line no-await-in-loop -- see the leagues loop above.
         await tx`
-          insert into weekly_entries (id, bowler_id, week, amount_paid, created_at, updated_at)
+          insert into weekly_entries (
+            id, bowler_id, week, amount_paid, applied_to_last_two_weeks, created_at, updated_at
+          )
           overriding system value values (
             ${e.id as number}, ${e.bowlerId as number}, ${e.week as number},
-            ${e.amountPaid as string}, ${e.createdAt as string}, ${e.updatedAt as string}
+            ${e.amountPaid as string}, ${e.appliedToLastTwoWeeks as boolean},
+            ${e.createdAt as string}, ${e.updatedAt as string}
           )
         `;
       }

@@ -216,7 +216,6 @@ function bowlerInputFromBody(body: Record<string, unknown>): bowlerService.Bowle
     depositPaid: requireNumber(body.depositPaid, 'depositPaid'),
     depositOptOut: requireBoolean(body.depositOptOut, 'depositOptOut'),
     usbcCardPaid: requireBoolean(body.usbcCardPaid, 'usbcCardPaid'),
-    lastTwoWeeksPaid: requireNumber(body.lastTwoWeeksPaid, 'lastTwoWeeksPaid'),
   };
 }
 
@@ -268,6 +267,7 @@ router.put(
       requireIdParam(req, 'bowlerId'),
       requireIdParam(req, 'week'),
       requireNumber(body.amountPaid, 'amountPaid'),
+      requireBoolean(body.appliedToLastTwoWeeks, 'appliedToLastTwoWeeks'),
     );
   }),
 );

@@ -50,6 +50,7 @@ export async function recordAmount(
   bowlerId: number,
   week: number,
   amountPaid: number,
+  appliedToLastTwoWeeks: boolean,
 ): Promise<WeeklyEntry> {
   assertSecretaryAccess(actor);
   if (week < 1) {
@@ -62,7 +63,7 @@ export async function recordAmount(
   if (!bowler) {
     throw new Error(`Bowler ${bowlerId} not found`);
   }
-  return weeklyEntryRepo.upsertAmount(bowlerId, week, amountPaid);
+  return weeklyEntryRepo.upsertAmount(bowlerId, week, amountPaid, appliedToLastTwoWeeks);
 }
 
 export async function removeEntry(
