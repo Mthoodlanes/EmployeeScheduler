@@ -82,6 +82,7 @@ const TABLES_IN_ANY_ORDER = [
   'teams',
   'bowlers',
   'weekly_entries',
+  'push_subscriptions',
 ];
 
 /**

@@ -22,6 +22,7 @@
 import * as schedulePublicationRepo from '../db/repositories/schedulePublicationRepo.js';
 import * as scheduledShiftRepo from '../db/repositories/scheduledShiftRepo.js';
 import * as shiftTemplateRepo from '../db/repositories/shiftTemplateRepo.js';
+import * as pushService from './pushService.js';
 import { getTodayIso, getWeekDates, getWeekStart, shiftWeek } from '../logic/weekRange.js';
 import { DepartmentMismatchError, ShiftTemplateNotFoundError } from './scheduledShiftErrors.js';
 import type {
@@ -35,6 +36,17 @@ import type {
 
 export type { RequestingActor };
 export { DepartmentMismatchError, ShiftTemplateNotFoundError };
+
+// Duplicated from src/shared/types/domain.ts's DEPARTMENT_LABELS — server/src
+// can't import from src/shared (see domain-types.ts's own file header for
+// why), and this is the only spot on the server that needs a human-readable
+// department name (for a push notification's body text).
+const DEPARTMENT_LABELS: Record<Department, string> = {
+  front_desk: 'Front Desk',
+  cafe: 'Cafe',
+  bar: 'Bar',
+  mechanic: 'Mechanic',
+};
 
 export class UnauthorizedScheduledShiftActionError extends Error {
   constructor(message = 'You do not have permission to perform this action') {
@@ -130,14 +142,49 @@ export async function getWeekPublication(
   return publication ?? null;
 }
 
-/** Manager-only: makes a department's week visible on every affected employee's "My Schedule". */
+/**
+ * Manager-only: makes a department's week visible on every affected
+ * employee's "My Schedule", then pushes a notification to anyone with a
+ * shift that week who has notifications enabled. The notification is
+ * necessarily tied to THIS action, not anything retroactive — there is no
+ * code path that scans old publications and fires notifications for them,
+ * so deploying this feature can never suddenly notify anyone about a
+ * schedule published before it existed.
+ */
 export async function publishWeek(
   actor: RequestingActor,
   department: Department,
   weekStart: string,
 ): Promise<SchedulePublication> {
   assertManager(actor);
-  return schedulePublicationRepo.publish(department, weekStart, actor.id);
+  const publication = await schedulePublicationRepo.publish(department, weekStart, actor.id);
+
+  const weekDates = getWeekDates(weekStart);
+  const shifts = await scheduledShiftRepo.listByDepartmentAndDateRange(
+    department,
+    weekDates[0],
+    weekDates[weekDates.length - 1],
+  );
+  const employeeIds = [...new Set(shifts.map((shift) => shift.employeeId))];
+  const weekLabel = new Date(`${weekStart}T00:00:00`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+  try {
+    await pushService.notifyEmployees(employeeIds, {
+      title: 'New schedule published',
+      body: `${DEPARTMENT_LABELS[department]} — week of ${weekLabel}`,
+      url: '/my-schedule',
+    });
+  } catch (err) {
+    // Publishing itself must never fail over notifications — most likely
+    // cause here is VAPID_PUBLIC_KEY/VAPID_PRIVATE_KEY/VAPID_SUBJECT not
+    // being configured yet (see pushService.ts).
+    // eslint-disable-next-line no-console -- worth surfacing in Render's log dashboard.
+    console.error('Failed to send schedule-published push notifications:', err);
+  }
+
+  return publication;
 }
 
 /** Manager-only: reverts a department's week back to draft, hiding it from "My Schedule" again. */

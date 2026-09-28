@@ -97,6 +97,14 @@ export default defineConfig({
           // assets are served without a network round-trip, and a changed
           // hash (new deploy) fetches only the changed files.
           globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+          // Web Push support: `importScripts` here means workbox-build
+          // literally emits `importScripts("push-worker.js")` inside the
+          // generated `sw.js`, rather than requiring a switch to
+          // `injectManifest` mode (which would mean hand-maintaining the
+          // precaching/runtime-caching logic below ourselves). The file
+          // itself lives in `src/renderer/public/` so Vite copies it to the
+          // output root unmodified, next to the generated `sw.js`.
+          importScripts: ['push-worker.js'],
           // These two flags are the actual fix for the reported "stale
           // content after a deploy" bug. `registerType: 'autoUpdate'` above
           // only controls the *client* register script's behavior (see

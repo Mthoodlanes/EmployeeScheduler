@@ -627,6 +627,24 @@ export interface SecretaryBackupsRestoreRequest {
 }
 export type SecretaryBackupsRestoreResponse = DuesTrackerBackup;
 
+// ---- push:vapidPublicKey ----
+export interface PushVapidPublicKeyResponse {
+  publicKey: string;
+}
+
+// ---- push:subscribe ----
+export interface PushSubscribeRequest {
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
+}
+export type PushSubscribeResponse = { success: true };
+
+// ---- push:unsubscribe ----
+export interface PushUnsubscribeRequest {
+  endpoint: string;
+}
+export type PushUnsubscribeResponse = { success: true };
+
 // ---- windowControls:minimize / toggleMaximize / close ----
 export type WindowControlsMinimizeResponse = { success: true };
 export type WindowControlsToggleMaximizeResponse = { isMaximized: boolean };

@@ -27,6 +27,7 @@
  * signature consistency across all 9 services.
  */
 import * as employeeRepo from '../db/repositories/employeeRepo.js';
+import * as pushSubscriptionRepo from '../db/repositories/pushSubscriptionRepo.js';
 import { hashPassword, InvalidCredentialsError, verifyPassword } from './authService.js';
 import type { Department, RequestingActor, Role } from '../db/domain-types.js';
 import type { EmployeeWithDepartmentsRow } from '../db/repositories/employeeRepo.js';
@@ -167,6 +168,10 @@ export async function updateEmployee(
  * deactivated employee is currently holding (see `session_version` in
  * schema.ts) — otherwise a deactivated employee who's still logged in on a
  * shared computer would keep their access until that token's 2-hour expiry.
+ * Also removes their push subscriptions outright — a deactivated employee
+ * should stop receiving "schedule published" notifications immediately,
+ * and unlike the session revocation above there's no expiry that would
+ * otherwise clean this up on its own.
  */
 export async function deactivateEmployee(
   actor: RequestingActor,
@@ -175,6 +180,7 @@ export async function deactivateEmployee(
   assertManager(actor);
   const result = await employeeRepo.deactivate(id);
   await employeeRepo.incrementSessionVersion(id);
+  await pushSubscriptionRepo.removeAllForEmployee(id);
   return result;
 }
 

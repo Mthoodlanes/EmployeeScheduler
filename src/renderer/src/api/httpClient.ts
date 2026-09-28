@@ -88,6 +88,11 @@ import type {
   NoticesCreateResponse,
   NoticesListResponse,
   NoticesMarkReadResponse,
+  PushVapidPublicKeyResponse,
+  PushSubscribeRequest,
+  PushSubscribeResponse,
+  PushUnsubscribeRequest,
+  PushUnsubscribeResponse,
   NoticesRemoveRequest,
   NoticesRemoveResponse,
   NoticesUnreadStatusResponse,
@@ -284,6 +289,11 @@ export interface Api {
     remove: (request: NoticesRemoveRequest) => Promise<NoticesRemoveResponse>;
     unreadStatus: () => Promise<NoticesUnreadStatusResponse>;
     markRead: () => Promise<NoticesMarkReadResponse>;
+  };
+  push: {
+    vapidPublicKey: () => Promise<PushVapidPublicKeyResponse>;
+    subscribe: (request: PushSubscribeRequest) => Promise<PushSubscribeResponse>;
+    unsubscribe: (request: PushUnsubscribeRequest) => Promise<PushUnsubscribeResponse>;
   };
   secretary: {
     leagues: {
@@ -607,6 +617,14 @@ const notices: Api['notices'] = {
   markRead: () => post<NoticesMarkReadResponse>('/notices/mark-read'),
 };
 
+const push: Api['push'] = {
+  vapidPublicKey: () => get<PushVapidPublicKeyResponse>('/push/vapid-public-key'),
+  subscribe: (subscribeRequest: PushSubscribeRequest) =>
+    post<PushSubscribeResponse>('/push/subscribe', subscribeRequest),
+  unsubscribe: (unsubscribeRequest: PushUnsubscribeRequest) =>
+    post<PushUnsubscribeResponse>('/push/unsubscribe', unsubscribeRequest),
+};
+
 const secretary: Api['secretary'] = {
   leagues: {
     list: () => get<SecretaryLeaguesListResponse>('/secretary/leagues'),
@@ -712,6 +730,7 @@ export const httpApi: Api = {
   storeHours,
   specialEvents,
   notices,
+  push,
   secretary,
   windowControls,
 };

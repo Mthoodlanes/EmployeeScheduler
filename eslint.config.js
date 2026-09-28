@@ -33,6 +33,10 @@ export default [
       '**/*.d.ts',
       'eslint.config.js',
       'scripts/*.mjs',
+      // Plain, dependency-free service-worker script `importScripts()`'d into
+      // the generated `sw.js` (see electron.vite.config.ts) — outside every
+      // tsconfig project, same reasoning as the other plain-JS entries above.
+      'src/renderer/public/push-worker.js',
     ],
   },
   js.configs.recommended,

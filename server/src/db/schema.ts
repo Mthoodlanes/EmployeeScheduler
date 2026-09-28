@@ -496,3 +496,25 @@ export const duesTrackerBackups = pgTable('dues_tracker_backups', {
     .references(() => employees.id),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 });
+
+// Web Push subscriptions — one row per browser/device an employee has
+// opted into notifications from (a phone AND a desktop both get their own
+// row). `endpoint` is unique because it's the push service's own
+// per-registration URL; re-subscribing the same device (e.g. after
+// clearing site data) naturally lands a new endpoint, not a duplicate of
+// the old one, so no extra dedupe logic is needed beyond this constraint.
+// `onDelete: 'cascade'` handles a genuinely deleted employee, but
+// employees are normally only ever deactivated (never deleted) — deactivation
+// explicitly removes this employee's rows itself (see `employeeService.ts`)
+// since a soft-deactivated row would otherwise leave stale subscriptions
+// behind indefinitely.
+export const pushSubscriptions = pgTable('push_subscriptions', {
+  id: integer('id').generatedAlwaysAsIdentity().primaryKey(),
+  employeeId: integer('employee_id')
+    .notNull()
+    .references(() => employees.id, { onDelete: 'cascade' }),
+  endpoint: text('endpoint').notNull().unique(),
+  p256dh: text('p256dh').notNull(),
+  auth: text('auth').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+});

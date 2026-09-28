@@ -36,6 +36,7 @@ const TABLES_IN_ANY_ORDER = [
   'bowlers',
   'weekly_entries',
   'dues_tracker_backups',
+  'push_subscriptions',
 ];
 
 export default async function globalSetup(): Promise<void> {
