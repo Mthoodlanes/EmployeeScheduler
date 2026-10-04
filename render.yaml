@@ -2,7 +2,14 @@ services:
   - type: web
     name: mt-hood-lanes-scheduler-backend
     runtime: node
-    plan: free
+    # This service is Blueprint-managed (created via this render.yaml), so
+    # Render re-reads this field on every deploy and silently reverts any
+    # plan change made directly in the dashboard back to whatever is
+    # committed here — confirmed live: upgrading to the $7/mo plan in the
+    # dashboard didn't stick because this still said `free`. `0.5c-512mb` is
+    # Render's current compute-plan identifier for that same $7/mo tier (the
+    # old `starter` name is gone from the Blueprint spec).
+    plan: 0.5c-512mb
     region: oregon
     # Milestone 20: `--include=dev` overrides npm's NODE_ENV-driven default of
     # skipping devDependencies during `npm ci` (verified locally: with
